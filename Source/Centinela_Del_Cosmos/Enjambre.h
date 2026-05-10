@@ -9,18 +9,20 @@
 UCLASS()
 class CENTINELA_DEL_COSMOS_API AEnjambre : public AActor
 {
-	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
-	AEnjambre();
-
+    GENERATED_BODY()
+public:
+    AEnjambre();
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+    virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+    UPROPERTY(VisibleAnywhere)
+    UStaticMeshComponent* MallaEnemigo;
+
+    // Dirección de rebote (1 o -1)
+    FVector DireccionMovimiento;
+
+public:
+    // Called every frame
+    virtual void Tick(float DeltaTime) override;
 
 };

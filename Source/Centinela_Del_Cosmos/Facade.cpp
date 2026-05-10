@@ -2,26 +2,21 @@
 
 
 #include "Facade.h"
+#include "EVastago_Del_infierno.h"
+#include "EVigia_Del_Vacio.h"
+#include "EHeraldo_De_La_Ruina.h"
+#include "Kismet/GameplayStatics.h"
 
-// Sets default values
-AFacade::AFacade()
-{
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+AFacade::AFacade() { PrimaryActorTick.bCanEverTick = false; }
 
-}
+void AFacade::MoverHorda() {
+    TArray<AActor*> Encontrados;
+    UGameplayStatics::GetAllActorsWithTag(GetWorld(), TEXT("Enemigo"), Encontrados);
 
-// Called when the game starts or when spawned
-void AFacade::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-// Called every frame
-void AFacade::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
+    for (AActor* Actor : Encontrados) {
+        if (auto* Vas = Cast<AEVastago_Del_infierno>(Actor)) Vas->moverVastago();
+        else if (auto* Vig = Cast<AEVigia_Del_Vacio>(Actor)) Vig->moverVigia();
+        else if (auto* Her = Cast<AEHeraldo_De_La_Ruina>(Actor)) Her->moverHeraldo();
+    }
 }
 

@@ -3,19 +3,20 @@
 
 #include "Enjambre.h"
 
-// Sets default values
+
 AEnjambre::AEnjambre()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = true; // Si vas a usar el Facade, podrías poner esto en false luego
 
+	MallaEnemigo = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MallaEnemigo"));
+	RootComponent = MallaEnemigo;
 }
 
-// Called when the game starts or when spawned
+
 void AEnjambre::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame

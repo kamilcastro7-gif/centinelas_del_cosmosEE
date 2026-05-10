@@ -10,17 +10,9 @@ UCLASS()
 class CENTINELA_DEL_COSMOS_API AFacade : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
+
+public:
+    // Sets default values for this actor's properties
 	AFacade();
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
+	void MoverHorda();
 };
