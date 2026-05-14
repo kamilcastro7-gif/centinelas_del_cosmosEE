@@ -14,6 +14,7 @@ class CENTINELA_DEL_COSMOS_API AEVigia_Del_Vacio : public AEnjambre
 public:
 	AEVigia_Del_Vacio();
 	void moverVigia();
+	void VigAtacar();
 
 protected:
 	virtual void BeginPlay() override;

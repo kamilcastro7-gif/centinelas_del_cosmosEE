@@ -16,6 +16,10 @@ class CENTINELA_DEL_COSMOS_API AEVastago_Del_infierno : public AEnjambre
 public:
 	AEVastago_Del_infierno();
 	void moverVastago();
+	void VasAtacar();
+
+protected:
+	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, Category = "Combate")
 	float VelocidadVastago;

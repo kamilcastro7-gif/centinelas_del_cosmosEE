@@ -3,6 +3,7 @@
 
 #include "EHeraldo_De_La_Ruina.h"
 #include "Kismet/GameplayStatics.h"
+#include "ProyectilBase.h"
 
 AEHeraldo_De_La_Ruina::AEHeraldo_De_La_Ruina() {
     VelocidadHeraldo = 350.0f;
@@ -15,6 +16,14 @@ AEHeraldo_De_La_Ruina::AEHeraldo_De_La_Ruina() {
     if (MeshAsset.Succeeded()) {
         MallaEnemigo->SetStaticMesh(MeshAsset.Object);
     }
+}
+
+void AEHeraldo_De_La_Ruina::BeginPlay() {
+    Super::BeginPlay();
+
+    // El heraldo dispara su gran esfera cada 10 segundos
+    FTimerHandle TimerHandle_Ataque;
+    GetWorld()->GetTimerManager().SetTimer(TimerHandle_Ataque, this, &AEHeraldo_De_La_Ruina::HerAtacar, 10.0f, true);
 }
 
 void AEHeraldo_De_La_Ruina::moverHeraldo()
@@ -80,5 +89,29 @@ void AEHeraldo_De_La_Ruina::moverHeraldo()
 
         // 4. ACTUALIZAR ROTACIÓN
         SetActorRotation(DireccionNormal.Rotation());
+    }
+}
+
+void AEHeraldo_De_La_Ruina::HerAtacar() {
+    if (!GetWorld()) return;
+
+    FVector Ubicacion = GetActorLocation() + (GetActorForwardVector() * 200.f);
+    FRotator Rotacion = GetActorRotation();
+
+    AProyectilBase* GranEsfera = GetWorld()->SpawnActor<AProyectilBase>(AProyectilBase::StaticClass(), Ubicacion, Rotacion);
+
+    if (GranEsfera) {
+        GranEsfera->bEsSeguidor = true;
+        GranEsfera->VidaProyectil = 8;
+
+        // CERO significa que no se destruirá por tiempo nunca.
+        GranEsfera->SetLifeSpan(0.0f);
+
+        if (GranEsfera->MovimientoProyectil) {
+            GranEsfera->MovimientoProyectil->InitialSpeed = 750.f;
+            GranEsfera->MovimientoProyectil->MaxSpeed = 750.f;
+            // Evitamos que rebote para que siempre busque impacto directo
+            GranEsfera->MovimientoProyectil->bShouldBounce = false;
+        }
     }
 }

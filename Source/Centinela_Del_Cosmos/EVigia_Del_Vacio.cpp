@@ -2,12 +2,13 @@
 
 
 #include "EVigia_Del_Vacio.h"
+#include "ProyectilBase.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
 
 #include "Kismet/GameplayStatics.h"      
-#include "Kismet/KismetMathLibrary.h"   
+#include "Kismet/KismetMathLibrary.h"  
 
 AEVigia_Del_Vacio::AEVigia_Del_Vacio() {
     // Definimos los parámetros de la oscilación
@@ -30,6 +31,8 @@ void AEVigia_Del_Vacio::BeginPlay() {
     Super::BeginPlay();
     // Guardamos dónde nació para oscilar alrededor de ese punto
     PosicionInicialSpawn = GetActorLocation();
+    FTimerHandle TimerHandle_Ataque;
+    GetWorld()->GetTimerManager().SetTimer(TimerHandle_Ataque, this, &AEVigia_Del_Vacio::VigAtacar, 5.0f, true);
 }
 
 void AEVigia_Del_Vacio::moverVigia() {
@@ -54,3 +57,30 @@ void AEVigia_Del_Vacio::moverVigia() {
         SetActorRotation(RotacionAlPlayer);
     }
 }
+
+void AEVigia_Del_Vacio::VigAtacar() {
+    if (!GetWorld()) return;
+
+    FVector Ubicacion = GetActorLocation() + (GetActorForwardVector() * 120.f);
+
+    // Apuntar a la posición actual del jugador para que el disparo tenga dirección
+    AActor* Jugador = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+    FRotator Rotacion = (Jugador) ?
+        UKismetMathLibrary::FindLookAtRotation(Ubicacion, Jugador->GetActorLocation()) : GetActorRotation();
+
+    AProyectilBase* Proy = GetWorld()->SpawnActor<AProyectilBase>(AProyectilBase::StaticClass(), Ubicacion, Rotacion);
+
+    if (Proy) {
+        Proy->MallaProyectil->SetRelativeScale3D(FVector(0.8f)); // Redondo y mediano
+        Proy->InitialLifeSpan = 5.0f; // Se destruye si falla
+
+        if (Proy->MovimientoProyectil) {
+            // Le damos velocidad inicial en la dirección a la que apunta
+            Proy->MovimientoProyectil->InitialSpeed = 6000.f;
+            Proy->MovimientoProyectil->MaxSpeed = 6000.f;
+            Proy->MovimientoProyectil->Velocity = Rotacion.Vector() * 6000.f;
+        }
+    }
+}
+
+

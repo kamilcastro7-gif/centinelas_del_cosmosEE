@@ -12,6 +12,10 @@ class CENTINELA_DEL_COSMOS_API AEHeraldo_De_La_Ruina : public AEnjambre
 public:
     AEHeraldo_De_La_Ruina();
     void moverHeraldo();
+    void HerAtacar();
+
+protected:
+    virtual void BeginPlay() override;
 
     UPROPERTY(EditAnywhere, Category = "Combate")
     float VelocidadHeraldo;

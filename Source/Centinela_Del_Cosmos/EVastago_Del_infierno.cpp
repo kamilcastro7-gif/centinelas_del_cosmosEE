@@ -3,6 +3,7 @@
 #include "EVastago_Del_infierno.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "ProyectilBase.h"
 
 AEVastago_Del_infierno::AEVastago_Del_infierno() {
     VelocidadVastago = 750.0f;
@@ -14,6 +15,14 @@ AEVastago_Del_infierno::AEVastago_Del_infierno() {
 
     static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cylinder.Shape_Cylinder'"));
     if (MeshAsset.Succeeded()) MallaEnemigo->SetStaticMesh(MeshAsset.Object);
+}
+
+void AEVastago_Del_infierno::BeginPlay() {
+    Super::BeginPlay();
+
+    // El vástago dispara cada 2 segundos
+    FTimerHandle TimerHandle_Ataque;
+    GetWorld()->GetTimerManager().SetTimer(TimerHandle_Ataque, this, &AEVastago_Del_infierno::VasAtacar, 2.0f, true);
 }
 
 void AEVastago_Del_infierno::moverVastago() {
@@ -47,4 +56,32 @@ void AEVastago_Del_infierno::moverVastago() {
     // Interpolar posición para que el movimiento sea fluido y no saltos bruscos
     FVector NuevaPos = FMath::VInterpTo(GetActorLocation(), Destino, DeltaTime, 1.5f);
     SetActorLocation(NuevaPos);
+}
+
+void AEVastago_Del_infierno::VasAtacar() {
+    AActor* Jugador = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+    if (!Jugador) return;
+
+    float Distancia = FVector::Dist(GetActorLocation(), Jugador->GetActorLocation());
+
+    // SOLO DISPARA SI ESTÁ CERCA (Ya rodeando al jugador)
+    if (Distancia < 1100.0f) {
+        FVector Ubicacion = GetActorLocation();
+        // Forzamos a que el proyectil mire al jugador, no hacia arriba
+        FRotator RotacionHaciaJugador = UKismetMathLibrary::FindLookAtRotation(Ubicacion, Jugador->GetActorLocation());
+
+        AProyectilBase* Proy = GetWorld()->SpawnActor<AProyectilBase>(AProyectilBase::StaticClass(), Ubicacion, RotacionHaciaJugador);
+
+        if (Proy) {
+            Proy->MallaProyectil->SetRelativeScale3D(FVector(0.3f));
+            // ALCANCE MUY CORTO: Se destruye en menos de 1 segundo
+            Proy->InitialLifeSpan = 0.8f;
+
+            if (Proy->MovimientoProyectil) {
+                Proy->MovimientoProyectil->InitialSpeed = 1200.f;
+                // Importante para que no salgan hacia arriba
+                Proy->MovimientoProyectil->Velocity = RotacionHaciaJugador.Vector() * 1200.f;
+            }
+        }
+    }
 }
