@@ -19,4 +19,11 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Combate")
 	float VelocidadVastago;
+
+private:
+	float TimerEstado;
+	bool bEstaRodeando;
+
+	// Cambiamos 'DireccionDispersión' por 'DireccionDispersion' (sin tilde)
+	FVector DireccionDispersion;
 };

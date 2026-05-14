@@ -8,11 +8,15 @@
 UCLASS()
 class CENTINELA_DEL_COSMOS_API AEHeraldo_De_La_Ruina : public AEnjambre
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 public:
-	AEHeraldo_De_La_Ruina();
-	void moverHeraldo();
+    AEHeraldo_De_La_Ruina();
+    void moverHeraldo();
 
-	UPROPERTY(EditAnywhere, Category = "Combate")
-	float VelocidadHeraldo;
+    UPROPERTY(EditAnywhere, Category = "Combate")
+    float VelocidadHeraldo;
+
+private:
+    float TimerEstadoHeraldo;
+    bool bEstaPersiguiendo;
 };

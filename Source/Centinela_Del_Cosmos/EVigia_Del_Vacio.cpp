@@ -6,6 +6,9 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
 
+#include "Kismet/GameplayStatics.h"      
+#include "Kismet/KismetMathLibrary.h"   
+
 AEVigia_Del_Vacio::AEVigia_Del_Vacio() {
     // Definimos los parámetros de la oscilación
     VelocidadVigia = 2.0f; // Frecuencia (más alto = más rápido de lado a lado)
@@ -30,20 +33,24 @@ void AEVigia_Del_Vacio::BeginPlay() {
 }
 
 void AEVigia_Del_Vacio::moverVigia() {
-    UWorld* Mundo = GetWorld();
-    if (!Mundo) return;
+    // Usamos el tiempo para oscilar el ángulo del arco
+    float Tiempo = GetWorld()->GetTimeSeconds() * VelocidadVigia;
+    float Radio = 1200.0f; // Distancia larga de francotirador
 
-    // MATEMÁTICAS PURAS: Calculamos la nueva posición Y basada en el tiempo
-    // Usamos Sinus para un movimiento suave de vaivén
-    float Tiempo = Mundo->GetTimeSeconds();
+    // El arco se mueve entre -1.5 y 1.5 radianes (aprox una media luna)
+    float OffsetAngulo = FMath::Sin(Tiempo) * 1.5f;
 
-    // NuevaY = SpawnY + Amplitud * Sin(Tiempo * Frecuencia)
-    float NuevaY = PosicionInicialSpawn.Y + (AmplitudPatrulla * FMath::Sin(Tiempo * VelocidadVigia));
+    FVector NuevaPos;
+    NuevaPos.X = PosicionInicialSpawn.X + (FMath::Cos(OffsetAngulo) * Radio);
+    NuevaPos.Y = PosicionInicialSpawn.Y + (FMath::Sin(OffsetAngulo) * Radio);
+    NuevaPos.Z = PosicionInicialSpawn.Z;
 
-    // Mantenemos X y Z igual que en el spawn
-    FVector NuevaPosicion = FVector(PosicionInicialSpawn.X, NuevaY, PosicionInicialSpawn.Z);
+    SetActorLocation(NuevaPos);
 
-    // Teletransportamos suavemente al actor a la nueva posición cada frame
-    // El 'false' desactiva el sweep, obligándolo a estar ahí
-    SetActorLocation(NuevaPosicion, false);
+    // Siempre mirar al jugador para preparar el disparo
+    AActor* Jugador = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+    if (Jugador) {
+        FRotator RotacionAlPlayer = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Jugador->GetActorLocation());
+        SetActorRotation(RotacionAlPlayer);
+    }
 }

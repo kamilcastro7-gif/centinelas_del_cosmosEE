@@ -23,6 +23,12 @@ void ACentinela_Del_CosmosGameMode::BeginPlay()
 
     if (!Factory) return;
 
+    // En ACentinela_Del_CosmosGameMode::BeginPlay()
+    for (int32 i = 0; i < 15; i++) {
+        FVector PosAleatoria = FVector(FMath::RandRange(-1000, 1000), FMath::RandRange(-1000, 1000), 150.0f);
+        Factory->SpawnEnemigo(ETipoEnemigo::Vastago, PosAleatoria, FRotator::ZeroRotator);
+    }
+
     const FVector   Origen = FVector(0.0f, 0.0f, 150.0f);
     const FRotator  SinRotacion = FRotator::ZeroRotator;
 
