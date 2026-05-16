@@ -6,8 +6,17 @@
 #include "GameFramework/Character.h"
 #include "Centinela_Del_CosmosPawn.generated.h"
 
+// Definición de las armas disponibles
+UENUM(BlueprintType)
+enum class ETipoArma : uint8
+{
+	Normal,
+	Boomerang,
+	Carga
+};
+
 UCLASS(Blueprintable)
-class ACentinela_Del_CosmosPawn : public APawn
+class CENTINELA_DEL_COSMOS_API ACentinela_Del_CosmosPawn : public APawn
 {
 	GENERATED_BODY()
 
@@ -27,9 +36,9 @@ public:
 	ACentinela_Del_CosmosPawn();
 
 	/** Offset from the ships location to spawn projectiles */
-	UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintReadWrite )
+	UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintReadWrite)
 	FVector GunOffset;
-	
+
 	/* How fast the weapon will fire */
 	UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintReadWrite)
 	float FireRate;
@@ -59,13 +68,26 @@ public:
 	static const FName FireForwardBinding;
 	static const FName FireRightBinding;
 
-private:
+	UPROPERTY(BlueprintReadOnly, Category = "Armas")
+	ETipoArma ArmaActual;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Armas")
+	bool bBoomerangEnVuelo;
+
+private:
 	/* Flag to control firing  */
 	uint32 bCanFire : 1;
 
 	/** Handle for efficient management of ShotTimerExpired timer */
 	FTimerHandle TimerHandle_ShotTimerExpired;
+
+	// --- CONTROL DE CARGA EN TIEMPO REAL ---
+	float TiempoCargaAcumulado;
+	bool bEstaCargando;
+
+	// Guardamos la referencia de la pelota para escalarla mientras crece
+	UPROPERTY()
+	class AProyectilCarga* ProyectilCargaActual;
 
 public:
 	/** Returns ShipMeshComponent subobject **/

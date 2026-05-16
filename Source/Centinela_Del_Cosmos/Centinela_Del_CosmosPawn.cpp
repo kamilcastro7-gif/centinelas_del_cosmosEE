@@ -2,6 +2,8 @@
 
 #include "Centinela_Del_CosmosPawn.h"
 #include "Centinela_Del_CosmosProjectile.h"
+#include "ProyectilBoomerang.h"
+#include "ProyectilCarga.h"
 #include "TimerManager.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
@@ -19,14 +21,14 @@ const FName ACentinela_Del_CosmosPawn::FireForwardBinding("FireForward");
 const FName ACentinela_Del_CosmosPawn::FireRightBinding("FireRight");
 
 ACentinela_Del_CosmosPawn::ACentinela_Del_CosmosPawn()
-{	
+{
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ShipMesh(TEXT("/Game/TwinStick/Meshes/TwinStickUFO.TwinStickUFO"));
 	// Create the mesh component
 	ShipMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShipMesh"));
 	RootComponent = ShipMeshComponent;
 	ShipMeshComponent->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
 	ShipMeshComponent->SetStaticMesh(ShipMesh.Object);
-	
+
 	// Cache our sound effect
 	static ConstructorHelpers::FObjectFinder<USoundBase> FireAudio(TEXT("/Game/TwinStick/Audio/TwinStickFire.TwinStickFire"));
 	FireSound = FireAudio.Object;
@@ -50,6 +52,12 @@ ACentinela_Del_CosmosPawn::ACentinela_Del_CosmosPawn()
 	GunOffset = FVector(90.f, 0.f, 0.f);
 	FireRate = 0.1f;
 	bCanFire = true;
+
+	ArmaActual = ETipoArma::Normal;
+	bBoomerangEnVuelo = false;
+	TiempoCargaAcumulado = 0.0f;
+	bEstaCargando = false;
+	ProyectilCargaActual = nullptr;
 }
 
 void ACentinela_Del_CosmosPawn::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -60,26 +68,19 @@ void ACentinela_Del_CosmosPawn::SetupPlayerInputComponent(class UInputComponent*
 	PlayerInputComponent->BindAxis(MoveForwardBinding);
 	PlayerInputComponent->BindAxis(MoveRightBinding);
 
-	// Mantenemos los axis por si acaso, pero añadimos la acción de Espacio
-	// En el Editor de Unreal, debes crear una Action Mapping llamada "EspacioDisparo" vinculada a SpaceBar
 	PlayerInputComponent->BindAction("EspacioDisparo", IE_Pressed, this, &ACentinela_Del_CosmosPawn::ShotTimerExpired);
-	// Nota: Usamos ShotTimerExpired o una función similar si quieres ráfaga, 
-	// pero para disparar donde mira la nave, modificamos el Tick abajo.
 }
 
 void ACentinela_Del_CosmosPawn::Tick(float DeltaSeconds)
 {
-	// Find movement direction
+	// 1. OBTENER EJES DE MOVIMIENTO (WASD / Joysticks)
 	const float ForwardValue = GetInputAxisValue(MoveForwardBinding);
 	const float RightValue = GetInputAxisValue(MoveRightBinding);
 
-	// Clamp max size so that (X=1, Y=1) doesn't cause faster movement in diagonal directions
+	// 2. CÁLCULO DE MOVIMIENTO CONSTANTE AL 100% (No se frena la nave)
 	const FVector MoveDirection = FVector(ForwardValue, RightValue, 0.f).GetClampedToMaxSize(1.0f);
-
-	// Calculate  movement
 	const FVector Movement = MoveDirection * MoveSpeed * DeltaSeconds;
 
-	// If non-zero size, move this actor
 	if (Movement.SizeSquared() > 0.0f)
 	{
 		const FRotator NewRotation = Movement.Rotation();
@@ -94,48 +95,146 @@ void ACentinela_Del_CosmosPawn::Tick(float DeltaSeconds)
 		}
 	}
 
-	// --- CAMBIO AQUÍ ---
-	// Ahora el FireDirection no viene de los ejes, sino de la rotación actual de la nave
-	// Si presionas Espacio (puedes usar un flag o GetActionValue)
-	if (GetWorld()->GetFirstPlayerController()->IsInputKeyDown(EKeys::SpaceBar))
+	// 3. CAMBIO DE ARMAS CON TECLAS 1, 2 Y 3
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (PC)
 	{
-		// Obtenemos el vector hacia adelante de la nave (donde está mirando)
-		const FVector FireDirection = GetActorForwardVector();
-		FireShot(FireDirection);
+		if (PC->WasInputKeyJustPressed(EKeys::One))   ArmaActual = ETipoArma::Normal;
+		else if (PC->WasInputKeyJustPressed(EKeys::Two))  ArmaActual = ETipoArma::Boomerang;
+		else if (PC->WasInputKeyJustPressed(EKeys::Three)) ArmaActual = ETipoArma::Carga;
+	}
+
+	// 4. CONTROL DE DISPARO POR TECLA ESPACIO
+	if (PC && PC->IsInputKeyDown(EKeys::SpaceBar))
+	{
+		if (ArmaActual == ETipoArma::Carga)
+		{
+			if (bCanFire)
+			{
+				// Si apenas empezamos a presionar, spawneamos la esfera pegada a la nave
+				if (!bEstaCargando)
+				{
+					bEstaCargando = true;
+					TiempoCargaAcumulado = 0.0f;
+
+					const FRotator FireRotation = GetActorRotation();
+					const FVector SpawnLocation = GetActorLocation() + FireRotation.RotateVector(GunOffset);
+
+					UWorld* const World = GetWorld();
+					if (World)
+					{
+						ProyectilCargaActual = World->SpawnActor<AProyectilCarga>(SpawnLocation, FireRotation);
+
+						// Adjuntamos físicamente la pelota a la nave para evitar que se desoriente al girar
+						if (ProyectilCargaActual)
+						{
+							ProyectilCargaActual->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepWorldTransform);
+						}
+					}
+				}
+			}
+
+			if (ProyectilCargaActual)
+			{
+				TiempoCargaAcumulado += DeltaSeconds;
+
+				// Va escalando la pelota en base al tiempo retenido
+				ProyectilCargaActual->InicializarCarga(TiempoCargaAcumulado);
+			}
+
+			// Disparamos ráfagas de proyectiles normales paralelos mientras va cargando la gorda
+			if (bCanFire)
+			{
+				UWorld* const World = GetWorld();
+				if (World)
+				{
+					const FRotator FireRotation = GetActorRotation();
+					const FVector SpawnLocation = GetActorLocation() + FireRotation.RotateVector(GunOffset);
+					World->SpawnActor<ACentinela_Del_CosmosProjectile>(SpawnLocation, FireRotation);
+
+					bCanFire = false;
+					World->GetTimerManager().SetTimer(TimerHandle_ShotTimerExpired, this, &ACentinela_Del_CosmosPawn::ShotTimerExpired, FireRate);
+				}
+			}
+		}
+		else
+		{
+			// Disparo normal para las otras armas del inventario
+			const FVector FireDirection = GetActorForwardVector();
+			FireShot(FireDirection);
+		}
+	}
+	else if (bEstaCargando)
+	{
+		// AL SOLTAR ESPACIO: Liberamos y disparamos con precisión absoluta hacia adelante
+		if (ProyectilCargaActual)
+		{
+			// Guardamos el vector de hacia dónde mira la nave JUSTO ANTES de desvincularla
+			FVector DireccionDeDisparoLimpia = GetActorForwardVector();
+
+			// Desvinculamos el proyectil de la nave para que sea libre en el mundo
+			ProyectilCargaActual->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+			// Le pasamos la dirección limpia guardada para blindar que NUNCA se quede quieta
+			ProyectilCargaActual->LiberarProyectil(TiempoCargaAcumulado, DireccionDeDisparoLimpia);
+			ProyectilCargaActual = nullptr;
+
+			// Se activa el cooldown de disparo
+			bCanFire = false;
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle_ShotTimerExpired, this, &ACentinela_Del_CosmosPawn::ShotTimerExpired, FireRate);
+
+			if (FireSound != nullptr)
+			{
+				UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
+			}
+		}
+
+		bEstaCargando = false;
+		TiempoCargaAcumulado = 0.0f;
 	}
 }
 
 void ACentinela_Del_CosmosPawn::FireShot(FVector FireDirection)
 {
-	// If it's ok to fire again
 	if (bCanFire == true)
 	{
-		// If we are pointing or looking in a direction (ahora siempre es el Forward)
 		if (FireDirection.SizeSquared() > 0.0f)
 		{
-			// La rotación del disparo ahora es la rotación actual de la nave
 			const FRotator FireRotation = GetActorRotation();
-
-			// Spawn projectile at an offset from this pawn
 			const FVector SpawnLocation = GetActorLocation() + FireRotation.RotateVector(GunOffset);
 
 			UWorld* const World = GetWorld();
 			if (World != nullptr)
 			{
-				// spawn the projectile
-				World->SpawnActor<ACentinela_Del_CosmosProjectile>(SpawnLocation, FireRotation);
+				if (ArmaActual == ETipoArma::Normal)
+				{
+					World->SpawnActor<ACentinela_Del_CosmosProjectile>(SpawnLocation, FireRotation);
+				}
+				else if (ArmaActual == ETipoArma::Boomerang)
+				{
+					if (!bBoomerangEnVuelo)
+					{
+						bBoomerangEnVuelo = true;
+						AProyectilBoomerang* Boomerang = World->SpawnActor<AProyectilBoomerang>(SpawnLocation, FireRotation);
+						if (Boomerang)
+						{
+							Boomerang->NaveDueno = this;
+						}
+					}
+					else
+					{
+						return;
+					}
+				}
 			}
 
 			bCanFire = false;
 			World->GetTimerManager().SetTimer(TimerHandle_ShotTimerExpired, this, &ACentinela_Del_CosmosPawn::ShotTimerExpired, FireRate);
 
-			// try and play the sound if specified
 			if (FireSound != nullptr)
 			{
 				UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
 			}
-
-			bCanFire = false;
 		}
 	}
 }
