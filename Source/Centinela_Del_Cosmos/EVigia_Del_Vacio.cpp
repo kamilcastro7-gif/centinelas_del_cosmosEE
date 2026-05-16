@@ -16,7 +16,7 @@ AEVigia_Del_Vacio::AEVigia_Del_Vacio() {
     AmplitudPatrulla = 500.0f; // Se moverá 500cm a la izquierda y 500cm a la derecha
     Tags.Add(FName("Enemigo"));
 
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Torus.Shape_Torus'"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_NarrowCapsule.Shape_NarrowCapsule'"));
     if (MeshAsset.Succeeded()) {
         MallaEnemigo->SetStaticMesh(MeshAsset.Object);
     }

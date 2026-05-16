@@ -59,8 +59,12 @@ void ACentinela_Del_CosmosPawn::SetupPlayerInputComponent(class UInputComponent*
 	// set up gameplay key bindings
 	PlayerInputComponent->BindAxis(MoveForwardBinding);
 	PlayerInputComponent->BindAxis(MoveRightBinding);
-	PlayerInputComponent->BindAxis(FireForwardBinding);
-	PlayerInputComponent->BindAxis(FireRightBinding);
+
+	// Mantenemos los axis por si acaso, pero añadimos la acción de Espacio
+	// En el Editor de Unreal, debes crear una Action Mapping llamada "EspacioDisparo" vinculada a SpaceBar
+	PlayerInputComponent->BindAction("EspacioDisparo", IE_Pressed, this, &ACentinela_Del_CosmosPawn::ShotTimerExpired);
+	// Nota: Usamos ShotTimerExpired o una función similar si quieres ráfaga, 
+	// pero para disparar donde mira la nave, modificamos el Tick abajo.
 }
 
 void ACentinela_Del_CosmosPawn::Tick(float DeltaSeconds)
@@ -72,7 +76,7 @@ void ACentinela_Del_CosmosPawn::Tick(float DeltaSeconds)
 	// Clamp max size so that (X=1, Y=1) doesn't cause faster movement in diagonal directions
 	const FVector MoveDirection = FVector(ForwardValue, RightValue, 0.f).GetClampedToMaxSize(1.0f);
 
-	// Calculate  movement
+	// Calculate  movement
 	const FVector Movement = MoveDirection * MoveSpeed * DeltaSeconds;
 
 	// If non-zero size, move this actor
@@ -81,7 +85,7 @@ void ACentinela_Del_CosmosPawn::Tick(float DeltaSeconds)
 		const FRotator NewRotation = Movement.Rotation();
 		FHitResult Hit(1.f);
 		RootComponent->MoveComponent(Movement, NewRotation, true, &Hit);
-		
+
 		if (Hit.IsValidBlockingHit())
 		{
 			const FVector Normal2D = Hit.Normal.GetSafeNormal2D();
@@ -89,14 +93,16 @@ void ACentinela_Del_CosmosPawn::Tick(float DeltaSeconds)
 			RootComponent->MoveComponent(Deflection, NewRotation, true);
 		}
 	}
-	
-	// Create fire direction vector
-	const float FireForwardValue = GetInputAxisValue(FireForwardBinding);
-	const float FireRightValue = GetInputAxisValue(FireRightBinding);
-	const FVector FireDirection = FVector(FireForwardValue, FireRightValue, 0.f);
 
-	// Try and fire a shot
-	FireShot(FireDirection);
+	// --- CAMBIO AQUÍ ---
+	// Ahora el FireDirection no viene de los ejes, sino de la rotación actual de la nave
+	// Si presionas Espacio (puedes usar un flag o GetActionValue)
+	if (GetWorld()->GetFirstPlayerController()->IsInputKeyDown(EKeys::SpaceBar))
+	{
+		// Obtenemos el vector hacia adelante de la nave (donde está mirando)
+		const FVector FireDirection = GetActorForwardVector();
+		FireShot(FireDirection);
+	}
 }
 
 void ACentinela_Del_CosmosPawn::FireShot(FVector FireDirection)
@@ -104,10 +110,12 @@ void ACentinela_Del_CosmosPawn::FireShot(FVector FireDirection)
 	// If it's ok to fire again
 	if (bCanFire == true)
 	{
-		// If we are pressing fire stick in a direction
+		// If we are pointing or looking in a direction (ahora siempre es el Forward)
 		if (FireDirection.SizeSquared() > 0.0f)
 		{
-			const FRotator FireRotation = FireDirection.Rotation();
+			// La rotación del disparo ahora es la rotación actual de la nave
+			const FRotator FireRotation = GetActorRotation();
+
 			// Spawn projectile at an offset from this pawn
 			const FVector SpawnLocation = GetActorLocation() + FireRotation.RotateVector(GunOffset);
 
