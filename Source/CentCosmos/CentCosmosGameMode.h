@@ -18,9 +18,23 @@ protected:
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
 
+public:
+    // MÉTODOS DE FABRICACIÓN DECLARADOS CORRECTAMENTE
+    AActor* FabricarObstaculoNave(UWorld* Mundo, const FVector& Posicion, const FRotator& Rotacion);
+    AActor* FabricarObstaculoSatelite(UWorld* Mundo, const FVector& Posicion, const FRotator& Rotacion);
+    AActor* FabricarObstaculoRestos(UWorld* Mundo, const FVector& Posicion, const FRotator& Rotacion);
+
 private:
+    UPROPERTY()
     class AEnemyFactory* Factory;
+
+    UPROPERTY()
     class AFacade* ManejadorHorda;
+
+    // VARIABLES RECONOCIDAS POR EL COMPILADOR
+    TSubclassOf<class AObstaculoNave> ClaseNave;
+    TSubclassOf<class AObstaculoSatelite> ClaseSatelite;
+    TSubclassOf<class AObstaculoRestos> ClaseRestos;
 };
 
 
