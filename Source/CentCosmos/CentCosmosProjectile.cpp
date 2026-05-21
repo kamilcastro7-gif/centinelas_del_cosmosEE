@@ -7,37 +7,47 @@
 
 ACentCosmosProjectile::ACentCosmosProjectile()
 {
-	// Cache our projectile mesh and materials
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> ProjectileMeshAsset(TEXT("/Game/TwinStick/Meshes/TwinStickProjectile.TwinStickProjectile"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> ProjectileMeshAsset(
+		TEXT("/Game/TwinStick/Meshes/TwinStickProjectile.TwinStickProjectile"));
 
-	// Create mesh component for the projectile
 	ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ProjectileMesh0"));
 	ProjectileMesh->SetStaticMesh(ProjectileMeshAsset.Object);
 	ProjectileMesh->SetupAttachment(RootComponent);
 	ProjectileMesh->BodyInstance.SetCollisionProfileName("Projectile");
-	ProjectileMesh->OnComponentHit.AddDynamic(this, &ACentCosmosProjectile::OnHit);		// set up a notification for when this component hits something
+	ProjectileMesh->OnComponentHit.AddDynamic(this, &ACentCosmosProjectile::OnHit);
 	RootComponent = ProjectileMesh;
 
-	// Use a ProjectileMovementComponent to govern this projectile's movement
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement0"));
 	ProjectileMovement->UpdatedComponent = ProjectileMesh;
 	ProjectileMovement->InitialSpeed = 3000.f;
-	ProjectileMovement->MaxSpeed = 3000.f;
+	ProjectileMovement->MaxSpeed = 6000.f;
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->bShouldBounce = false;
-	ProjectileMovement->ProjectileGravityScale = 0.f; // No gravity
+	ProjectileMovement->ProjectileGravityScale = 0.f;
 
-	// Die after 3 seconds by default
 	InitialLifeSpan = 3.0f;
 }
 
-void ACentCosmosProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+// Fuerza la dirección y velocidad del proyectil desde afuera
+void ACentCosmosProjectile::ForzarDireccion(FVector Direccion, float Velocidad)
 {
-	// Only add impulse and destroy projectile if we hit a physics
-	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr) && OtherComp->IsSimulatingPhysics())
+	if (ProjectileMovement)
+	{
+		FVector Dir = Direccion.GetSafeNormal();
+		ProjectileMovement->Velocity = Dir * Velocidad;
+		ProjectileMovement->MaxSpeed = Velocidad;
+		ProjectileMovement->UpdateComponentVelocity();
+		SetActorRotation(Dir.Rotation());
+	}
+}
+
+void ACentCosmosProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr)
+		&& OtherComp->IsSimulatingPhysics())
 	{
 		OtherComp->AddImpulseAtLocation(GetVelocity() * 20.f, GetActorLocation());
 	}
-
 	Destroy();
 }

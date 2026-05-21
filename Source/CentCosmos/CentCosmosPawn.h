@@ -1,7 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
-
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "CentCosmosPawn.generated.h"
@@ -19,47 +18,44 @@ class CENTCOSMOS_API ACentCosmosPawn : public APawn
 {
 	GENERATED_BODY()
 
-	/* The mesh component */
 	UPROPERTY(Category = Mesh, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* ShipMeshComponent;
 
-	/* The camera */
 	UPROPERTY(Category = Camera, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* CameraComponent;
 
-	/* The camera boom positioning the camera above the character */
 	UPROPERTY(Category = Camera, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
 
 public:
 	ACentCosmosPawn();
 
-	/** Offset from the ships location to spawn projectiles */
 	UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintReadWrite)
 	FVector GunOffset;
 
-	/** How fast the weapon fires */
 	UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintReadWrite)
 	float FireRate;
 
-	/** The speed of the ship */
 	UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintReadWrite)
 	float MoveSpeed;
 
-	/** Sound to play each time we fire */
 	UPROPERTY(Category = Audio, EditAnywhere, BlueprintReadWrite)
 	class USoundBase* FireSound;
 
-	// Begin Actor Interface
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	// End Actor Interface
 
-	/* Handler for the fire timer expiring */
 	void FireShot(FVector FireDirection);
 	void ShotTimerExpired();
 
-	// Static names for the input bindings
+	// Función auxiliar: spawnea un proyectil normal con dirección garantizada
+	// usando SpawnActorDeferred para fijar velocidad antes de BeginPlay
+	class ACentCosmosProjectile* SpawnProyectilNormal(
+		UWorld* World, FVector Location, FRotator Rotacion, float Velocidad);
+
+	void DesactivarDisparoTriple();
+	void DesactivarSobreCargaApex();
+
 	static const FName MoveForwardBinding;
 	static const FName MoveRightBinding;
 
@@ -70,24 +66,43 @@ public:
 	bool bBoomerangEnVuelo;
 
 private:
-	/* Flag to control firing  */
 	uint32 bCanFire : 1;
 
-	/** Handle for efficient management of ShotTimerExpired timer */
 	FTimerHandle TimerHandle_ShotTimerExpired;
+	FTimerHandle TimerHandle_DisparoTriple;
+	FTimerHandle TimerHandle_SobreCargaApex;
 
 	float TiempoCargaAcumulado;
-	bool bEstaCargando;
+	bool  bEstaCargando;
 
 	UPROPERTY()
 	class AProyectilCarga* ProyectilCargaActual;
 
 public:
-	/** Returns ShipMeshComponent subobject **/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PowerUps")
+	bool bTieneDisparoTriple;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PowerUps")
+	bool bTieneSobreCargaApex;
+
+	UPROPERTY(EditAnywhere, Category = "Configuracion Disparo")
+	TSubclassOf<class ACentCosmosProjectile> ClaseBalaBlueprint;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armas")
+	TSubclassOf<class ACentCosmosProjectile> MiProyectilAmarilloBP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armas")
+	TSubclassOf<class ACentCosmosProjectile> ClaseNormalBP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armas")
+	TSubclassOf<class AProyectilCarga> ClaseCargaBP;
+
+	float MoveSpeedBase;
+	float FireRateBase;
+
+public:
 	FORCEINLINE class UStaticMeshComponent* GetShipMeshComponent() const { return ShipMeshComponent; }
-	/** Returns CameraComponent subobject **/
-	FORCEINLINE class UCameraComponent* GetCameraComponent() const { return CameraComponent; }
-	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	FORCEINLINE class UCameraComponent* GetCameraComponent()   const { return CameraComponent; }
+	FORCEINLINE class USpringArmComponent* GetCameraBoom()        const { return CameraBoom; }
 };
 

@@ -10,8 +10,9 @@ AProyectilCarga::AProyectilCarga()
 {
     PrimaryActorTick.bCanEverTick = false;
 
-    // REFERENCIA: Shape_Sphere
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> SphereMesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> SphereMesh(
+        TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
+
     ProyectilMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SphereCargaMesh"));
     RootComponent = ProyectilMesh;
 
@@ -23,10 +24,13 @@ AProyectilCarga::AProyectilCarga()
     ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
     ProjectileMovement->UpdatedComponent = ProyectilMesh;
     ProjectileMovement->InitialSpeed = 0.f;
-    ProjectileMovement->MaxSpeed = 4000.f;
+    ProjectileMovement->MaxSpeed = 5000.f;
     ProjectileMovement->ProjectileGravityScale = 0.f;
     ProjectileMovement->bRotationFollowsVelocity = true;
-    ProjectileMovement->bSimulationEnabled = false;
+
+    // MUY IMPORTANTE: desactivado hasta que el jugador suelte el botón.
+    // Sin esto el proyectil sale volando solo en cuanto se spawnea.
+    ProjectileMovement->SetActive(false);
 
     DanoBase = 10.f;
     InitialLifeSpan = 4.0f;
@@ -45,7 +49,7 @@ void AProyectilCarga::InicializarCarga(float TiempoCarga)
 
 void AProyectilCarga::LiberarProyectil(float TiempoCargaFinal, FVector DireccionLanzamiento)
 {
-    float VelocidadLanzamiento = 2500.f;
+    float VelocidadLanzamiento;
 
     if (TiempoCargaFinal >= 6.0f)
     {
@@ -65,16 +69,21 @@ void AProyectilCarga::LiberarProyectil(float TiempoCargaFinal, FVector Direccion
 
     if (ProjectileMovement)
     {
-        ProjectileMovement->bSimulationEnabled = true;
+        FVector DirNormal = DireccionLanzamiento.GetSafeNormal();
+
+        // Activamos el componente y le asignamos velocidad en dirección mundo
+        ProjectileMovement->SetActive(true);
+        ProjectileMovement->MaxSpeed = VelocidadLanzamiento;
         ProjectileMovement->InitialSpeed = VelocidadLanzamiento;
-        ProjectileMovement->Velocity = DireccionLanzamiento * VelocidadLanzamiento;
-        ProjectileMovement->SetVelocityInLocalSpace(FVector(VelocidadLanzamiento, 0.f, 0.f));
+        ProjectileMovement->Velocity = DirNormal * VelocidadLanzamiento;
         ProjectileMovement->UpdateComponentVelocity();
     }
+
     ProyectilMesh->OnComponentHit.AddDynamic(this, &AProyectilCarga::AlChocar);
 }
 
-void AProyectilCarga::AlChocar(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void AProyectilCarga::AlChocar(UPrimitiveComponent* HitComponent, AActor* OtherActor,
+    UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
     if (OtherActor && OtherActor != this)
     {
