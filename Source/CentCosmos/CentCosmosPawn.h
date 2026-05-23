@@ -100,6 +100,10 @@ public:
 	float MoveSpeedBase;
 	float FireRateBase;
 
+	// En alguna parte pública de tu CentCosmosPawn.h
+public:
+	bool bRalentizadoPorChispa = false;
+
 public:
 	FORCEINLINE class UStaticMeshComponent* GetShipMeshComponent() const { return ShipMeshComponent; }
 	FORCEINLINE class UCameraComponent* GetCameraComponent()   const { return CameraComponent; }

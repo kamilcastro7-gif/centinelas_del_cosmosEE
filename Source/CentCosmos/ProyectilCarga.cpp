@@ -1,9 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ProyectilCarga.h"
+
+#include "Kismet/GameplayStatics.h" 
+#include "Engine/World.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "UObject/ConstructorHelpers.h"
+#include "CentCosmosPawn.h"
 #include "ProyectilBase.h"
 
 AProyectilCarga::AProyectilCarga()
@@ -51,6 +55,7 @@ void AProyectilCarga::LiberarProyectil(float TiempoCargaFinal, FVector Direccion
 {
     float VelocidadLanzamiento;
 
+    // 1. Primero calculamos la velocidad base según el nivel de carga
     if (TiempoCargaFinal >= 6.0f)
     {
         DanoBase = 100.f;
@@ -67,11 +72,25 @@ void AProyectilCarga::LiberarProyectil(float TiempoCargaFinal, FVector Direccion
         VelocidadLanzamiento = 3400.f;
     }
 
+    // =========================================================================
+    // 2. ¡EFECTO APLICADO AL FINAL! (No importa el nivel de carga, aquí se castiga)
+    // =========================================================================
+    APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+    if (PlayerPawn)
+    {
+        ACentCosmosPawn* NaveJugador = Cast<ACentCosmosPawn>(PlayerPawn);
+        // Si la nave fue alcanzada por la chispa, reducimos la velocidad final un 20%
+        if (NaveJugador && NaveJugador->bRalentizadoPorChispa)
+        {
+            VelocidadLanzamiento = VelocidadLanzamiento * 0.5f;
+        }
+    }
+
+    // 3. Finalmente aplicamos la velocidad calculada al componente físico de Unreal
     if (ProjectileMovement)
     {
         FVector DirNormal = DireccionLanzamiento.GetSafeNormal();
 
-        // Activamos el componente y le asignamos velocidad en dirección mundo
         ProjectileMovement->SetActive(true);
         ProjectileMovement->MaxSpeed = VelocidadLanzamiento;
         ProjectileMovement->InitialSpeed = VelocidadLanzamiento;

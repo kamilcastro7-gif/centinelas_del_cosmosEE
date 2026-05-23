@@ -33,15 +33,22 @@ void AProyectilBoomerang::Tick(float DeltaTime)
 
     if (!bRegresando && TiempoEnVuelo >= TiempoDeGiro) bRegresando = true;
 
+    // EVALUACIÓN DEL EFECTO: Si la nave está afectada, la velocidad se reduce un 40% (Multiplicada por 0.6)
+    float VelocidadActual = Velocidad;
+    if (NaveDueno && NaveDueno->bRalentizadoPorChispa)
+    {
+        VelocidadActual = Velocidad * 0.4f;
+    }
+
     if (!bRegresando)
     {
-        FVector NuevaPosicion = GetActorLocation() + (GetActorForwardVector() * Velocidad * DeltaTime);
+        FVector NuevaPosicion = GetActorLocation() + (GetActorForwardVector() * VelocidadActual * DeltaTime);
         SetActorLocation(NuevaPosicion);
     }
     else if (NaveDueno)
     {
         FVector DireccionALaNave = (NaveDueno->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-        FVector NuevaPosicion = GetActorLocation() + (DireccionALaNave * Velocidad * DeltaTime);
+        FVector NuevaPosicion = GetActorLocation() + (DireccionALaNave * VelocidadActual * DeltaTime);
 
         AddActorLocalRotation(FRotator(0.f, 5.f, 0.f));
         SetActorLocation(NuevaPosicion);

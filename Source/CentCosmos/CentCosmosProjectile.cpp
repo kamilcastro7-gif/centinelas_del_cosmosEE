@@ -4,6 +4,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Escudo.h"
 
 ACentCosmosProjectile::ACentCosmosProjectile()
 {
@@ -28,26 +29,53 @@ ACentCosmosProjectile::ACentCosmosProjectile()
 	InitialLifeSpan = 3.0f;
 }
 
-// Fuerza la dirección y velocidad del proyectil desde afuera
 void ACentCosmosProjectile::ForzarDireccion(FVector Direccion, float Velocidad)
 {
-	if (ProjectileMovement)
-	{
-		FVector Dir = Direccion.GetSafeNormal();
-		ProjectileMovement->Velocity = Dir * Velocidad;
-		ProjectileMovement->MaxSpeed = Velocidad;
-		ProjectileMovement->UpdateComponentVelocity();
-		SetActorRotation(Dir.Rotation());
-	}
+	if (!ProjectileMovement) return;
+
+	FVector Dir = Direccion.GetSafeNormal();
+
+	// Paramos cualquier movimiento previo y reseteamos el componente
+	ProjectileMovement->StopMovementImmediately();
+	ProjectileMovement->SetActive(false);
+
+	// Asignamos la nueva velocidad y límites
+	ProjectileMovement->InitialSpeed = Velocidad;
+	ProjectileMovement->MaxSpeed = Velocidad;
+	ProjectileMovement->Velocity = Dir * Velocidad;
+
+	// Reactivamos el componente para que procese la nueva velocidad
+	ProjectileMovement->SetActive(true);
+	ProjectileMovement->UpdateComponentVelocity();
+
+	// Rotamos el actor para que apunte en la dirección correcta
+	SetActorRotation(Dir.Rotation());
 }
 
-void ACentCosmosProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void ACentCosmosProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr)
-		&& OtherComp->IsSimulatingPhysics())
+	if (OtherActor != nullptr && OtherActor != this)
+	{
+		AEscudo* EscudoImpactado = Cast<AEscudo>(OtherActor);
+		FString NombreImpacto = OtherActor->GetName();
+
+		if (EscudoImpactado != nullptr || NombreImpacto.Contains(TEXT("Escudo")))
+		{
+			if (EscudoImpactado == nullptr)
+				EscudoImpactado = Cast<AEscudo>(OtherActor);
+
+			if (EscudoImpactado != nullptr)
+				EscudoImpactado->RecibirDanoEscudo(1.0f);
+
+			Destroy();
+			return;
+		}
+	}
+
+	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr) && OtherComp->IsSimulatingPhysics())
 	{
 		OtherComp->AddImpulseAtLocation(GetVelocity() * 20.f, GetActorLocation());
 	}
+
 	Destroy();
 }
