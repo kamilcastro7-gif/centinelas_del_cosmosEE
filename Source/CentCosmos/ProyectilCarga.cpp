@@ -9,6 +9,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "CentCosmosPawn.h"
 #include "ProyectilBase.h"
+#include "GrietaAntimateria.h" 
 
 AProyectilCarga::AProyectilCarga()
 {
@@ -106,6 +107,7 @@ void AProyectilCarga::AlChocar(UPrimitiveComponent* HitComponent, AActor* OtherA
 {
     if (OtherActor && OtherActor != this)
     {
+        // 1. Lógica existente para proyectiles enemigos
         AProyectilBase* ProyectilEnemigo = Cast<AProyectilBase>(OtherActor);
         if (ProyectilEnemigo)
         {
@@ -113,7 +115,19 @@ void AProyectilCarga::AlChocar(UPrimitiveComponent* HitComponent, AActor* OtherA
             Destroy();
             return;
         }
+
+        // 2. NUEVA LÓGICA: Interactuar con la Grieta de Antimateria
+        AGrietaAntimateria* Grieta = Cast<AGrietaAntimateria>(OtherActor);
+        if (Grieta)
+        {
+            // Avisamos a la grieta que ha sido impactada
+            Grieta->ProcesarImpacto();
+            Destroy();
+            return;
+        }
     }
+
+    // Si no golpeó ni enemigo ni grieta, se destruye normalmente
     Destroy();
 }
 

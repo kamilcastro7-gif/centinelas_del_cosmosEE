@@ -113,9 +113,23 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 	// ==========================================================
 	// 3. CONTROL DE DISPARO UNIFICADO (BARRA ESPACIADORA)
 	// ==========================================================
+
+	if (!bPuedeDisparar)
+	{
+		if (bEstaCargando)
+		{
+			if (ProyectilCargaActual) ProyectilCargaActual->Destroy();
+			bEstaCargando = false;
+			ProyectilCargaActual = nullptr;
+		}
+		return;
+	}
+
+	// Definimos World una sola vez aquí arriba
+	UWorld* const World = GetWorld();
+
 	if (PC && PC->IsInputKeyDown(EKeys::SpaceBar))
 	{
-		UWorld* const World = GetWorld();
 		if (World != nullptr)
 		{
 			const FRotator FireRotation = GetActorRotation();

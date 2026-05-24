@@ -5,6 +5,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Escudo.h"
+#include "GrietaAntimateria.h"
 
 ACentCosmosProjectile::ACentCosmosProjectile()
 {
@@ -56,22 +57,28 @@ void ACentCosmosProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherAct
 {
 	if (OtherActor != nullptr && OtherActor != this)
 	{
+		// 1. Lógica del Escudo (la que ya tienes)
 		AEscudo* EscudoImpactado = Cast<AEscudo>(OtherActor);
-		FString NombreImpacto = OtherActor->GetName();
-
-		if (EscudoImpactado != nullptr || NombreImpacto.Contains(TEXT("Escudo")))
+		if (EscudoImpactado != nullptr || OtherActor->GetName().Contains(TEXT("Escudo")))
 		{
-			if (EscudoImpactado == nullptr)
-				EscudoImpactado = Cast<AEscudo>(OtherActor);
+			if (EscudoImpactado == nullptr) EscudoImpactado = Cast<AEscudo>(OtherActor);
+			if (EscudoImpactado != nullptr) EscudoImpactado->RecibirDanoEscudo(1.0f);
+			Destroy();
+			return;
+		}
 
-			if (EscudoImpactado != nullptr)
-				EscudoImpactado->RecibirDanoEscudo(1.0f);
-
+		// 2. NUEVA LÓGICA DE LA GRIETA
+		AGrietaAntimateria* GrietaImpactada = Cast<AGrietaAntimateria>(OtherActor);
+		if (GrietaImpactada != nullptr)
+		{
+			// Avisamos a la grieta antes de destruir la bala
+			GrietaImpactada->ProcesarImpacto();
 			Destroy();
 			return;
 		}
 	}
 
+	// Lógica de física para objetos movibles
 	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr) && OtherComp->IsSimulatingPhysics())
 	{
 		OtherComp->AddImpulseAtLocation(GetVelocity() * 20.f, GetActorLocation());
