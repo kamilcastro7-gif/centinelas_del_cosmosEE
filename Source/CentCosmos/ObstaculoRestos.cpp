@@ -10,8 +10,9 @@ AObstaculoRestos::AObstaculoRestos()
 	if (CuboMesh.Succeeded() && MallaObstaculo)
 	{
 		MallaObstaculo->SetStaticMesh(CuboMesh.Object);
-		// Escala pequeña para los escombros sueltos
+		// Escala pequeï¿½a para los escombros sueltos
 		MallaObstaculo->SetRelativeScale3D(FVector(1.2f, 1.2f, 1.2f));
+		MallaObstaculo->SetCollisionProfileName(TEXT("BlockAllDynamic"));
 	}
 }
 void AObstaculoRestos::InicializarObstaculo() {}
