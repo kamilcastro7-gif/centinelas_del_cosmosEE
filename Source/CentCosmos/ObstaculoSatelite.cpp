@@ -12,6 +12,7 @@ AObstaculoSatelite::AObstaculoSatelite()
 		MallaObstaculo->SetStaticMesh(CuboMesh.Object);
 		// Escala mediana
 		MallaObstaculo->SetRelativeScale3D(FVector(2.0f, 2.0f, 2.0f));
+		MallaObstaculo->SetCollisionProfileName(TEXT("BlockAllDynamic"));
 	}
 }
 void AObstaculoSatelite::InicializarObstaculo() {}

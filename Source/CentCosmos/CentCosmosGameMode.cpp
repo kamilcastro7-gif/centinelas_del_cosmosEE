@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "CentCosmosGameMode.h"
+#include "CentCosmos.h"
 #include "EnemyFactory.h"
 #include "Facade.h"
 #include "ObstaculoNave.h"
@@ -24,10 +25,12 @@ void ACentCosmosGameMode::BeginPlay()
 {
     Super::BeginPlay();
 
+    UE_LOG(LogCentCosmos, Log, TEXT("[CentCosmos] BeginPlay ejecutado en %s"), *GetName());
+
     UWorld* const Mundo = GetWorld();
     if (!Mundo) return;
 
-    // --- GENERACIÓN DE ENEMIGOS DE TU AMIGO ---
+    // --- GENERACIï¿½N DE ENEMIGOS DE TU AMIGO ---
     Factory = Mundo->SpawnActor<AEnemyFactory>(AEnemyFactory::StaticClass());
     ManejadorHorda = Mundo->SpawnActor<AFacade>(AFacade::StaticClass());
 
@@ -46,15 +49,15 @@ void ACentCosmosGameMode::BeginPlay()
         Factory->SpawnEnemigo(ETipoEnemigo::Heraldo, Origen + FVector(0, 300, 0), SinRotacion);
     }
 
-    // --- AQUÍ VA: GENERACIÓN DE TUS 30 OBSTÁCULOS DISPERSOS EN RANGO AMPLIO ---
+    // --- AQUï¿½ VA: GENERACIï¿½N DE TUS 30 OBSTï¿½CULOS DISPERSOS EN RANGO AMPLIO ---
     for (int32 i = 0; i < 10; i++)
     {
-        // Rango expandido para evitar que se amontonen y permitir que sobresalgan del límite actual
+        // Rango expandido para evitar que se amontonen y permitir que sobresalgan del lï¿½mite actual
         FVector PosNave = FVector(FMath::RandRange(-2500, 2500), FMath::RandRange(-2500, 2500), 150.0f);
         FVector PosSatelite = FVector(FMath::RandRange(-2500, 2500), FMath::RandRange(-2500, 2500), 150.0f);
         FVector PosRestos = FVector(FMath::RandRange(-2500, 2500), FMath::RandRange(-2500, 2500), 150.0f);
 
-        // Rotación aleatoria en el eje Z (Yaw) para que no queden todos simétricos
+        // Rotaciï¿½n aleatoria en el eje Z (Yaw) para que no queden todos simï¿½tricos
         FRotator RotAleatoriaNave = FRotator(0.0f, FMath::RandRange(0.0f, 360.0f), 0.0f);
         FRotator RotAleatoriaSat = FRotator(0.0f, FMath::RandRange(0.0f, 360.0f), 0.0f);
         FRotator RotAleatoriaRes = FRotator(0.0f, FMath::RandRange(0.0f, 360.0f), 0.0f);

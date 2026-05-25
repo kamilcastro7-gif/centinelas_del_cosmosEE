@@ -35,6 +35,8 @@ void AProyectilBase::Tick(float DeltaTime) {
     Super::Tick(DeltaTime);
 
     FVector NuevaUbicacion = GetActorLocation() + (GetActorForwardVector() * MovimientoProyectil->InitialSpeed * DeltaTime);
+    // TODO: Conflicto con UProjectileMovementComponent activo.
+    // Usar solo uno: o el componente o este movimiento manual.
     SetActorLocation(NuevaUbicacion);
 
     if (bEsSeguidor) {

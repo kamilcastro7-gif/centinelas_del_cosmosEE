@@ -10,8 +10,9 @@ AObstaculoNave::AObstaculoNave()
 	if (CuboMesh.Succeeded() && MallaObstaculo)
 	{
 		MallaObstaculo->SetStaticMesh(CuboMesh.Object);
-		// Escala moderada para el obstáculo grande
+		// Escala moderada para el obstï¿½culo grande
 		MallaObstaculo->SetRelativeScale3D(FVector(3.0f, 3.0f, 3.0f));
+		MallaObstaculo->SetCollisionProfileName(TEXT("BlockAllDynamic"));
 	}
 }
 void AObstaculoNave::InicializarObstaculo() {}

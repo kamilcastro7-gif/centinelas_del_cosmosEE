@@ -19,33 +19,28 @@ const FName ACentCosmosPawn::MoveRightBinding("MoveRight");
 
 ACentCosmosPawn::ACentCosmosPawn()
 {
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> ShipMesh(TEXT("/Game/TwinStick/Meshes/TwinStickUFO.TwinStickUFO"));
-	// Create the mesh component
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> ShipMesh(TEXT("/Game/StarterContent/Shapes/Meshy_AI_Nebula_Vanguard_0525182523_generate.Meshy_AI_Nebula_Vanguard_0525182523_generate"));
 	ShipMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShipMesh"));
 	RootComponent = ShipMeshComponent;
 	ShipMeshComponent->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
 	ShipMeshComponent->SetStaticMesh(ShipMesh.Object);
+	ShipMeshComponent->SetRelativeRotation(FRotator(0.f, 180.f, 0.f));
 
-	// Cache our sound effect
 	static ConstructorHelpers::FObjectFinder<USoundBase> FireAudio(TEXT("/Game/TwinStick/Audio/TwinStickFire.TwinStickFire"));
 	FireSound = FireAudio.Object;
 
-	// Create a camera boom...
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->SetUsingAbsoluteRotation(true); // Don't want arm to rotate when ship does
+	CameraBoom->SetUsingAbsoluteRotation(true);
 	CameraBoom->TargetArmLength = 1200.f;
 	CameraBoom->SetRelativeRotation(FRotator(-80.f, 0.f, 0.f));
-	CameraBoom->bDoCollisionTest = false; // Don't want to pull camera in when it collides with level
+	CameraBoom->bDoCollisionTest = false;
 
-	// Create a camera...
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
 	CameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	CameraComponent->bUsePawnControlRotation = false;	// Camera does not rotate relative to arm
+	CameraComponent->bUsePawnControlRotation = false;
 
-	// Movement
 	MoveSpeed = 1000.0f;
-	// Weapon
 	GunOffset = FVector(90.f, 0.f, 0.f);
 	FireRate = 0.1f;
 	bCanFire = true;
@@ -60,30 +55,32 @@ ACentCosmosPawn::ACentCosmosPawn()
 void ACentCosmosPawn::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	check(PlayerInputComponent);
-
-	// set up gameplay key bindings
 	PlayerInputComponent->BindAxis(MoveForwardBinding);
 	PlayerInputComponent->BindAxis(MoveRightBinding);
+}
+
+// Helper para obtener la rotacion real de disparo (compensa el +180 del movimiento)
+static FRotator GetFireRotation(const ACentCosmosPawn* Pawn)
+{
+	FRotator R = Pawn->GetActorRotation();
+	R.Yaw -= 180.f;
+	return R;
 }
 
 void ACentCosmosPawn::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	// Find movement direction
 	const float ForwardValue = GetInputAxisValue(MoveForwardBinding);
 	const float RightValue = GetInputAxisValue(MoveRightBinding);
 
-	// Clamp max size so that (e.g.) diagonal movement isn't faster
 	const FVector MoveDirection = FVector(ForwardValue, RightValue, 0.f).GetClampedToMaxSize(1.0f);
-
-	// Calculate  movement
 	const FVector Movement = MoveDirection * MoveSpeed * DeltaSeconds;
 
-	// If non-zero size, move the Ship
 	if (Movement.SizeSquared() > 0.0f)
 	{
-		const FRotator NewRotation = Movement.Rotation();
+		FRotator NewRotation = Movement.Rotation();
+		NewRotation.Yaw += 180.f; // Compensar orientacion del mesh
 		FHitResult Hit(1.f);
 		RootComponent->MoveComponent(Movement, NewRotation, true, &Hit);
 
@@ -98,8 +95,8 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
 	if (PC)
 	{
-		if (PC->WasInputKeyJustPressed(EKeys::One))      ArmaActual = ETipoArma::Normal;
-		else if (PC->WasInputKeyJustPressed(EKeys::Two))  ArmaActual = ETipoArma::Boomerang;
+		if (PC->WasInputKeyJustPressed(EKeys::One))   ArmaActual = ETipoArma::Normal;
+		else if (PC->WasInputKeyJustPressed(EKeys::Two))   ArmaActual = ETipoArma::Boomerang;
 		else if (PC->WasInputKeyJustPressed(EKeys::Three)) ArmaActual = ETipoArma::Carga;
 	}
 
@@ -114,7 +111,8 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 					bEstaCargando = true;
 					TiempoCargaAcumulado = 0.0f;
 
-					const FRotator FireRotation = GetActorRotation();
+					// Usar rotacion corregida para el spawn
+					const FRotator FireRotation = GetFireRotation(this);
 					const FVector SpawnLocation = GetActorLocation() + FireRotation.RotateVector(GunOffset);
 
 					UWorld* const World = GetWorld();
@@ -134,24 +132,11 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 				TiempoCargaAcumulado += DeltaSeconds;
 				ProyectilCargaActual->InicializarCarga(TiempoCargaAcumulado);
 			}
-
-			if (bCanFire)
-			{
-				UWorld* const World = GetWorld();
-				if (World)
-				{
-					const FRotator FireRotation = GetActorRotation();
-					const FVector SpawnLocation = GetActorLocation() + FireRotation.RotateVector(GunOffset);
-					World->SpawnActor<ACentCosmosProjectile>(SpawnLocation, FireRotation);
-
-					bCanFire = false;
-					World->GetTimerManager().SetTimer(TimerHandle_ShotTimerExpired, this, &ACentCosmosPawn::ShotTimerExpired, FireRate);
-				}
-			}
 		}
 		else
 		{
-			const FVector FireDirection = GetActorForwardVector();
+			// Usar el vector opuesto al forward (que esta invertido por el +180)
+			const FVector FireDirection = -GetActorForwardVector();
 			FireShot(FireDirection);
 		}
 	}
@@ -159,7 +144,8 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 	{
 		if (ProyectilCargaActual)
 		{
-			FVector DireccionDeDisparoLimpia = GetActorForwardVector();
+			// Tambien corregir la direccion de liberacion
+			const FVector DireccionDeDisparoLimpia = -GetActorForwardVector();
 			ProyectilCargaActual->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 			ProyectilCargaActual->LiberarProyectil(TiempoCargaAcumulado, DireccionDeDisparoLimpia);
 			ProyectilCargaActual = nullptr;
@@ -180,11 +166,10 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 
 void ACentCosmosPawn::FireShot(FVector FireDirection)
 {
-	// If it's ok to fire again
 	if (bCanFire == true && FireDirection.SizeSquared() > 0.0f)
 	{
-		const FRotator FireRotation = GetActorRotation();
-		// Spawn projectile at corner of cube
+		// Rotacion corregida para spawn y direccion de proyectil
+		const FRotator FireRotation = GetFireRotation(this);
 		const FVector SpawnLocation = GetActorLocation() + FireRotation.RotateVector(GunOffset);
 
 		UWorld* const World = GetWorld();
@@ -192,7 +177,6 @@ void ACentCosmosPawn::FireShot(FVector FireDirection)
 		{
 			if (ArmaActual == ETipoArma::Normal)
 			{
-				// spawn the projectile
 				World->SpawnActor<ACentCosmosProjectile>(SpawnLocation, FireRotation);
 			}
 			else if (ArmaActual == ETipoArma::Boomerang)
@@ -227,4 +211,3 @@ void ACentCosmosPawn::ShotTimerExpired()
 {
 	bCanFire = true;
 }
-
