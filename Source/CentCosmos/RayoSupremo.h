@@ -1,0 +1,37 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameFramework/Actor.h"
+#include "RayoSupremo.generated.h"
+
+UCLASS()
+class CENTCOSMOS_API ARayoSupremo : public AActor
+{
+    GENERATED_BODY()
+
+public:
+    ARayoSupremo();
+
+protected:
+    virtual void BeginPlay() override;
+
+public:
+    virtual void Tick(float DeltaTime) override;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
+    class USceneComponent* RaizGrupo;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
+    class UStaticMeshComponent* MallaAdvertenciaComp;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
+    class UStaticMeshComponent* MallaLetalComp;
+
+private:
+    FTimerHandle TimerFaseLetal;
+    bool bEsRayoLetal;
+
+    void ActivarRayoLetal();
+};
