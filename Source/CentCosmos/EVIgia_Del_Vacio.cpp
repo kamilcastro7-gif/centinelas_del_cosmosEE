@@ -10,7 +10,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 
 AEVigia_Del_Vacio::AEVigia_Del_Vacio() {
-    VelocidadVigia = 2.0f;
+    VelocidadVigia = 1.0f;
     AmplitudPatrulla = 500.0f;
     Tags.Add(FName("Enemigo"));
 
@@ -63,9 +63,9 @@ void AEVigia_Del_Vacio::VigAtacar() {
         Proy->InitialLifeSpan = 5.0f;
 
         if (Proy->MovimientoProyectil) {
-            Proy->MovimientoProyectil->InitialSpeed = 6000.f;
-            Proy->MovimientoProyectil->MaxSpeed = 6000.f;
-            Proy->MovimientoProyectil->Velocity = Rotacion.Vector() * 6000.f;
+            Proy->MovimientoProyectil->InitialSpeed = 2000.f;
+            Proy->MovimientoProyectil->MaxSpeed = 2000.f;
+            Proy->MovimientoProyectil->Velocity = Rotacion.Vector() * 2000.f;
         }
     }
 }
