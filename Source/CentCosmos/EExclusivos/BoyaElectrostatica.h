@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EExclusivo.h"
+#include "../EExclusivo.h"
 #include "BoyaElectrostatica.generated.h"
 
 UCLASS()

@@ -3,10 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EExclusivo.h"
+#include "../EExclusivo.h"
 #include "MinadorRocoso.generated.h"
 
-// Estados del enemigo para evitar que se mezclen las lógicas de movimiento
+// Estados del enemigo para evitar que se mezclen las lï¿½gicas de movimiento
 UENUM(BlueprintType)
 enum class EMinadorEstado : uint8
 {

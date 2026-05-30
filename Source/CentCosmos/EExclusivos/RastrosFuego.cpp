@@ -3,7 +3,7 @@
 #include "RastrosFuego.h"
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
-#include "CentCosmosPawn.h"
+#include "../Player/CentCosmosPawn.h"
 #include "Engine/World.h"
 
 ARastrosFuego::ARastrosFuego()
@@ -16,7 +16,7 @@ ARastrosFuego::ARastrosFuego()
 	FuegoMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	FuegoMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 
-	// IMPLEMENTACIÓN: Malla del plano para el rastro de fuego en el suelo
+	// IMPLEMENTACIï¿½N: Malla del plano para el rastro de fuego en el suelo
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> PlaneMesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Plane.Shape_Plane'"));
 	if (PlaneMesh.Succeeded())
 	{
@@ -40,7 +40,7 @@ void ARastrosFuego::NotifyActorBeginOverlap(AActor* OtherActor)
 
 	if (OtherActor && OtherActor->IsA(ACentCosmosPawn::StaticClass()))
 	{
-		// Si tienes una función para restar vida en tu nave, la llamas aquí
+		// Si tienes una funciï¿½n para restar vida en tu nave, la llamas aquï¿½
 		// Cast<ACentCosmosPawn>(OtherActor)->RecibirDano(DanoPorSegundo);
 	}
 }

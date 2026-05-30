@@ -2,7 +2,7 @@
 
 #include "FragmentoErupcion.h"
 #include "Components/StaticMeshComponent.h"
-#include "RastrosFuego.h" 
+#include "../EExclusivos/RastrosFuego.h" 
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 #include "TimerManager.h" // NECESARIO para que GetWorldTimerManager funcione
@@ -30,10 +30,10 @@ void AFragmentoErupcion::BeginPlay()
     APawn* PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
     if (PlayerPawn)
     {
-        // Guardamos la posición exacta del jugador en este momento preciso
+        // Guardamos la posiciï¿½n exacta del jugador en este momento preciso
         FVector PosicionJugador = PlayerPawn->GetActorLocation();
 
-        // Calculamos el vector dirección apuntando hacia esa posición fija
+        // Calculamos el vector direcciï¿½n apuntando hacia esa posiciï¿½n fija
         DireccionVuelo = (PosicionJugador - GetActorLocation()).GetSafeNormal();
     }
     else
@@ -41,7 +41,7 @@ void AFragmentoErupcion::BeginPlay()
         DireccionVuelo = GetActorForwardVector();
     }
 
-    // Timer de rastro y vida útil (damos más tiempo de vida si nace muy lejos)
+    // Timer de rastro y vida ï¿½til (damos mï¿½s tiempo de vida si nace muy lejos)
     GetWorldTimerManager().SetTimer(TimerRastrosHandle, this, &AFragmentoErupcion::SoltarRastro, 0.15f, true);
 
     // Aumentamos el LifeSpan a 10 segundos para que llegue bien desde lejos
@@ -56,7 +56,7 @@ void AFragmentoErupcion::Tick(float DeltaTime)
 
 void AFragmentoErupcion::SoltarRastro()
 {
-    // Obtenemos el mundo correctamente dentro de la función
+    // Obtenemos el mundo correctamente dentro de la funciï¿½n
     UWorld* CurrentWorld = GetWorld();
     if (CurrentWorld)
     {

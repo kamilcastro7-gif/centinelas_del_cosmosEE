@@ -64,7 +64,7 @@ ACentCosmosPawn::ACentCosmosPawn()
 	ClaseNormalBP = ACentCosmosProjectile::StaticClass();
 	ClaseCargaBP = AProyectilCarga::StaticClass();
 
-	// INICIALIZACI�N DE VIDA
+	// INICIALIZACION DE VIDA
 	VidaMax = 100.f;
 	VidaActual = VidaMax;
 }
@@ -112,19 +112,16 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
 	if (PC)
 	{
-		if (PC->WasInputKeyJustPressed(EKeys::One))       ArmaActual = ETipoArma::Normal;
-		else if (PC->WasInputKeyJustPressed(EKeys::Two))  ArmaActual = ETipoArma::Boomerang;
+		if (PC->WasInputKeyJustPressed(EKeys::One)) ArmaActual = ETipoArma::Normal;
+		else if (PC->WasInputKeyJustPressed(EKeys::Two)) ArmaActual = ETipoArma::Boomerang;
 		else if (PC->WasInputKeyJustPressed(EKeys::Three)) ArmaActual = ETipoArma::Carga;
 	}
 
-	if (!bPuedeDisparar)
+	// Unificado a bCanFire en lugar de !bPuedeDisparar para evitar conflictos de variables
+	if (!bCanFire && ArmaActual != ETipoArma::Carga)
 	{
-		if (bEstaCargando)
-		{
-			if (ProyectilCargaActual) ProyectilCargaActual->Destroy();
-			bEstaCargando = false;
-			ProyectilCargaActual = nullptr;
-		}
+		// Solo detenemos la ejecucion si no puede disparar y NO esta usando el arma de carga 
+		// (porque la de carga necesita seguir acumulando tiempo en el tick aunque bCanFire sea false)
 		return;
 	}
 
@@ -143,21 +140,21 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 				{
 					TSubclassOf<ACentCosmosProjectile> ClaseAUsar = ClaseNormalBP ? ClaseNormalBP : TSubclassOf<ACentCosmosProjectile>(ACentCosmosProjectile::StaticClass());
 
-					// Usar rotacion corregida para el spawn
-					FActorSpawnParameters CargaSpawnParams;
-					CargaSpawnParams.Owner = this;
-					CargaSpawnParams.Instigator = GetInstigator();
-					CargaSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+					FActorSpawnParameters SpawnParamsNormal;
+					SpawnParamsNormal.Owner = this;
+					SpawnParamsNormal.Instigator = GetInstigator();
+					SpawnParamsNormal.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-					UWorld* const World = GetWorld();
-					if (World)
-					{
-						ProyectilCargaActual = World->SpawnActor<AProyectilCarga>(SpawnLocation, FireRotation, CargaSpawnParams);
-					}
+					// Spawneamos el proyectil Normal
+					World->SpawnActor<ACentCosmosProjectile>(ClaseAUsar, SpawnLocation, FireRotation, SpawnParamsNormal);
 
-					if (ProyectilCargaActual)
+					// Reseteamos el disparo
+					bCanFire = false;
+					World->GetTimerManager().SetTimer(TimerHandle_ShotTimerExpired, this, &ACentCosmosPawn::ShotTimerExpired, FireRate);
+
+					if (FireSound != nullptr)
 					{
-						ProyectilCargaActual->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepWorldTransform);
+						UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
 					}
 				}
 			}
@@ -201,7 +198,7 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 				}
 			}
 
-			if (ProyectilCargaActual)
+			if (ProyectilCargaActual && bEstaCargando)
 			{
 				TiempoCargaAcumulado += DeltaSeconds;
 				ProyectilCargaActual->InicializarCarga(TiempoCargaAcumulado);
@@ -209,7 +206,6 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 		}
 		else
 		{
-			// Usar el vector opuesto al forward (que esta invertido por el +180)
 			const FVector FireDirection = -GetActorForwardVector();
 			FireShot(FireDirection);
 		}
@@ -218,7 +214,6 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 	{
 		if (ProyectilCargaActual)
 		{
-			// Tambien corregir la direccion de liberacion
 			const FVector DireccionDeDisparoLimpia = -GetActorForwardVector();
 			ProyectilCargaActual->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 
@@ -244,50 +239,10 @@ void ACentCosmosPawn::ShotTimerExpired() { bCanFire = true; }
 
 void ACentCosmosPawn::DesactivarDisparoTriple()
 {
-	if (bCanFire == true && FireDirection.SizeSquared() > 0.0f)
-	{
-		// Rotacion corregida para spawn y direccion de proyectil
-		const FRotator FireRotation = GetFireRotation(this);
-		const FVector SpawnLocation = GetActorLocation() + FireRotation.RotateVector(GunOffset);
-
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = this;
-		SpawnParams.Instigator = GetInstigator();
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-
-		UWorld* const World = GetWorld();
-		if (World != nullptr)
-		{
-			if (ArmaActual == ETipoArma::Normal)
-			{
-				World->SpawnActor<ACentCosmosProjectile>(SpawnLocation, FireRotation, SpawnParams);
-			}
-			else if (ArmaActual == ETipoArma::Boomerang)
-			{
-				if (!bBoomerangEnVuelo)
-				{
-					bBoomerangEnVuelo = true;
-					AProyectilBoomerang* Boomerang = World->SpawnActor<AProyectilBoomerang>(SpawnLocation, FireRotation, SpawnParams);
-					if (Boomerang)
-					{
-						Boomerang->NaveDueno = this;
-					}
-				}
-				else
-				{
-					return;
-				}
-			}
-		}
-
-		bCanFire = false;
-		World->GetTimerManager().SetTimer(TimerHandle_ShotTimerExpired, this, &ACentCosmosPawn::ShotTimerExpired, FireRate);
-
-		if (FireSound != nullptr)
-		{
-			UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
-		}
-	}
+	// Limpiamos esta funcion para que solo desactive el power-up
+	// y no intente disparar proyectiles por error
+	bTieneDisparoTriple = false;
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Disparo Triple Terminado."));
 }
 
 void ACentCosmosPawn::DesactivarSobreCargaApex()
@@ -302,14 +257,11 @@ void ACentCosmosPawn::RecibirDanioNave(float Cantidad)
 {
 	VidaActual -= Cantidad;
 
-	// Mensaje azul para el da�o de la nave
 	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, FString::Printf(TEXT("Nave recibio %f de dano. Vida restante: %f"), Cantidad, VidaActual));
 
 	if (VidaActual <= 0.f)
 	{
-		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("�LA NAVE HA SIDO DESTRUIDA!"));
-
-		// Destruye la nave (o desencadena Game Over)
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("LA NAVE HA SIDO DESTRUIDA!"));
 		Destroy();
 	}
 }

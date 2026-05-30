@@ -22,7 +22,10 @@ public class CentCosmos : ModuleRules
 			System.IO.Path.Combine(ModuleDirectory, "Patterns/FactoryMethod"),
 			System.IO.Path.Combine(ModuleDirectory, "Patterns/Facade"),
 			System.IO.Path.Combine(ModuleDirectory, "Patterns/Observer"),
-			System.IO.Path.Combine(ModuleDirectory, "Patterns/Decorator")
+			System.IO.Path.Combine(ModuleDirectory, "Patterns/Decorator"),
+			System.IO.Path.Combine(ModuleDirectory, "EExclusivos"),
+			System.IO.Path.Combine(ModuleDirectory, "Ambientacion"),
+			System.IO.Path.Combine(ModuleDirectory, "TribunalBase")
 		});
 	}
 }

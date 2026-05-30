@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EExclusivo.h"
+#include "../EExclusivo.h"
 #include "DronAnclaje.generated.h"
 
 UCLASS()

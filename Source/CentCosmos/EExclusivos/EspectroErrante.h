@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EExclusivo.h" // Cabecera de tu clase padre para enemigos exclusivos
+#include "../EExclusivo.h" // Cabecera de tu clase padre para enemigos exclusivos
 #include "EspectroErrante.generated.h"
 
 UCLASS()
@@ -23,7 +23,7 @@ public:
 	// Llamado en cada frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Flag público para controlar la vulnerabilidad desde los proyectiles del jugador
+	// Flag pï¿½blico para controlar la vulnerabilidad desde los proyectiles del jugador
 	UPROPERTY(BlueprintReadOnly, Category = "Espectro")
 	bool bEsInvulnerable;
 
@@ -32,13 +32,13 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes", meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* MallaCuerpo;
 
-	// Componente de la malla del núcleo central (Sphere)
+	// Componente de la malla del nï¿½cleo central (Sphere)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes", meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* MallaNucleo;
 
 	// Velocidad a la que se desplaza el espectro
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Configuracion", meta = (AllowPrivateAccess = "true"))
-	float VelocidadFlotacion = 320.0f; // ¡Subida brutal de velocidad para que vuele por el mapa!
+	float VelocidadFlotacion = 320.0f; // ï¿½Subida brutal de velocidad para que vuele por el mapa!
 
 	// Handles para el control de los tiempos de fase
 	FTimerHandle TimerFaseInvisibleHandle;
@@ -47,7 +47,7 @@ private:
 	// Handle para el bucle del rumbo aleatorio
 	FTimerHandle TimerRumboHandle;
 
-	// Vector que almacena la dirección del movimiento errante
+	// Vector que almacena la direcciï¿½n del movimiento errante
 	FVector DireccionErrante;
 
 	// Macro UFUNCTION obligatoria para que Unreal pueda enlazar el Timer correctamente

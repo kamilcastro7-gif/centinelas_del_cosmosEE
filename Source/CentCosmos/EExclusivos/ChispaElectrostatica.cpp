@@ -5,7 +5,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
-#include "CentCosmosPawn.h" 
+#include "../Player/CentCosmosPawn.h" 
 
 AChispaElectrostatica::AChispaElectrostatica()
 {
@@ -59,7 +59,7 @@ void AChispaElectrostatica::NotifyActorBeginOverlap(AActor* OtherActor)
 		ACentCosmosPawn* NaveJugador = Cast<ACentCosmosPawn>(OtherActor);
 		if (NaveJugador != nullptr)
 		{
-			// 1. EFECTO BALAS NORMALES (Aumenta el delay entre ráfagas)
+			// 1. EFECTO BALAS NORMALES (Aumenta el delay entre rï¿½fagas)
 			FFloatProperty* FireRateProp = CastField<FFloatProperty>(NaveJugador->GetClass()->FindPropertyByName(TEXT("FireRate")));
 			if (!FireRateProp) FireRateProp = CastField<FFloatProperty>(NaveJugador->GetClass()->FindPropertyByName(TEXT("FireDelay")));
 
@@ -70,7 +70,7 @@ void AChispaElectrostatica::NotifyActorBeginOverlap(AActor* OtherActor)
 			}
 
 			// =========================================================================
-			// ACTIVACIÓN DEL FLAG PARA BOOMERANG Y CARGA
+			// ACTIVACIï¿½N DEL FLAG PARA BOOMERANG Y CARGA
 			// =========================================================================
 			NaveJugador->bRalentizadoPorChispa = true;
 
@@ -92,7 +92,7 @@ void AChispaElectrostatica::RestaurarAtributosJugador(AActor* JugadorCasteado)
 	ACentCosmosPawn* NaveJugador = Cast<ACentCosmosPawn>(JugadorCasteado);
 	if (NaveJugador != nullptr)
 	{
-		// RESTAURACIÓN: Balas normales vuelven a su cadencia original
+		// RESTAURACIï¿½N: Balas normales vuelven a su cadencia original
 		FFloatProperty* FireRateProp = CastField<FFloatProperty>(NaveJugador->GetClass()->FindPropertyByName(TEXT("FireRate")));
 		if (!FireRateProp) FireRateProp = CastField<FFloatProperty>(NaveJugador->GetClass()->FindPropertyByName(TEXT("FireDelay")));
 
@@ -102,7 +102,7 @@ void AChispaElectrostatica::RestaurarAtributosJugador(AActor* JugadorCasteado)
 		}
 
 		// =========================================================================
-		// DESACTIVACIÓN DEL FLAG AL PASAR LOS 5 SEGUNDOS
+		// DESACTIVACIï¿½N DEL FLAG AL PASAR LOS 5 SEGUNDOS
 		// =========================================================================
 		NaveJugador->bRalentizadoPorChispa = false;
 	}

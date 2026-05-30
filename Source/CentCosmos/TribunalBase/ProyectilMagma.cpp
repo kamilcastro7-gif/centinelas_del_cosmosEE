@@ -3,7 +3,7 @@
 
 #include "ProyectilMagma.h"
 #include "Tribunal_Ira.h"
-#include "RastrosFuego.h" // Se mantiene intacto asumiendo que ya existe en tu proyecto
+#include "../EExclusivos/RastrosFuego.h" // Se mantiene intacto asumiendo que ya existe en tu proyecto
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/World.h"

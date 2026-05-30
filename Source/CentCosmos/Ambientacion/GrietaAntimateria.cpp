@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "GrietaAntimateria.h"
-#include "CentCosmosProjectile.h"
+#include "../Projectiles/CentCosmosProjectile.h"
 #include "PAntimateria.h"
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Components/StaticMeshComponent.h"
-#include "GameFramework/ProjectileMovementComponent.h" // ¡NECESARIO!
+#include "GameFramework/ProjectileMovementComponent.h" // ï¿½NECESARIO!
 
 AGrietaAntimateria::AGrietaAntimateria()
 {
@@ -23,12 +23,12 @@ AGrietaAntimateria::AGrietaAntimateria()
     MeshGrieta->SetCollisionProfileName(TEXT("BlockAll"));
     MeshGrieta->SetGenerateOverlapEvents(true);
 
-    // ELIMINÉ EL PROJECTILEMOVEMENT AQUÍ PORQUE LA GRIETA NO SE MUEVE
+    // ELIMINï¿½ EL PROJECTILEMOVEMENT AQUï¿½ PORQUE LA GRIETA NO SE MUEVE
 }
 
 void AGrietaAntimateria::ProcesarImpacto()
 {
-    // El contador aumenta sin importar qué tipo de proyectil sea
+    // El contador aumenta sin importar quï¿½ tipo de proyectil sea
     ProyectilesRecibidos++;
 
     APawn* Jugador = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);

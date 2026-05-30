@@ -2,7 +2,7 @@
 
 #include "NubeIonizada.h"
 #include "Components/StaticMeshComponent.h"
-#include "CentCosmosPawn.h"
+#include "../Player/CentCosmosPawn.h"
 #include "TimerManager.h"
 
 ANubeIonizada::ANubeIonizada()
@@ -15,7 +15,7 @@ ANubeIonizada::ANubeIonizada()
     static ConstructorHelpers::FObjectFinder<UStaticMesh> PlaneAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube'"));
     if (PlaneAsset.Succeeded()) MallaNube->SetStaticMesh(PlaneAsset.Object);
 
-    // --- CONFIGURACIÓN DE COLISIÓN ---
+    // --- CONFIGURACIï¿½N DE COLISIï¿½N ---
     MallaNube->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
     MallaNube->SetCollisionObjectType(ECC_WorldDynamic);
     MallaNube->SetCollisionResponseToAllChannels(ECR_Ignore);
@@ -27,7 +27,7 @@ ANubeIonizada::ANubeIonizada()
     // Valores por defecto
     VelocidadY = 200.0f;
     DuracionEfecto = 4.0f;
-    RangoMovimientoY = 600.0f; // Define el área de patrulla
+    RangoMovimientoY = 600.0f; // Define el ï¿½rea de patrulla
     DireccionMovimiento = 1.0f;
 }
 
@@ -41,11 +41,11 @@ void ANubeIonizada::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    // 1. Obtenemos la posición actual
+    // 1. Obtenemos la posiciï¿½n actual
     FVector CurrentLocation = GetActorLocation();
 
     // 2. Calculamos el desplazamiento basado en el tiempo
-    // Usamos FMath::Sin para un movimiento fluido y automático que nunca se sale del rango
+    // Usamos FMath::Sin para un movimiento fluido y automï¿½tico que nunca se sale del rango
     float Tiempo = GetWorld()->GetTimeSeconds();
 
     // El movimiento es: PosicionInicial + (Direccion * Velocidad * Tiempo)
@@ -54,7 +54,7 @@ void ANubeIonizada::Tick(float DeltaTime)
 
     CurrentLocation.Y = PosicionInicialY + Desplazamiento;
 
-    // 3. Aplicamos la nueva posición
+    // 3. Aplicamos la nueva posiciï¿½n
     SetActorLocation(CurrentLocation);
 }
 
@@ -66,7 +66,7 @@ void ANubeIonizada::NotifyActorBeginOverlap(AActor* OtherActor)
 
     if (Nave)
     {
-        // 1. Guardamos velocidad y ralentizamos (40% de reducción = 0.6)
+        // 1. Guardamos velocidad y ralentizamos (40% de reducciï¿½n = 0.6)
         float VelocidadOriginal = Nave->MoveSpeed;
         Nave->MoveSpeed = VelocidadOriginal * 0.6f;
 
@@ -77,7 +77,7 @@ void ANubeIonizada::NotifyActorBeginOverlap(AActor* OtherActor)
                 if (Nave) Nave->MoveSpeed = VelocidadOriginal;
             }, DuracionEfecto, false);
 
-        // 3. ¡Desaparecer!
+        // 3. ï¿½Desaparecer!
         Destroy();
     }
 }

@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "EclipseSilencioso.h"
-#include "CentCosmosPawn.h"
+#include "../Player/CentCosmosPawn.h"
 #include "TimerManager.h"
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
