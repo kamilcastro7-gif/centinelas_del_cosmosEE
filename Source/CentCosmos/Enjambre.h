@@ -22,4 +22,18 @@ protected:
 
 public:
     virtual void Tick(float DeltaTime) override;
+
+    // =========================================================
+    // ESTADÍSTICAS BASE HEREDABLES
+    // =========================================================
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Estadisticas")
+    float VidaActual;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Estadisticas")
+    float DanioDeChoque;
+
+    UFUNCTION(BlueprintCallable, Category = "Combate")
+    virtual void RecibirDanioEnemigo(float Cantidad);
+    // Función nativa de Unreal para detectar cuando otro actor lo atraviesa
+    virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 };

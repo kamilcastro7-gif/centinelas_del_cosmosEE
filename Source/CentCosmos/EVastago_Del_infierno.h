@@ -35,7 +35,6 @@ private:
     bool bEstaRodeando;
     FVector DireccionDispersion;
 
-    // Bandera para no repetir la orden de carga
     bool bOlaCargaIniciada;
 
     void IntentarLiderarCarga();

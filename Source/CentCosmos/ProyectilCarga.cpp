@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ProyectilCarga.h"
-
 #include "Kismet/GameplayStatics.h" 
 #include "Engine/World.h"
 #include "Components/StaticMeshComponent.h"
@@ -10,6 +9,7 @@
 #include "CentCosmosPawn.h"
 #include "ProyectilBase.h"
 #include "GrietaAntimateria.h" 
+#include "Enjambre.h" 
 
 AProyectilCarga::AProyectilCarga()
 {
@@ -33,11 +33,9 @@ AProyectilCarga::AProyectilCarga()
     ProjectileMovement->ProjectileGravityScale = 0.f;
     ProjectileMovement->bRotationFollowsVelocity = true;
 
-    // MUY IMPORTANTE: desactivado hasta que el jugador suelte el botón.
-    // Sin esto el proyectil sale volando solo en cuanto se spawnea.
     ProjectileMovement->SetActive(false);
 
-    DanoBase = 10.f;
+    DanoBase = 2.f;
     InitialLifeSpan = 4.0f;
 }
 
@@ -56,38 +54,33 @@ void AProyectilCarga::LiberarProyectil(float TiempoCargaFinal, FVector Direccion
 {
     float VelocidadLanzamiento;
 
-    // 1. Primero calculamos la velocidad base según el nivel de carga
+    // 1. BALANCE ACTUALIZADO DE DAÑO
     if (TiempoCargaFinal >= 6.0f)
     {
-        DanoBase = 100.f;
+        DanoBase = 20.f; // Daño brutal para la carga máxima (opcional, premia aguantar 6s)
         VelocidadLanzamiento = 2000.f;
     }
     else if (TiempoCargaFinal >= 3.0f)
     {
-        DanoBase = 45.f;
+        DanoBase = 10.f; // SOLICITADO: La carga media ahora hace 10 de daño
         VelocidadLanzamiento = 2700.f;
     }
     else
     {
-        DanoBase = 10.f;
+        DanoBase = 2.f;  // Daño Mínimo
         VelocidadLanzamiento = 3400.f;
     }
 
-    // =========================================================================
-    // 2. ¡EFECTO APLICADO AL FINAL! (No importa el nivel de carga, aquí se castiga)
-    // =========================================================================
     APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
     if (PlayerPawn)
     {
         ACentCosmosPawn* NaveJugador = Cast<ACentCosmosPawn>(PlayerPawn);
-        // Si la nave fue alcanzada por la chispa, reducimos la velocidad final un 20%
         if (NaveJugador && NaveJugador->bRalentizadoPorChispa)
         {
             VelocidadLanzamiento = VelocidadLanzamiento * 0.5f;
         }
     }
 
-    // 3. Finalmente aplicamos la velocidad calculada al componente físico de Unreal
     if (ProjectileMovement)
     {
         FVector DirNormal = DireccionLanzamiento.GetSafeNormal();
@@ -107,7 +100,14 @@ void AProyectilCarga::AlChocar(UPrimitiveComponent* HitComponent, AActor* OtherA
 {
     if (OtherActor && OtherActor != this)
     {
-        // 1. Lógica existente para proyectiles enemigos
+        AEnjambre* EnemigoImpactado = Cast<AEnjambre>(OtherActor);
+        if (EnemigoImpactado)
+        {
+            EnemigoImpactado->RecibirDanioEnemigo(DanoBase);
+            Destroy();
+            return;
+        }
+
         AProyectilBase* ProyectilEnemigo = Cast<AProyectilBase>(OtherActor);
         if (ProyectilEnemigo)
         {
@@ -116,18 +116,15 @@ void AProyectilCarga::AlChocar(UPrimitiveComponent* HitComponent, AActor* OtherA
             return;
         }
 
-        // 2. NUEVA LÓGICA: Interactuar con la Grieta de Antimateria
         AGrietaAntimateria* Grieta = Cast<AGrietaAntimateria>(OtherActor);
         if (Grieta)
         {
-            // Avisamos a la grieta que ha sido impactada
             Grieta->ProcesarImpacto();
             Destroy();
             return;
         }
     }
 
-    // Si no golpeó ni enemigo ni grieta, se destruye normalmente
     Destroy();
 }
 

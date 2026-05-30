@@ -63,6 +63,10 @@ ACentCosmosPawn::ACentCosmosPawn()
 
 	ClaseNormalBP = ACentCosmosProjectile::StaticClass();
 	ClaseCargaBP = AProyectilCarga::StaticClass();
+
+	// INICIALIZACIÓN DE VIDA
+	VidaMax = 100.f;
+	VidaActual = VidaMax;
 }
 
 void ACentCosmosPawn::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -76,9 +80,6 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	// ==========================================================
-	// 1. LÓGICA DE MOVIMIENTO COMPLETA DE LA NAVE (EJES X E Y)
-	// ==========================================================
 	const float ForwardValue = GetInputAxisValue(MoveForwardBinding);
 	const float RightValue = GetInputAxisValue(MoveRightBinding);
 
@@ -99,9 +100,6 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 		}
 	}
 
-	// ==========================================================
-	// 2. DETECCIÓN DE CAMBIO DE ARMAS POR TECLADO (1, 2 y 3)
-	// ==========================================================
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
 	if (PC)
 	{
@@ -109,10 +107,6 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 		else if (PC->WasInputKeyJustPressed(EKeys::Two))  ArmaActual = ETipoArma::Boomerang;
 		else if (PC->WasInputKeyJustPressed(EKeys::Three)) ArmaActual = ETipoArma::Carga;
 	}
-
-	// ==========================================================
-	// 3. CONTROL DE DISPARO UNIFICADO (BARRA ESPACIADORA)
-	// ==========================================================
 
 	if (!bPuedeDisparar)
 	{
@@ -125,7 +119,6 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 		return;
 	}
 
-	// Definimos World una sola vez aquí arriba
 	UWorld* const World = GetWorld();
 
 	if (PC && PC->IsInputKeyDown(EKeys::SpaceBar))
@@ -135,9 +128,6 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 			const FRotator FireRotation = GetActorRotation();
 			const FVector SpawnLocation = GetActorLocation() + FireRotation.RotateVector(GunOffset);
 
-			// --------------------------------------------------
-			// A. ARMA ACTUAL: DISPARO NORMAL (BLINDADO CONTRA CHOQUES)
-			// --------------------------------------------------
 			if (ArmaActual == ETipoArma::Normal)
 			{
 				if (bCanFire)
@@ -147,35 +137,28 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 					FActorSpawnParameters SpawnParams;
 					SpawnParams.Owner = this;
 					SpawnParams.Instigator = GetInstigator();
-					// Regla de oro: Si colisiona al nacer, ignora el choque y spawnea igual sin empujarse
 					SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 					if (bTieneDisparoTriple)
 					{
-						// Obtenemos el vector derecho de la nave para calcular un desfase lateral limpio
 						const FVector RightVector = FRotationMatrix(FireRotation).GetUnitAxis(EAxis::Y);
 
-						// Separamos las balas 35 unidades a los lados para que no nazcan una encima de la otra
 						const FVector SpawnCentro = SpawnLocation;
 						const FVector SpawnIzquierda = SpawnLocation - (RightVector * 35.0f);
 						const FVector SpawnDerecha = SpawnLocation + (RightVector * 35.0f);
 
-						// BALA 1: Centro (Dirección recta al frente)
 						World->SpawnActor<ACentCosmosProjectile>(ClaseAUsar, SpawnCentro, FireRotation, SpawnParams);
 
-						// BALA 2: Izquierda (Nace rotada -15 grados en su propio punto separado)
 						FRotator RotIzq = FireRotation;
 						RotIzq.Yaw -= 15.0f;
 						World->SpawnActor<ACentCosmosProjectile>(ClaseAUsar, SpawnIzquierda, RotIzq, SpawnParams);
 
-						// BALA 3: Derecha (Nace rotada +15 grados en su propio punto separado)
 						FRotator RotDer = FireRotation;
 						RotDer.Yaw += 15.0f;
 						World->SpawnActor<ACentCosmosProjectile>(ClaseAUsar, SpawnDerecha, RotDer, SpawnParams);
 					}
 					else
 					{
-						// Disparo simple común recto libre de problemas
 						World->SpawnActor<ACentCosmosProjectile>(ClaseAUsar, SpawnLocation, FireRotation, SpawnParams);
 					}
 
@@ -188,9 +171,6 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 					}
 				}
 			}
-			// --------------------------------------------------
-			// B. ARMA ACTUAL: BÚMERAN
-			// --------------------------------------------------
 			else if (ArmaActual == ETipoArma::Boomerang)
 			{
 				if (bCanFire && !bBoomerangEnVuelo)
@@ -230,9 +210,6 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 					}
 				}
 			}
-			// --------------------------------------------------
-			// C. ARMA ACTUAL: DISPARO DE CARGA
-			// --------------------------------------------------
 			else if (ArmaActual == ETipoArma::Carga)
 			{
 				if (bCanFire)
@@ -259,9 +236,6 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 			}
 		}
 	}
-	// ==========================================================
-	// 4. LIBERACIÓN DEL DISPARO DE CARGA AL SOLTAR ESPACIO
-	// ==========================================================
 	else if (bEstaCargando)
 	{
 		if (ProyectilCargaActual)
@@ -286,15 +260,8 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 	}
 }
 
-void ACentCosmosPawn::FireShot(FVector FireDirection)
-{
-	// Vacío: el disparo ocurre en Tick
-}
-
-void ACentCosmosPawn::ShotTimerExpired()
-{
-	bCanFire = true;
-}
+void ACentCosmosPawn::FireShot(FVector FireDirection) {}
+void ACentCosmosPawn::ShotTimerExpired() { bCanFire = true; }
 
 void ACentCosmosPawn::DesactivarDisparoTriple()
 {
@@ -308,5 +275,21 @@ void ACentCosmosPawn::DesactivarSobreCargaApex()
 	MoveSpeed = MoveSpeedBase;
 	FireRate = FireRateBase;
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("SobreCarga Apex Terminada."));
+}
+
+void ACentCosmosPawn::RecibirDanioNave(float Cantidad)
+{
+	VidaActual -= Cantidad;
+
+	// Mensaje azul para el daño de la nave
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, FString::Printf(TEXT("Nave recibio %f de dano. Vida restante: %f"), Cantidad, VidaActual));
+
+	if (VidaActual <= 0.f)
+	{
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("¡LA NAVE HA SIDO DESTRUIDA!"));
+
+		// Destruye la nave (o desencadena Game Over)
+		Destroy();
+	}
 }
 

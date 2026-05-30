@@ -19,12 +19,13 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
     class UProjectileMovementComponent* ProjectileMovement;
 
+    // ATRIBUTO DE DAÑO PÚBLICO
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combate")
+    float DanoBase;
+
     void InicializarCarga(float TiempoCarga);
     void LiberarProyectil(float TiempoCargaFinal, FVector DireccionLanzamiento);
 
     UFUNCTION()
     void AlChocar(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
-private:
-    float DanoBase;
 };

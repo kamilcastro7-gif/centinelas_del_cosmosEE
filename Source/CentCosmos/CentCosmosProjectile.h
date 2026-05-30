@@ -26,8 +26,11 @@ public:
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
-	// NUEVA FUNCIÓN: fuerza la dirección y velocidad del proyectil en cualquier momento
 	void ForzarDireccion(FVector Direccion, float Velocidad);
+
+	// ATRIBUTO DE DAÑO
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combate")
+	float Danio;
 
 	FORCEINLINE UStaticMeshComponent* GetProjectileMesh()      const { return ProjectileMesh; }
 	FORCEINLINE UProjectileMovementComponent* GetProjectileMovement()  const { return ProjectileMovement; }

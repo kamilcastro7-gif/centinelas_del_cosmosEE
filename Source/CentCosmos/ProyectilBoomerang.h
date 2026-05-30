@@ -19,6 +19,10 @@ public:
     UPROPERTY()
     class ACentCosmosPawn* NaveDueno;
 
+    // ATRIBUTO DE DAÑO
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combate")
+    float Danio;
+
     virtual void Tick(float DeltaTime) override;
 
     UFUNCTION()

@@ -21,10 +21,13 @@ AEVastago_Del_infierno::AEVastago_Del_infierno() {
     bEstaRodeando = false;
     bOlaCargaIniciada = false;
 
+    // ESTADÍSTICAS VÁSTAGO
+    VidaActual = 2.0f;
+    DanioDeChoque = 2.0f;
+
     static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cylinder.Shape_Cylinder'"));
     if (MeshAsset.Succeeded()) MallaEnemigo->SetStaticMesh(MeshAsset.Object);
 
-    // Malla para simular la carga
     ProyectilFalso = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ProyectilFalso"));
     ProyectilFalso->SetupAttachment(RootComponent);
 
@@ -39,46 +42,37 @@ AEVastago_Del_infierno::AEVastago_Del_infierno() {
 
 void AEVastago_Del_infierno::BeginPlay() {
     Super::BeginPlay();
-    // Quitamos los timers del BeginPlay. Ahora el Tick controlará TODO el ritmo.
 }
 
 void AEVastago_Del_infierno::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    // 1. EL RELOJ MAESTRO
     TimerEstado += DeltaTime;
     float TiempoLimite = bEstaRodeando ? 7.0f : 5.0f;
 
-    // 2. ¿SE ACABÓ EL TIEMPO DE LA FASE ACTUAL?
     if (TimerEstado >= TiempoLimite) {
-
-        // Si estábamos rodeando (7 segundos), ES HORA DE DISPARAR justo antes de huir
         if (bEstaRodeando) {
             EjecutarDisparo();
         }
 
-        // Reseteamos el reloj y cambiamos de fase
         TimerEstado = 0.0f;
         bEstaRodeando = !bEstaRodeando;
-        bOlaCargaIniciada = false; // Permite que se vuelva a cargar en el próximo ciclo
+        bOlaCargaIniciada = false;
         DireccionDispersion = FVector(FMath::RandRange(-1.0f, 1.0f), FMath::RandRange(-1.0f, 1.0f), 0.0f).GetSafeNormal();
     }
 
-    // 3. LA OLA DE CARGA (Ocurre a los 1.5s de empezar a rodear)
     if (bEstaRodeando && TimerEstado >= 1.5f && !bOlaCargaIniciada) {
         IntentarLiderarCarga();
     }
 
-    // 4. MOVIMIENTO CONSTANTE
     moverVastago();
 }
 
-void AEVastago_Del_infierno::moverVastago() { // <-- CORRECCIÓN: Sin parámetros
+void AEVastago_Del_infierno::moverVastago() {
     AActor* Jugador = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
     if (!Jugador) return;
 
-    // Calculamos el DeltaTime internamente para no romper el Facade
     float DeltaTime = GetWorld()->GetDeltaSeconds();
 
     FVector Destino;
@@ -94,7 +88,6 @@ void AEVastago_Del_infierno::moverVastago() { // <-- CORRECCIÓN: Sin parámetros
     FVector NuevaPos = FMath::VInterpTo(GetActorLocation(), Destino, DeltaTime, 1.5f);
     SetActorLocation(NuevaPos);
 
-    // Rotamos constantemente hacia el jugador para no perderlo de vista
     FRotator RotacionHaciaJugador = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Jugador->GetActorLocation());
     SetActorRotation(RotacionHaciaJugador);
 }
@@ -108,10 +101,8 @@ void AEVastago_Del_infierno::IntentarLiderarCarga() {
     APawn* Jugador = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
     if (!Jugador || Vastagos.Num() == 0) return;
 
-    // Si SOY el primero en la lista, organizo la coreografía
     if (Vastagos[0] == this)
     {
-        // Ordeno a todos en círculo
         Vastagos.Sort([Jugador](const AActor& A, const AActor& B) {
             FVector DirA = A.GetActorLocation() - Jugador->GetActorLocation();
             FVector DirB = B.GetActorLocation() - Jugador->GetActorLocation();
@@ -125,7 +116,7 @@ void AEVastago_Del_infierno::IntentarLiderarCarga() {
             AEVastago_Del_infierno* Vastago = Cast<AEVastago_Del_infierno>(Vastagos[i]);
             if (Vastago)
             {
-                Vastago->bOlaCargaIniciada = true; // Sincronizo la bandera para los demás
+                Vastago->bOlaCargaIniciada = true;
                 FTimerHandle TimerCarga;
                 float TiempoInicioCarga = FMath::Max(0.01f, i * RitmoDeCarga);
                 GetWorld()->GetTimerManager().SetTimer(TimerCarga, Vastago, &AEVastago_Del_infierno::CargarAtaque, TiempoInicioCarga, false);
@@ -137,12 +128,11 @@ void AEVastago_Del_infierno::IntentarLiderarCarga() {
 void AEVastago_Del_infierno::CargarAtaque() {
     if (ProyectilFalso) {
         ProyectilFalso->SetVisibility(true);
-        ProyectilFalso->SetRelativeScale3D(FVector(0.3f, 0.3f, 0.3f)); // Se enciende la bolita chiquita
+        ProyectilFalso->SetRelativeScale3D(FVector(0.3f, 0.3f, 0.3f));
     }
 }
 
 void AEVastago_Del_infierno::EjecutarDisparo() {
-    // Apagamos la bolita visual porque ya se va a disparar la real
     if (ProyectilFalso) {
         ProyectilFalso->SetVisibility(false);
     }
@@ -150,7 +140,6 @@ void AEVastago_Del_infierno::EjecutarDisparo() {
     AActor* Jugador = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
     if (!Jugador) return;
 
-    // Quitamos la restricción estricta de distancia para que la coreografía fluya
     FVector DirHaciaJugador = (Jugador->GetActorLocation() - GetActorLocation());
     DirHaciaJugador.Z = 0.f;
     DirHaciaJugador.Normalize();
@@ -161,10 +150,11 @@ void AEVastago_Del_infierno::EjecutarDisparo() {
     FActorSpawnParameters SpawnParams;
     SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-    // Spawneamos directamente la clase base para evitar fallos de Blueprint
     AProyectilBase* Proy = GetWorld()->SpawnActor<AProyectilBase>(AProyectilBase::StaticClass(), Ubicacion, RotacionHaciaJugador, SpawnParams);
 
     if (Proy) {
+        Proy->Danio = 2.0f; // Daño del Vástago
+
         if (Proy->MallaProyectil) {
             Proy->MallaProyectil->SetRelativeScale3D(FVector(0.3f, 0.3f, 0.3f));
         }

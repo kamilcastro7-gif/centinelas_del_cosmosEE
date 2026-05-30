@@ -48,8 +48,6 @@ public:
 	void FireShot(FVector FireDirection);
 	void ShotTimerExpired();
 
-	// Función auxiliar: spawnea un proyectil normal con dirección garantizada
-	// usando SpawnActorDeferred para fijar velocidad antes de BeginPlay
 	class ACentCosmosProjectile* SpawnProyectilNormal(
 		UWorld* World, FVector Location, FRotator Rotacion, float Velocidad);
 
@@ -64,6 +62,18 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Armas")
 	bool bBoomerangEnVuelo;
+
+	// =========================================================================
+	// SISTEMA DE SALUD
+	// =========================================================================
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Salud")
+	float VidaMax;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Salud")
+	float VidaActual;
+
+	UFUNCTION(BlueprintCallable, Category = "Salud")
+	void RecibirDanioNave(float Cantidad);
 
 private:
 	uint32 bCanFire : 1;
@@ -100,10 +110,10 @@ public:
 	float MoveSpeedBase;
 	float FireRateBase;
 
-	// En alguna parte pública de tu CentCosmosPawn.h
 public:
 	bool bRalentizadoPorChispa = false;
 	bool bPuedeDisparar = true;
+
 public:
 	FORCEINLINE class UStaticMeshComponent* GetShipMeshComponent() const { return ShipMeshComponent; }
 	FORCEINLINE class UCameraComponent* GetCameraComponent()   const { return CameraComponent; }

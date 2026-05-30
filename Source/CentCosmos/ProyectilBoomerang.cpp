@@ -5,12 +5,12 @@
 #include "CentCosmosPawn.h"
 #include "UObject/ConstructorHelpers.h"
 #include "ProyectilBase.h" 
+#include "Enjambre.h" // <-- IMPORTANTE: Para dañar al enjambre
 
 AProyectilBoomerang::AProyectilBoomerang()
 {
     PrimaryActorTick.bCanEverTick = true;
 
-    // REFERENCIA: Shape_Torus
     static ConstructorHelpers::FObjectFinder<UStaticMesh> TorusMesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Torus.Shape_Torus'"));
     ProyectilMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BoomerangMesh"));
     RootComponent = ProyectilMesh;
@@ -24,6 +24,8 @@ AProyectilBoomerang::AProyectilBoomerang()
     TiempoDeGiro = 1.2f;
     TiempoEnVuelo = 0.f;
     bRegresando = false;
+
+    Danio = 3.0f;
 }
 
 void AProyectilBoomerang::Tick(float DeltaTime)
@@ -33,7 +35,6 @@ void AProyectilBoomerang::Tick(float DeltaTime)
 
     if (!bRegresando && TiempoEnVuelo >= TiempoDeGiro) bRegresando = true;
 
-    // EVALUACIÓN DEL EFECTO: Si la nave está afectada, la velocidad se reduce un 40% (Multiplicada por 0.6)
     float VelocidadActual = Velocidad;
     if (NaveDueno && NaveDueno->bRalentizadoPorChispa)
     {
@@ -59,6 +60,13 @@ void AProyectilBoomerang::OnOverlap(UPrimitiveComponent* OverlappedComponent, AA
 {
     if (OtherActor && OtherActor != this)
     {
+        AEnjambre* EnemigoImpactado = Cast<AEnjambre>(OtherActor);
+        if (EnemigoImpactado)
+        {
+            EnemigoImpactado->RecibirDanioEnemigo(Danio);
+            // El Búmeran no se destruye aquí, ¡atraviesa!
+        }
+
         AProyectilBase* ProyectilEnemigo = Cast<AProyectilBase>(OtherActor);
         if (ProyectilEnemigo) ProyectilEnemigo->RecibirImpacto();
 
