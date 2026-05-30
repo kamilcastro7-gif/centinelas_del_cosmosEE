@@ -5,12 +5,12 @@
 #include "CentCosmosPawn.h"
 #include "UObject/ConstructorHelpers.h"
 #include "ProyectilBase.h" 
+#include "Enjambre.h" // <-- IMPORTANTE: Para dañar al enjambre
 
 AProyectilBoomerang::AProyectilBoomerang()
 {
     PrimaryActorTick.bCanEverTick = true;
 
-    // REFERENCIA: Shape_Torus
     static ConstructorHelpers::FObjectFinder<UStaticMesh> TorusMesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Torus.Shape_Torus'"));
     ProyectilMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BoomerangMesh"));
     RootComponent = ProyectilMesh;
@@ -24,6 +24,8 @@ AProyectilBoomerang::AProyectilBoomerang()
     TiempoDeGiro = 1.2f;
     TiempoEnVuelo = 0.f;
     bRegresando = false;
+
+    Danio = 3.0f;
 }
 
 void AProyectilBoomerang::Tick(float DeltaTime)
@@ -33,15 +35,21 @@ void AProyectilBoomerang::Tick(float DeltaTime)
 
     if (!bRegresando && TiempoEnVuelo >= TiempoDeGiro) bRegresando = true;
 
+    float VelocidadActual = Velocidad;
+    if (NaveDueno && NaveDueno->bRalentizadoPorChispa)
+    {
+        VelocidadActual = Velocidad * 0.4f;
+    }
+
     if (!bRegresando)
     {
-        FVector NuevaPosicion = GetActorLocation() + (GetActorForwardVector() * Velocidad * DeltaTime);
+        FVector NuevaPosicion = GetActorLocation() + (GetActorForwardVector() * VelocidadActual * DeltaTime);
         SetActorLocation(NuevaPosicion);
     }
     else if (NaveDueno)
     {
         FVector DireccionALaNave = (NaveDueno->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-        FVector NuevaPosicion = GetActorLocation() + (DireccionALaNave * Velocidad * DeltaTime);
+        FVector NuevaPosicion = GetActorLocation() + (DireccionALaNave * VelocidadActual * DeltaTime);
 
         AddActorLocalRotation(FRotator(0.f, 5.f, 0.f));
         SetActorLocation(NuevaPosicion);
@@ -52,6 +60,13 @@ void AProyectilBoomerang::OnOverlap(UPrimitiveComponent* OverlappedComponent, AA
 {
     if (OtherActor && OtherActor != this)
     {
+        AEnjambre* EnemigoImpactado = Cast<AEnjambre>(OtherActor);
+        if (EnemigoImpactado)
+        {
+            EnemigoImpactado->RecibirDanioEnemigo(Danio);
+            // El Búmeran no se destruye aquí, ¡atraviesa!
+        }
+
         AProyectilBase* ProyectilEnemigo = Cast<AProyectilBase>(OtherActor);
         if (ProyectilEnemigo) ProyectilEnemigo->RecibirImpacto();
 

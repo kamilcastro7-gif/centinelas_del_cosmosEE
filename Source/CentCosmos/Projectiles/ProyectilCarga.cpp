@@ -1,17 +1,23 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ProyectilCarga.h"
+#include "Kismet/GameplayStatics.h" 
+#include "Engine/World.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "UObject/ConstructorHelpers.h"
+#include "CentCosmosPawn.h"
 #include "ProyectilBase.h"
+#include "GrietaAntimateria.h" 
+#include "Enjambre.h" 
 
 AProyectilCarga::AProyectilCarga()
 {
     PrimaryActorTick.bCanEverTick = false;
 
-    // REFERENCIA: Shape_Sphere
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> SphereMesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> SphereMesh(
+        TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
+
     ProyectilMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SphereCargaMesh"));
     RootComponent = ProyectilMesh;
 
@@ -23,12 +29,13 @@ AProyectilCarga::AProyectilCarga()
     ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
     ProjectileMovement->UpdatedComponent = ProyectilMesh;
     ProjectileMovement->InitialSpeed = 0.f;
-    ProjectileMovement->MaxSpeed = 4000.f;
+    ProjectileMovement->MaxSpeed = 5000.f;
     ProjectileMovement->ProjectileGravityScale = 0.f;
     ProjectileMovement->bRotationFollowsVelocity = true;
-    ProjectileMovement->bSimulationEnabled = false;
 
-    DanoBase = 10.f;
+    ProjectileMovement->SetActive(false);
+
+    DanoBase = 2.f;
     InitialLifeSpan = 4.0f;
 }
 
@@ -45,39 +52,62 @@ void AProyectilCarga::InicializarCarga(float TiempoCarga)
 
 void AProyectilCarga::LiberarProyectil(float TiempoCargaFinal, FVector DireccionLanzamiento)
 {
-    float VelocidadLanzamiento = 2500.f;
+    float VelocidadLanzamiento;
 
+    // 1. BALANCE ACTUALIZADO DE DAÑO
     if (TiempoCargaFinal >= 6.0f)
     {
-        DanoBase = 100.f;
+        DanoBase = 20.f; // Daño brutal para la carga máxima (opcional, premia aguantar 6s)
         VelocidadLanzamiento = 2000.f;
     }
     else if (TiempoCargaFinal >= 3.0f)
     {
-        DanoBase = 45.f;
+        DanoBase = 10.f; // SOLICITADO: La carga media ahora hace 10 de daño
         VelocidadLanzamiento = 2700.f;
     }
     else
     {
-        DanoBase = 10.f;
+        DanoBase = 2.f;  // Daño Mínimo
         VelocidadLanzamiento = 3400.f;
+    }
+
+    APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+    if (PlayerPawn)
+    {
+        ACentCosmosPawn* NaveJugador = Cast<ACentCosmosPawn>(PlayerPawn);
+        if (NaveJugador && NaveJugador->bRalentizadoPorChispa)
+        {
+            VelocidadLanzamiento = VelocidadLanzamiento * 0.5f;
+        }
     }
 
     if (ProjectileMovement)
     {
-        ProjectileMovement->bSimulationEnabled = true;
+        FVector DirNormal = DireccionLanzamiento.GetSafeNormal();
+
+        ProjectileMovement->SetActive(true);
+        ProjectileMovement->MaxSpeed = VelocidadLanzamiento;
         ProjectileMovement->InitialSpeed = VelocidadLanzamiento;
-        ProjectileMovement->Velocity = DireccionLanzamiento * VelocidadLanzamiento;
-        ProjectileMovement->SetVelocityInLocalSpace(FVector(VelocidadLanzamiento, 0.f, 0.f));
+        ProjectileMovement->Velocity = DirNormal * VelocidadLanzamiento;
         ProjectileMovement->UpdateComponentVelocity();
     }
+
     ProyectilMesh->OnComponentHit.AddDynamic(this, &AProyectilCarga::AlChocar);
 }
 
-void AProyectilCarga::AlChocar(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void AProyectilCarga::AlChocar(UPrimitiveComponent* HitComponent, AActor* OtherActor,
+    UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
     if (OtherActor && OtherActor != this)
     {
+        AEnjambre* EnemigoImpactado = Cast<AEnjambre>(OtherActor);
+        if (EnemigoImpactado)
+        {
+            EnemigoImpactado->RecibirDanioEnemigo(DanoBase);
+            Destroy();
+            return;
+        }
+
         AProyectilBase* ProyectilEnemigo = Cast<AProyectilBase>(OtherActor);
         if (ProyectilEnemigo)
         {
@@ -85,7 +115,16 @@ void AProyectilCarga::AlChocar(UPrimitiveComponent* HitComponent, AActor* OtherA
             Destroy();
             return;
         }
+
+        AGrietaAntimateria* Grieta = Cast<AGrietaAntimateria>(OtherActor);
+        if (Grieta)
+        {
+            Grieta->ProcesarImpacto();
+            Destroy();
+            return;
+        }
     }
+
     Destroy();
 }
 

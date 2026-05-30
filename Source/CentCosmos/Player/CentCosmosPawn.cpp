@@ -1,4 +1,5 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
+
 #include "CentCosmosPawn.h"
 #include "CentCosmosProjectile.h"
 #include "ProyectilBoomerang.h"
@@ -14,6 +15,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundBase.h"
 #include "Observer/Subject.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+#include "Templates/SubclassOf.h"
 
 const FName ACentCosmosPawn::MoveForwardBinding("MoveForward");
 const FName ACentCosmosPawn::MoveRightBinding("MoveRight");
@@ -27,7 +30,8 @@ ACentCosmosPawn::ACentCosmosPawn()
 	ShipMeshComponent->SetStaticMesh(ShipMesh.Object);
 	ShipMeshComponent->SetRelativeRotation(FRotator(0.f, 180.f, 0.f));
 
-	static ConstructorHelpers::FObjectFinder<USoundBase> FireAudio(TEXT("/Game/TwinStick/Audio/TwinStickFire.TwinStickFire"));
+	static ConstructorHelpers::FObjectFinder<USoundBase> FireAudio(
+		TEXT("/Game/TwinStick/Audio/TwinStickFire.TwinStickFire"));
 	FireSound = FireAudio.Object;
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -42,8 +46,10 @@ ACentCosmosPawn::ACentCosmosPawn()
 	CameraComponent->bUsePawnControlRotation = false;
 
 	MoveSpeed = 1000.0f;
+	MoveSpeedBase = 1000.0f;
 	GunOffset = FVector(90.f, 0.f, 0.f);
 	FireRate = 0.1f;
+	FireRateBase = 0.1f;
 	bCanFire = true;
 
 	ArmaActual = ETipoArma::Normal;
@@ -51,6 +57,16 @@ ACentCosmosPawn::ACentCosmosPawn()
 	TiempoCargaAcumulado = 0.0f;
 	bEstaCargando = false;
 	ProyectilCargaActual = nullptr;
+
+	bTieneDisparoTriple = false;
+	bTieneSobreCargaApex = false;
+
+	ClaseNormalBP = ACentCosmosProjectile::StaticClass();
+	ClaseCargaBP = AProyectilCarga::StaticClass();
+
+	// INICIALIZACI�N DE VIDA
+	VidaMax = 100.f;
+	VidaActual = VidaMax;
 }
 
 void ACentCosmosPawn::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -96,26 +112,38 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
 	if (PC)
 	{
-		if (PC->WasInputKeyJustPressed(EKeys::One))   ArmaActual = ETipoArma::Normal;
-		else if (PC->WasInputKeyJustPressed(EKeys::Two))   ArmaActual = ETipoArma::Boomerang;
+		if (PC->WasInputKeyJustPressed(EKeys::One))       ArmaActual = ETipoArma::Normal;
+		else if (PC->WasInputKeyJustPressed(EKeys::Two))  ArmaActual = ETipoArma::Boomerang;
 		else if (PC->WasInputKeyJustPressed(EKeys::Three)) ArmaActual = ETipoArma::Carga;
 	}
 
+	if (!bPuedeDisparar)
+	{
+		if (bEstaCargando)
+		{
+			if (ProyectilCargaActual) ProyectilCargaActual->Destroy();
+			bEstaCargando = false;
+			ProyectilCargaActual = nullptr;
+		}
+		return;
+	}
+
+	UWorld* const World = GetWorld();
+
 	if (PC && PC->IsInputKeyDown(EKeys::SpaceBar))
 	{
-		if (ArmaActual == ETipoArma::Carga)
+		if (World != nullptr)
 		{
-			if (bCanFire)
+			const FRotator FireRotation = GetFireRotation(this);
+			const FVector SpawnLocation = GetActorLocation() + FireRotation.RotateVector(GunOffset);
+
+			if (ArmaActual == ETipoArma::Normal)
 			{
-				if (!bEstaCargando)
+				if (bCanFire)
 				{
-					bEstaCargando = true;
-					TiempoCargaAcumulado = 0.0f;
+					TSubclassOf<ACentCosmosProjectile> ClaseAUsar = ClaseNormalBP ? ClaseNormalBP : TSubclassOf<ACentCosmosProjectile>(ACentCosmosProjectile::StaticClass());
 
 					// Usar rotacion corregida para el spawn
-					const FRotator FireRotation = GetFireRotation(this);
-					const FVector SpawnLocation = GetActorLocation() + FireRotation.RotateVector(GunOffset);
-
 					FActorSpawnParameters CargaSpawnParams;
 					CargaSpawnParams.Owner = this;
 					CargaSpawnParams.Instigator = GetInstigator();
@@ -125,6 +153,46 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 					if (World)
 					{
 						ProyectilCargaActual = World->SpawnActor<AProyectilCarga>(SpawnLocation, FireRotation, CargaSpawnParams);
+					}
+
+					if (ProyectilCargaActual)
+					{
+						ProyectilCargaActual->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepWorldTransform);
+					}
+				}
+			}
+			else if (ArmaActual == ETipoArma::Boomerang)
+			{
+				if (bCanFire && !bBoomerangEnVuelo)
+				{
+					bBoomerangEnVuelo = true;
+
+					FActorSpawnParameters SpawnParamsBoom;
+					SpawnParamsBoom.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+					AProyectilBoomerang* Boomerang = World->SpawnActor<AProyectilBoomerang>(AProyectilBoomerang::StaticClass(), SpawnLocation, FireRotation, SpawnParamsBoom);
+					if (Boomerang) Boomerang->NaveDueno = this;
+
+					bCanFire = false;
+					World->GetTimerManager().SetTimer(TimerHandle_ShotTimerExpired, this, &ACentCosmosPawn::ShotTimerExpired, FireRate);
+
+					if (FireSound != nullptr)
+					{
+						UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
+					}
+				}
+			}
+			else if (ArmaActual == ETipoArma::Carga)
+			{
+				if (bCanFire)
+				{
+					if (!bEstaCargando)
+					{
+						bEstaCargando = true;
+						TiempoCargaAcumulado = 0.0f;
+
+						TSubclassOf<AProyectilCarga> ClaseCargaAUsar = ClaseCargaBP ? ClaseCargaBP : TSubclassOf<AProyectilCarga>(AProyectilCarga::StaticClass());
+						ProyectilCargaActual = World->SpawnActor<AProyectilCarga>(ClaseCargaAUsar, SpawnLocation, FireRotation);
 						if (ProyectilCargaActual)
 						{
 							ProyectilCargaActual->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepWorldTransform);
@@ -153,6 +221,7 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 			// Tambien corregir la direccion de liberacion
 			const FVector DireccionDeDisparoLimpia = -GetActorForwardVector();
 			ProyectilCargaActual->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
 			ProyectilCargaActual->LiberarProyectil(TiempoCargaAcumulado, DireccionDeDisparoLimpia);
 			ProyectilCargaActual = nullptr;
 
@@ -170,7 +239,10 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 	}
 }
 
-void ACentCosmosPawn::FireShot(FVector FireDirection)
+void ACentCosmosPawn::FireShot(FVector FireDirection) {}
+void ACentCosmosPawn::ShotTimerExpired() { bCanFire = true; }
+
+void ACentCosmosPawn::DesactivarDisparoTriple()
 {
 	if (bCanFire == true && FireDirection.SizeSquared() > 0.0f)
 	{
@@ -218,7 +290,26 @@ void ACentCosmosPawn::FireShot(FVector FireDirection)
 	}
 }
 
-void ACentCosmosPawn::ShotTimerExpired()
+void ACentCosmosPawn::DesactivarSobreCargaApex()
 {
-	bCanFire = true;
+	bTieneSobreCargaApex = false;
+	MoveSpeed = MoveSpeedBase;
+	FireRate = FireRateBase;
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("SobreCarga Apex Terminada."));
+}
+
+void ACentCosmosPawn::RecibirDanioNave(float Cantidad)
+{
+	VidaActual -= Cantidad;
+
+	// Mensaje azul para el da�o de la nave
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, FString::Printf(TEXT("Nave recibio %f de dano. Vida restante: %f"), Cantidad, VidaActual));
+
+	if (VidaActual <= 0.f)
+	{
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("�LA NAVE HA SIDO DESTRUIDA!"));
+
+		// Destruye la nave (o desencadena Game Over)
+		Destroy();
+	}
 }

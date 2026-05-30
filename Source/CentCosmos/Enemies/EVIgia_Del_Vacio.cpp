@@ -10,15 +10,21 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 
 AEVigia_Del_Vacio::AEVigia_Del_Vacio() {
-    VelocidadVigia = 2.0f;
+    // 1. BALANCE: Velocidad reducida drásticamente para que sea más fácil apuntarle
+    VelocidadVigia = 0.65f;
     AmplitudPatrulla = 500.0f;
     Tags.Add(FName("Enemigo"));
 
-    // REFERENCIA: Shape_NarrowCapsule
+    VidaActual = 10.0f;
+    DanioDeChoque = 10.0f;
+
     static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_NarrowCapsule.Shape_NarrowCapsule'"));
     if (MeshAsset.Succeeded()) {
         MallaEnemigo->SetStaticMesh(MeshAsset.Object);
     }
+
+    // 2. BALANCE: Aumentamos su tamaño 2.5 veces para que tenga una "hitbox" más generosa
+    MallaEnemigo->SetRelativeScale3D(FVector(1.5f, 1.5f, 1.5f));
 
     MallaEnemigo->SetSimulatePhysics(false);
     MallaEnemigo->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
@@ -59,13 +65,15 @@ void AEVigia_Del_Vacio::VigAtacar() {
 
     AProyectilBase* Proy = GetWorld()->SpawnActor<AProyectilBase>(AProyectilBase::StaticClass(), Ubicacion, Rotacion);
     if (Proy) {
+        Proy->Danio = 10.0f;
+
         Proy->MallaProyectil->SetRelativeScale3D(FVector(0.8f));
         Proy->InitialLifeSpan = 5.0f;
 
         if (Proy->MovimientoProyectil) {
-            Proy->MovimientoProyectil->InitialSpeed = 6000.f;
-            Proy->MovimientoProyectil->MaxSpeed = 6000.f;
-            Proy->MovimientoProyectil->Velocity = Rotacion.Vector() * 6000.f;
+            Proy->MovimientoProyectil->InitialSpeed = 2000.f;
+            Proy->MovimientoProyectil->MaxSpeed = 2000.f;
+            Proy->MovimientoProyectil->Velocity = Rotacion.Vector() * 2000.f;
         }
     }
 }

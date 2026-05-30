@@ -1,0 +1,83 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#include "NubeIonizada.h"
+#include "Components/StaticMeshComponent.h"
+#include "CentCosmosPawn.h"
+#include "TimerManager.h"
+
+ANubeIonizada::ANubeIonizada()
+{
+    PrimaryActorTick.bCanEverTick = true;
+
+    MallaNube = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MallaNube"));
+    RootComponent = MallaNube;
+
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> PlaneAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube'"));
+    if (PlaneAsset.Succeeded()) MallaNube->SetStaticMesh(PlaneAsset.Object);
+
+    // --- CONFIGURACIÓN DE COLISIÓN ---
+    MallaNube->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+    MallaNube->SetCollisionObjectType(ECC_WorldDynamic);
+    MallaNube->SetCollisionResponseToAllChannels(ECR_Ignore);
+    MallaNube->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+    MallaNube->SetGenerateOverlapEvents(true);
+
+    MallaNube->SetRelativeScale3D(FVector(15.0f, 15.0f, 0.7f));
+
+    // Valores por defecto
+    VelocidadY = 200.0f;
+    DuracionEfecto = 4.0f;
+    RangoMovimientoY = 600.0f; // Define el área de patrulla
+    DireccionMovimiento = 1.0f;
+}
+
+void ANubeIonizada::BeginPlay()
+{
+    Super::BeginPlay();
+    PosicionInicialY = GetActorLocation().Y; // Guardamos el centro
+}
+
+void ANubeIonizada::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    // 1. Obtenemos la posición actual
+    FVector CurrentLocation = GetActorLocation();
+
+    // 2. Calculamos el desplazamiento basado en el tiempo
+    // Usamos FMath::Sin para un movimiento fluido y automático que nunca se sale del rango
+    float Tiempo = GetWorld()->GetTimeSeconds();
+
+    // El movimiento es: PosicionInicial + (Direccion * Velocidad * Tiempo)
+    // Usamos Sin para que oscile perfectamente entre -Rango y +Rango
+    float Desplazamiento = FMath::Sin(Tiempo * (VelocidadY / 100.0f)) * RangoMovimientoY;
+
+    CurrentLocation.Y = PosicionInicialY + Desplazamiento;
+
+    // 3. Aplicamos la nueva posición
+    SetActorLocation(CurrentLocation);
+}
+
+void ANubeIonizada::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+    Super::NotifyActorBeginOverlap(OtherActor);
+
+    ACentCosmosPawn* Nave = Cast<ACentCosmosPawn>(OtherActor);
+
+    if (Nave)
+    {
+        // 1. Guardamos velocidad y ralentizamos (40% de reducción = 0.6)
+        float VelocidadOriginal = Nave->MoveSpeed;
+        Nave->MoveSpeed = VelocidadOriginal * 0.6f;
+
+        // 2. Timer para restaurar
+        FTimerHandle Handle;
+        GetWorldTimerManager().SetTimer(Handle, [Nave, VelocidadOriginal]()
+            {
+                if (Nave) Nave->MoveSpeed = VelocidadOriginal;
+            }, DuracionEfecto, false);
+
+        // 3. ¡Desaparecer!
+        Destroy();
+    }
+}
