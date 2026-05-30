@@ -32,6 +32,20 @@ void ACentCosmosGameMode::BeginPlay()
     UWorld* const Mundo = GetWorld();
     if (!Mundo) return;
 
+    // Asegurar que el jugador principal (Pawn) se cree correctamente
+    APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+    if (PlayerController && !PlayerController->GetPawn())
+    {
+        FVector SpawnLocation = FVector(0.0f, 0.0f, 100.0f);
+        FRotator SpawnRotation = FRotator::ZeroRotator;
+        APawn* SpawnedPawn = Mundo->SpawnActor<ACentCosmosPawn>(ACentCosmosPawn::StaticClass(), SpawnLocation, SpawnRotation);
+        if (SpawnedPawn)
+        {
+            PlayerController->Possess(SpawnedPawn);
+            UE_LOG(LogCentCosmos, Log, TEXT("[CentCosmos] Personaje principal creado en posición: %s"), *SpawnLocation.ToString());
+        }
+    }
+
     // --- GENERACI�N DE ENEMIGOS DE TU AMIGO ---
     Factory = Mundo->SpawnActor<AEnemyFactory>(AEnemyFactory::StaticClass());
     ManejadorHorda = Mundo->SpawnActor<AFacade>(AFacade::StaticClass());

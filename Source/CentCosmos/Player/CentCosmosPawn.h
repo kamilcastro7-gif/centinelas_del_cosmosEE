@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "Patterns/Facade/FachadaEstadosJugador.h"
+#include "Patterns/Observer/IObserver.h"
 #include "CentCosmosPawn.generated.h"
 
 UENUM(BlueprintType)
@@ -15,7 +17,7 @@ enum class ETipoArma : uint8
 };
 
 UCLASS(Blueprintable)
-class CENTCOSMOS_API ACentCosmosPawn : public APawn
+class CENTCOSMOS_API ACentCosmosPawn : public APawn, public IObserver
 {
 	GENERATED_BODY()
 
@@ -53,6 +55,8 @@ public:
 	// Begin Actor Interface
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void BeginPlay() override;
+	virtual void OnNotify(FName EventType) override;
 	// End Actor Interface
 
 	/* Handler for the fire timer expiring */
@@ -78,6 +82,9 @@ private:
 
 	float TiempoCargaAcumulado;
 	bool bEstaCargando;
+
+	UPROPERTY()
+	UFachadaEstadosJugador* Fachada;
 
 	UPROPERTY()
 	class AProyectilCarga* ProyectilCargaActual;

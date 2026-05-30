@@ -51,6 +51,7 @@ ACentCosmosPawn::ACentCosmosPawn()
 	TiempoCargaAcumulado = 0.0f;
 	bEstaCargando = false;
 	ProyectilCargaActual = nullptr;
+	Fachada = NewObject<UFachadaEstadosJugador>(this, TEXT("Fachada"));
 }
 
 void ACentCosmosPawn::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -58,6 +59,13 @@ void ACentCosmosPawn::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAxis(MoveForwardBinding);
 	PlayerInputComponent->BindAxis(MoveRightBinding);
+}
+
+void ACentCosmosPawn::BeginPlay()
+{
+	Super::BeginPlay();
+	if (Fachada)
+		Fachada->IniciarEstadoJugador();
 }
 
 // Helper para obtener la rotacion real de disparo (compensa el +180 del movimiento)
@@ -150,15 +158,12 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 	{
 		if (ProyectilCargaActual)
 		{
-			// Tambien corregir la direccion de liberacion
 			const FVector DireccionDeDisparoLimpia = -GetActorForwardVector();
 			ProyectilCargaActual->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 			ProyectilCargaActual->LiberarProyectil(TiempoCargaAcumulado, DireccionDeDisparoLimpia);
 			ProyectilCargaActual = nullptr;
-
 			bCanFire = false;
 			GetWorld()->GetTimerManager().SetTimer(TimerHandle_ShotTimerExpired, this, &ACentCosmosPawn::ShotTimerExpired, FireRate);
-
 			if (FireSound != nullptr)
 			{
 				UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
@@ -167,6 +172,7 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 
 		bEstaCargando = false;
 		TiempoCargaAcumulado = 0.0f;
+		OnNotify(FName("EstadoJugador"));
 	}
 }
 
@@ -221,4 +227,22 @@ void ACentCosmosPawn::FireShot(FVector FireDirection)
 void ACentCosmosPawn::ShotTimerExpired()
 {
 	bCanFire = true;
+}
+
+void ACentCosmosPawn::OnNotify(FName EventType)
+{
+	if (!Fachada) return;
+
+	float Vida    = Fachada->ObtenerVida();
+	float Stamina = Fachada->ObtenerStamina();
+
+	FString Msg = FString::Printf(
+		TEXT("[%s] Vida: %.1f | Stamina: %.1f"),
+		*EventType.ToString(), Vida, Stamina
+	);
+
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *Msg);
+
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Cyan, Msg);
 }

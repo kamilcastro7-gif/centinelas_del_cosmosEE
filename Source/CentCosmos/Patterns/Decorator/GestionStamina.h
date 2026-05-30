@@ -1,40 +1,34 @@
-// GestionStamina.h
-// Subsistema de gestion de stamina del jugador.
-
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
+#include "DecoratorBase.h"
 #include "GestionStamina.generated.h"
 
-UCLASS(BlueprintType)
-class CENTCOSMOS_API UGestionStamina : public UObject
+UCLASS()
+class CENTCOSMOS_API UGestionStamina : public UDecoratorBase
 {
     GENERATED_BODY()
 
 public:
     UGestionStamina();
 
+    virtual void Aplicar() override;
     void Inicializar();
     void Regenerar(float DeltaTime);
     void Restaurar();
 
-    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Stamina")
     float GetStaminaActual() const { return StaminaActual; }
-
-    UFUNCTION(BlueprintCallable, Category = "Stamina")
+    float GetStaminaMaxima() const { return StaminaMaxima; }
     void SetStaminaActual(float NuevaStamina) { StaminaActual = FMath::Clamp(NuevaStamina, 0.0f, StaminaMaxima); }
-
-    UFUNCTION(BlueprintCallable, Category = "Stamina")
     bool Consumir(float Costo);
 
 private:
-    UPROPERTY(VisibleAnywhere, Category = "Stamina")
+    UPROPERTY()
     float StaminaActual;
 
-    UPROPERTY(EditDefaultsOnly, Category = "Stamina")
+    UPROPERTY()
     float StaminaMaxima;
 
-    UPROPERTY(EditDefaultsOnly, Category = "Stamina")
+    UPROPERTY()
     float RegeneracionPorSegundo;
 };
