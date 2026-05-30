@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "CentCosmosPawn.h"  
 #include "CentCosmosGameMode.generated.h"
+
 
 UCLASS()
 class CENTCOSMOS_API ACentCosmosGameMode : public AGameModeBase

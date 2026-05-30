@@ -13,6 +13,7 @@
 #include "Engine/StaticMesh.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundBase.h"
+#include "Observer/Subject.h"
 
 const FName ACentCosmosPawn::MoveForwardBinding("MoveForward");
 const FName ACentCosmosPawn::MoveRightBinding("MoveRight");
@@ -32,7 +33,7 @@ ACentCosmosPawn::ACentCosmosPawn()
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->SetUsingAbsoluteRotation(true);
-	CameraBoom->TargetArmLength = 1200.f;
+	CameraBoom->TargetArmLength = 2200.f;
 	CameraBoom->SetRelativeRotation(FRotator(-80.f, 0.f, 0.f));
 	CameraBoom->bDoCollisionTest = false;
 
@@ -115,10 +116,15 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 					const FRotator FireRotation = GetFireRotation(this);
 					const FVector SpawnLocation = GetActorLocation() + FireRotation.RotateVector(GunOffset);
 
+					FActorSpawnParameters CargaSpawnParams;
+					CargaSpawnParams.Owner = this;
+					CargaSpawnParams.Instigator = GetInstigator();
+					CargaSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
 					UWorld* const World = GetWorld();
 					if (World)
 					{
-						ProyectilCargaActual = World->SpawnActor<AProyectilCarga>(SpawnLocation, FireRotation);
+						ProyectilCargaActual = World->SpawnActor<AProyectilCarga>(SpawnLocation, FireRotation, CargaSpawnParams);
 						if (ProyectilCargaActual)
 						{
 							ProyectilCargaActual->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepWorldTransform);
@@ -172,19 +178,24 @@ void ACentCosmosPawn::FireShot(FVector FireDirection)
 		const FRotator FireRotation = GetFireRotation(this);
 		const FVector SpawnLocation = GetActorLocation() + FireRotation.RotateVector(GunOffset);
 
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.Instigator = GetInstigator();
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
 		UWorld* const World = GetWorld();
 		if (World != nullptr)
 		{
 			if (ArmaActual == ETipoArma::Normal)
 			{
-				World->SpawnActor<ACentCosmosProjectile>(SpawnLocation, FireRotation);
+				World->SpawnActor<ACentCosmosProjectile>(SpawnLocation, FireRotation, SpawnParams);
 			}
 			else if (ArmaActual == ETipoArma::Boomerang)
 			{
 				if (!bBoomerangEnVuelo)
 				{
 					bBoomerangEnVuelo = true;
-					AProyectilBoomerang* Boomerang = World->SpawnActor<AProyectilBoomerang>(SpawnLocation, FireRotation);
+					AProyectilBoomerang* Boomerang = World->SpawnActor<AProyectilBoomerang>(SpawnLocation, FireRotation, SpawnParams);
 					if (Boomerang)
 					{
 						Boomerang->NaveDueno = this;

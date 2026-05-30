@@ -31,10 +31,24 @@ ACentCosmosProjectile::ACentCosmosProjectile()
 	InitialLifeSpan = 3.0f;
 }
 
+void ACentCosmosProjectile::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (GetOwner())
+	{
+		ProjectileMesh->IgnoreActorWhenMoving(GetOwner(), true);
+	}
+}
+
 void ACentCosmosProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	// Only add impulse and destroy projectile if we hit a physics
-	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr) && OtherComp->IsSimulatingPhysics())
+	if (OtherActor == nullptr || OtherActor == this || OtherActor == GetOwner())
+	{
+		return;
+	}
+
+	if (OtherComp != nullptr && OtherComp->IsSimulatingPhysics())
 	{
 		OtherComp->AddImpulseAtLocation(GetVelocity() * 20.f, GetActorLocation());
 	}

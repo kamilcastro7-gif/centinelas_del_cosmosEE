@@ -1,9 +1,10 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "CentCosmosGameMode.h"
+#include "CentCosmosPawn.h" 
 #include "CentCosmos.h"
 #include "EnemyFactory.h"
-#include "Facade.h"
+#include "Facade.h" 
 #include "ObstaculoNave.h"
 #include "ObstaculoSatelite.h"
 #include "ObstaculoRestos.h"
@@ -14,6 +15,7 @@ ACentCosmosGameMode::ACentCosmosGameMode()
     PrimaryActorTick.bCanEverTick = true;
     Factory = nullptr;
     ManejadorHorda = nullptr;
+    DefaultPawnClass = ACentCosmosPawn::StaticClass();
 
     // Vinculamos las clases nativas
     ClaseNave = AObstaculoNave::StaticClass();

@@ -7,6 +7,7 @@ AEnjambre::AEnjambre()
 {
     PrimaryActorTick.bCanEverTick = true;
     MallaEnemigo = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MallaEnemigo"));
+    MallaEnemigo->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
     RootComponent = MallaEnemigo;
 }
 
