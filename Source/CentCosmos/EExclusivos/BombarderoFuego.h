@@ -19,6 +19,7 @@ protected:
 
 public:
 	virtual void Tick(float DeltaTime) override;
+	void moverBombardero();
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes", meta = (AllowPrivateAccess = "true"))

@@ -12,7 +12,7 @@ ABoyaElectrostatica::ABoyaElectrostatica()
 	Velocidad = 380.0f;
 	RangoDistanciaJugador = 550.0f;
 	TiempoParaNuevoDestino = 0.0f;
-	bEstaElevandose = false;          // Bandera de parón estático
+	bEstaElevandose = false;          // Bandera de parï¿½n estï¿½tico
 	TiempoElevacion = 0.0f;
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> WedgeMesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Wedge_A.Shape_Wedge_A'"));
@@ -42,7 +42,7 @@ void ABoyaElectrostatica::Tick(float DeltaTime)
 
 	FVector PosicionActual = GetActorLocation();
 
-	// 1. MANEJO DEL PARÓN DE CARGA DE 2 SEGUNDOS
+	// 1. MANEJO DEL PARï¿½N DE CARGA DE 2 SEGUNDOS
 	if (bEstaElevandose)
 	{
 		TiempoElevacion += DeltaTime;
@@ -61,7 +61,7 @@ void ABoyaElectrostatica::Tick(float DeltaTime)
 			TiempoElevacion = 0.0f;
 		}
 
-		return; // Bloquea persecución durante la carga
+		return; // Bloquea persecuciï¿½n durante la carga
 	}
 
 	// 2. MOVIMIENTO DE ACOSO CONSTANTE
@@ -85,6 +85,31 @@ void ABoyaElectrostatica::Tick(float DeltaTime)
 		FVector NuevaPosHorizontal = PosicionActual + (DireccionHorizontal.GetSafeNormal() * Velocidad * DeltaTime);
 		NuevaPosHorizontal.Z = PosicionBaseZ.Z;
 		SetActorLocation(NuevaPosHorizontal);
+	}
+}
+
+void ABoyaElectrostatica::moverBoya()
+{
+	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	if (!PlayerPawn) return;
+
+	FVector PosicionActual = GetActorLocation();
+	TiempoParaNuevoDestino -= 0.1f;
+	if (TiempoParaNuevoDestino <= 0.0f)
+	{
+		TiempoParaNuevoDestino = FMath::FRandRange(0.5f, 1.0f);
+		FVector PosJugador = PlayerPawn->GetActorLocation();
+		FVector OffsetAleatorio = FMath::VRand() * RangoDistanciaJugador;
+		OffsetAleatorio.Z = 0.0f;
+		DestinoErratico = PosJugador + OffsetAleatorio;
+	}
+	FVector Direccion = (DestinoErratico - PosicionActual);
+	Direccion.Z = 0.0f;
+	if (!Direccion.IsNearlyZero(10.0f))
+	{
+		FVector NuevaPos = PosicionActual + Direccion.GetSafeNormal() * Velocidad * 0.1f;
+		NuevaPos.Z = PosicionBaseZ.Z;
+		SetActorLocation(NuevaPos);
 	}
 }
 
@@ -118,7 +143,7 @@ void ABoyaElectrostatica::SpawnChispasAlRededor()
 	// =========================================================================
 	for (int32 i = 0; i < 3; i++)
 	{
-		// Ángulos variados para envolver a la nave del jugador
+		// ï¿½ngulos variados para envolver a la nave del jugador
 		float AnguloJugador = FMath::FRandRange(0.0f, 2.0f * 3.14159f);
 		// Distancia corta (entre 100 y 160 unidades) para forzar maniobra de escape
 		float DistanciaAlJugador = FMath::FRandRange(100.0f, 160.0f);
@@ -134,7 +159,7 @@ void ABoyaElectrostatica::SpawnChispasAlRededor()
 	}
 
 	// =========================================================================
-	// CHISPAS RESTANTES (2): GENERADAS PERIFÉRICAS CERCA DE LA BOYA
+	// CHISPAS RESTANTES (2): GENERADAS PERIFï¿½RICAS CERCA DE LA BOYA
 	// =========================================================================
 	for (int32 i = 0; i < 2; i++)
 	{

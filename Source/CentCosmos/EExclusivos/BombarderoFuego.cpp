@@ -4,7 +4,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/World.h"
-#include "Kismet/GameplayStatics.h" // Inclusión necesaria para buscar al jugador
+#include "Kismet/GameplayStatics.h" // Inclusiï¿½n necesaria para buscar al jugador
 #include "ProyectilFuego.h"
 
 ABombarderoFuego::ABombarderoFuego()
@@ -20,14 +20,17 @@ ABombarderoFuego::ABombarderoFuego()
 		BombarderoMesh->SetStaticMesh(WedgeMesh.Object);
 	}
 
-	VelocidadMovimiento = 400.0f; // Velocidad para seguirte el ritmo en Y
+	VelocidadMovimiento = 400.0f;
+	RangoBarrido = 300.0f;
+	PosicionCentro = FVector::ZeroVector;
+	bMoviendoDerecha = true;
 }
 
 void ABombarderoFuego::BeginPlay()
 {
 	AActor::BeginPlay();
 
-	// CORRECCIÓN: Modificado para que ataque estrictamente cada 5 segundos
+	// CORRECCIï¿½N: Modificado para que ataque estrictamente cada 5 segundos
 	GetWorld()->GetTimerManager().SetTimer(TimerAtaqueHandle, this, &ABombarderoFuego::EjecutarDisparoFuego, 5.0f, true);
 }
 
@@ -44,10 +47,10 @@ void ABombarderoFuego::Tick(float DeltaTime)
 		FVector PosicionActual = GetActorLocation();
 		FVector PosicionJugador = PlayerPawn->GetActorLocation();
 
-		// Calculamos la dirección hacia donde se mueve el jugador en Y
+		// Calculamos la direcciï¿½n hacia donde se mueve el jugador en Y
 		float DireccionY = PosicionJugador.Y - PosicionActual.Y;
 
-		// Si el jugador está lejos en el eje Y, el bombardero se desplaza para alinearse
+		// Si el jugador estï¿½ lejos en el eje Y, el bombardero se desplaza para alinearse
 		if (FMath::Abs(DireccionY) > 10.0f)
 		{
 			float Signo = (DireccionY > 0.0f) ? 1.0f : -1.0f;
@@ -55,6 +58,25 @@ void ABombarderoFuego::Tick(float DeltaTime)
 			SetActorLocation(PosicionActual);
 		}
 	}
+}
+
+void ABombarderoFuego::moverBombardero()
+{
+	FVector PosicionActual = GetActorLocation();
+	float Desplazamiento = bMoviendoDerecha ? VelocidadMovimiento * 0.1f : -VelocidadMovimiento * 0.1f;
+	float NuevaY = PosicionActual.Y + Desplazamiento;
+	if (NuevaY > PosicionCentro.Y + RangoBarrido)
+	{
+		NuevaY = PosicionCentro.Y + RangoBarrido;
+		bMoviendoDerecha = false;
+	}
+	else if (NuevaY < PosicionCentro.Y - RangoBarrido)
+	{
+		NuevaY = PosicionCentro.Y - RangoBarrido;
+		bMoviendoDerecha = true;
+	}
+	PosicionActual.Y = NuevaY;
+	SetActorLocation(PosicionActual);
 }
 
 void ABombarderoFuego::EjecutarDisparoFuego()
@@ -72,16 +94,16 @@ void ABombarderoFuego::EjecutarDisparoFuego()
 			FVector UbicacionBombardero = GetActorLocation();
 			FVector PosicionJugador = PlayerPawn->GetActorLocation();
 
-			// 2. CORRECCIÓN SÓLIDA: Calculamos la dirección real hacia el jugador
+			// 2. CORRECCIï¿½N Sï¿½LIDA: Calculamos la direcciï¿½n real hacia el jugador
 			FVector DireccionHaciaJugador = (PosicionJugador - UbicacionBombardero).GetSafeNormal();
 
-			// Ajustamos el spawn un poco al frente en dirección al jugador para evitar colisiones propias
+			// Ajustamos el spawn un poco al frente en direcciï¿½n al jugador para evitar colisiones propias
 			FVector UbicacionDisparo = UbicacionBombardero + (DireccionHaciaJugador * 120.0f);
 
 			// Hacemos que el proyectil rote mirando fijamente hacia el jugador
 			FRotator RotacionDisparo = DireccionHaciaJugador.Rotation();
 
-			// 3. Spawneamos el cubo de fuego con la dirección e inclinación perfectas
+			// 3. Spawneamos el cubo de fuego con la direcciï¿½n e inclinaciï¿½n perfectas
 			World->SpawnActor<AProyectilFuego>(AProyectilFuego::StaticClass(), UbicacionDisparo, RotacionDisparo, SpawnParams);
 		}
 	}
