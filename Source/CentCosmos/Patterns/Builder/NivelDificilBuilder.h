@@ -3,7 +3,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "INivelBuilder.h"
-#include "Patterns/Decorator/IEnemigo.h"
 #include "NivelDificilBuilder.generated.h"
 
 UCLASS()

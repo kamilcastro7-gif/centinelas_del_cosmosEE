@@ -1,6 +1,4 @@
 #include "NivelFacilBuilder.h"
-#include "Patterns/Decorator/EnemBasico.h"
-#include "Patterns/Decorator/EnemRapido.h"
 
 ANivelFacilBuilder::ANivelFacilBuilder()
 {
@@ -33,16 +31,8 @@ void ANivelFacilBuilder::AgregarEnemigos(UWorld* World, const TArray<AActor*>& P
         FActorSpawnParameters Params;
         Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-        if (Plantilla->IsA(AEnemBasico::StaticClass()))
-        {
-            AEnemBasico* Basico = World->SpawnActor<AEnemBasico>(AEnemBasico::StaticClass(), Plantilla->GetActorLocation(), Plantilla->GetActorRotation(), Params);
-            if (Basico) EnemigosGenerados.Add(Basico);
-        }
-        else if (Plantilla->IsA(AEnemRapido::StaticClass()))
-        {
-            AEnemRapido* Rapido = World->SpawnActor<AEnemRapido>(AEnemRapido::StaticClass(), Plantilla->GetActorLocation(), Plantilla->GetActorRotation(), Params);
-            if (Rapido) EnemigosGenerados.Add(Rapido);
-        }
+        AActor* Spawned = World->SpawnActor<AActor>(Plantilla->GetClass(), Plantilla->GetActorLocation(), Plantilla->GetActorRotation(), Params);
+        if (Spawned) EnemigosGenerados.Add(Spawned);
     }
 }
 

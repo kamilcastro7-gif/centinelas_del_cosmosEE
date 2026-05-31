@@ -1,44 +1,36 @@
 #pragma once
-
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "IEnemigo.h"
 #include "EnemDecorador.generated.h"
 
-UCLASS(BlueprintType)
-class CENTCOSMOS_API UEnemDecorador : public UObject, public IEnemigo
+UCLASS()
+class CENTCOSMOS_API UEnemDecorador : public UObject
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 protected:
-	UPROPERTY()
-	TScriptInterface<IEnemigo> Inner;
+    UPROPERTY()
+    AActor* Inner;
+
+    float VidaActual;
+    float VidaMaxima;
 
 public:
-	void Initialize(UObject* InInner) { Inner.SetObject(InInner); }
+    void AplicarVida(AActor* Objetivo, float Cantidad)
+    {
+        Inner = Objetivo;
+        VidaActual = Cantidad;
+        VidaMaxima = Cantidad;
+    }
 
-	virtual float GetVida() const override
-	{
-		return Inner ? Inner->GetVida() : 0.0f;
-	}
+    void RegenerarVida(float Bonus)
+    {
+        VidaActual = FMath::Min(VidaActual + Bonus, VidaMaxima);
+    }
 
-	virtual float GetDanio() const override
-	{
-		return Inner ? Inner->GetDanio() : 0.0f;
-	}
+    float GetVida() const { return VidaActual; }
 
-	virtual float GetVelocidad() const override
-	{
-		return Inner ? Inner->GetVelocidad() : 0.0f;
-	}
+    void RecibirDanio(float Cantidad) { VidaActual = FMath::Max(VidaActual - Cantidad, 0.0f); }
 
-	virtual void RecibirDanio(float Cantidad) override
-	{
-		if (Inner) Inner->RecibirDanio(Cantidad);
-	}
-
-	virtual bool EstaVivo() const override
-	{
-		return Inner ? Inner->EstaVivo() : false;
-	}
+    bool EstaVivo() const { return VidaActual > 0.0f; }
 };

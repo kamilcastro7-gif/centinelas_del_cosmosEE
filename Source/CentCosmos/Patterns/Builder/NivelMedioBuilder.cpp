@@ -1,7 +1,4 @@
 #include "NivelMedioBuilder.h"
-#include "Patterns/Decorator/EnemBasico.h"
-#include "Patterns/Decorator/EnemTanque.h"
-#include "Patterns/Decorator/EnemVida.h"
 
 ANivelMedioBuilder::ANivelMedioBuilder()
 {
@@ -34,22 +31,8 @@ void ANivelMedioBuilder::AgregarEnemigos(UWorld* World, const TArray<AActor*>& P
         FActorSpawnParameters Params;
         Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-        if (Plantilla->IsA(AEnemBasico::StaticClass()))
-        {
-            AEnemBasico* Basico = World->SpawnActor<AEnemBasico>(AEnemBasico::StaticClass(), Plantilla->GetActorLocation(), Plantilla->GetActorRotation(), Params);
-            if (Basico) EnemigosGenerados.Add(Basico);
-        }
-        else if (Plantilla->IsA(AEnemTanque::StaticClass()))
-        {
-            AEnemTanque* Tanque = World->SpawnActor<AEnemTanque>(AEnemTanque::StaticClass(), Plantilla->GetActorLocation(), Plantilla->GetActorRotation(), Params);
-            if (Tanque)
-            {
-                UEnemVida* Decorado = NewObject<UEnemVida>();
-                Decorado->Initialize(Tanque, 150.0f);
-                Tanque->SetVida(Decorado->GetVida());
-                EnemigosGenerados.Add(Tanque);
-            }
-        }
+        AActor* Spawned = World->SpawnActor<AActor>(Plantilla->GetClass(), Plantilla->GetActorLocation(), Plantilla->GetActorRotation(), Params);
+        if (Spawned) EnemigosGenerados.Add(Spawned);
     }
 }
 
