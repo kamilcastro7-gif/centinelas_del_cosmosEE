@@ -15,6 +15,12 @@ protected:
     float VidaActual;
     float VidaMaxima;
 
+    UPROPERTY(EditDefaultsOnly, Category = "Decorador")
+    float DuracionSobrecargaApex;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Decorador")
+    float DuracionDisparoTriple;
+
 public:
     void AplicarVida(AActor* Objetivo, float Cantidad)
     {
@@ -33,4 +39,7 @@ public:
     void RecibirDanio(float Cantidad) { VidaActual = FMath::Max(VidaActual - Cantidad, 0.0f); }
 
     bool EstaVivo() const { return VidaActual > 0.0f; }
+
+    void AplicarSobrecargaApex(class ACentCosmosPawn* Nave);
+    void AplicarDisparoTriple(class ACentCosmosPawn* Nave);
 };

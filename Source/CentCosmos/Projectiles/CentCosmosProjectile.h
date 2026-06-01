@@ -14,10 +14,10 @@ class ACentCosmosProjectile : public AActor
 {
 	GENERATED_BODY()
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Projectile, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
 	UStaticMeshComponent* ProjectileMesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
 	UProjectileMovementComponent* ProjectileMovement;
 
 public:
@@ -31,7 +31,7 @@ public:
 	void ForzarDireccion(FVector Direccion, float Velocidad);
 
 	// ATRIBUTO DE DA�O
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combate")
+	UPROPERTY()
 	float Danio;
 
 	FORCEINLINE UStaticMeshComponent* GetProjectileMesh()      const { return ProjectileMesh; }

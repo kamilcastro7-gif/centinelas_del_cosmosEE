@@ -13,14 +13,14 @@ class CENTCOSMOS_API AProyectilCarga : public AActor
 public:
     AProyectilCarga();
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
+    UPROPERTY()
     class UStaticMeshComponent* ProyectilMesh;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+    UPROPERTY()
     class UProjectileMovementComponent* ProjectileMovement;
 
     // ATRIBUTO DE DAÑO PÚBLICO
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combate")
+    UPROPERTY()
     float DanoBase;
 
     void InicializarCarga(float TiempoCarga);
