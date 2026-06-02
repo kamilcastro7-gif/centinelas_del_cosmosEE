@@ -1,39 +1,39 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
-
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Patterns/Decorator/EnemDecorador.h" // <-- 1. Añadir el include
 #include "Enjambre.generated.h"
 
 UCLASS()
 class CENTCOSMOS_API AEnjambre : public AActor
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
+
 public:
-    AEnjambre();
+	AEnjambre();
+
 protected:
-    virtual void BeginPlay() override;
+	virtual void BeginPlay() override;
 
-    UPROPERTY(VisibleAnywhere)
-    UStaticMeshComponent* MallaEnemigo;
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* MallaEnemigo;
 
-    FVector DireccionMovimiento;
+	FVector DireccionMovimiento;
+	float ProbabilidadDrop;
+
+	void DropPowerUp();
 
 public:
-    virtual void Tick(float DeltaTime) override;
+	virtual void Tick(float DeltaTime) override;
 
-    // =========================================================
-    // ESTADÍSTICAS BASE HEREDABLES
-    // =========================================================
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Estadisticas")
-    float VidaActual;
+	// Estadísticas base
+	float VidaActual;
+	float DanioDeChoque;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Estadisticas")
-    float DanioDeChoque;
+	// <-- 2. Declarar el componente Decorador
+	UPROPERTY()
+	UEnemDecorador* DecoradorVida;
 
-    UFUNCTION(BlueprintCallable, Category = "Combate")
-    virtual void RecibirDanioEnemigo(float Cantidad);
-    // Función nativa de Unreal para detectar cuando otro actor lo atraviesa
-    virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+	virtual void RecibirDanioEnemigo(float Cantidad);
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 };

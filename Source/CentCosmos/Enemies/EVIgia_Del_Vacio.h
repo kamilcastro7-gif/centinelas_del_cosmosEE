@@ -12,6 +12,7 @@ class CENTCOSMOS_API AEVigia_Del_Vacio : public AEnjambre
     GENERATED_BODY()
 public:
     AEVigia_Del_Vacio();
+    virtual void Tick(float DeltaTime) override;
     void moverVigia();
     void VigAtacar();
 

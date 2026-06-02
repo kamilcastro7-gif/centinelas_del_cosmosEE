@@ -37,6 +37,14 @@ void AEVigia_Del_Vacio::BeginPlay() {
     GetWorld()->GetTimerManager().SetTimer(TimerHandle_Ataque, this, &AEVigia_Del_Vacio::VigAtacar, 5.0f, true);
 }
 
+void AEVigia_Del_Vacio::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    // Llamamos a la función para que el Vigía patrulle constantemente
+    moverVigia();
+}
+
 void AEVigia_Del_Vacio::moverVigia() {
     float Tiempo = GetWorld()->GetTimeSeconds() * VelocidadVigia;
     float Radio = 1200.0f;

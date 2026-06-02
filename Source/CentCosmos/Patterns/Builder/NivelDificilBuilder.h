@@ -13,12 +13,19 @@ class CENTCOSMOS_API ANivelDificilBuilder : public AActor, public INivelBuilder
 public:
     ANivelDificilBuilder();
 
-    virtual void Reset() override;
-    virtual void SetMetadatos(const FString& Nombre, float TiempoLimite) override;
-    virtual void SetDificultad(float Dificultad) override;
-    virtual void AgregarEnemigos(UWorld* World, const TArray<AActor*>& Plantillas) override;
-    virtual void AgregarBoss(UWorld* World, AActor* Boss) override;
-    virtual FNivel ObtenerNivel() override;
+	virtual void Reset() override;
+	virtual void SetMetadatos(const FString& Nombre, float TiempoLimite) override;
+	virtual void SetDificultad(float Dificultad) override;
+
+	// A estas dos funciones QUÍTALES cualquier parámetro extra. Solo deben recibir UWorld*
+	virtual void AgregarEnemigos(UWorld* World) override;
+	virtual void AgregarAmbientacion(UWorld* World) override;
+
+	virtual FNivel ObtenerNivel() override;
+
+	// Si tienes AgregarBoss, QUÍTALE la palabra 'override' al final, 
+	// ya que es una función exclusiva de esta clase, no de la interfaz.
+	void AgregarBoss(UWorld* World);
 
 private:
     FNivel NivelActual;

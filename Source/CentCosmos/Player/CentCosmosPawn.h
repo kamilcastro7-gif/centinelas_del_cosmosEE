@@ -7,120 +7,115 @@
 #include "Observer/Subject.h"
 #include "CentCosmosPawn.generated.h"
 
-UENUM(BlueprintType)
+UENUM()
 enum class ETipoArma : uint8
 {
-    Normal,
-    Boomerang,
-    Carga
+	Normal,
+	Boomerang,
+	Carga
 };
 
-UCLASS(Blueprintable)
+UCLASS()
 class CENTCOSMOS_API ACentCosmosPawn : public APawn
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
-    UPROPERTY(Category = Mesh, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-    class UStaticMeshComponent* ShipMeshComponent;
+	// Mantenemos los macros de Blueprint por defecto del engine para la cámara y la malla
+	UPROPERTY(Category = Mesh, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UStaticMeshComponent* ShipMeshComponent;
 
-    UPROPERTY(Category = Camera, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-    class UCameraComponent* CameraComponent;
+	UPROPERTY(Category = Camera, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UCameraComponent* CameraComponent;
 
-    UPROPERTY(Category = Camera, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-    class USpringArmComponent* CameraBoom;
+	UPROPERTY(Category = Camera, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class USpringArmComponent* CameraBoom;
 
 public:
-    ACentCosmosPawn();
+	ACentCosmosPawn();
 
-    virtual void BeginPlay() override;
+	virtual void BeginPlay() override;
 
-    UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintReadWrite)
-    FVector GunOffset;
+	UPROPERTY(Category = Gameplay, EditAnywhere)
+	FVector GunOffset;
 
-    UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintReadWrite)
-    float FireRate;
+	UPROPERTY(Category = Gameplay, EditAnywhere)
+	float FireRate;
 
-    UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintReadWrite)
-    float MoveSpeed;
+	UPROPERTY(Category = Gameplay, EditAnywhere)
+	float MoveSpeed;
 
-    UPROPERTY(Category = "Audio", EditAnywhere, BlueprintReadWrite)
-    class USoundBase* FireSound;
+	UPROPERTY(Category = "Audio", EditAnywhere)
+	class USoundBase* FireSound;
 
-    UPROPERTY()
-    UEnemDecorador* Decorador;
+	UPROPERTY()
+	UEnemDecorador* Decorador;
 
-    virtual void Tick(float DeltaSeconds) override;
-    virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-    void FireShot(FVector FireDirection);
-    void ShotTimerExpired();
-    void DesactivarDisparoTriple();
-    void DesactivarSobreCargaApex();
+	virtual void Tick(float DeltaSeconds) override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	void FireShot(FVector FireDirection);
+	void ShotTimerExpired();
+	void DesactivarDisparoTriple();
+	void DesactivarSobreCargaApex();
 
-    static const FName MoveForwardBinding;
-    static const FName MoveRightBinding;
+	static const FName MoveForwardBinding;
+	static const FName MoveRightBinding;
 
-    UPROPERTY(BlueprintReadOnly, Category = "Armas")
-    ETipoArma ArmaActual;
+	UPROPERTY(VisibleAnywhere, Category = "Armas")
+	ETipoArma ArmaActual;
 
-    UPROPERTY(BlueprintReadWrite, Category = "Armas")
-    bool bBoomerangEnVuelo;
+	UPROPERTY(VisibleAnywhere, Category = "Armas")
+	bool bBoomerangEnVuelo;
 
-    // SISTEMA DE SALUD
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Salud")
-    float VidaMax;
+	// SISTEMA DE SALUD
+	UPROPERTY(EditAnywhere, Category = "Salud")
+	float VidaMax;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Salud")
-    float VidaActual;
+	UPROPERTY(VisibleAnywhere, Category = "Salud")
+	float VidaActual;
 
-    UFUNCTION(BlueprintCallable, Category = "Salud")
-    void RecibirDanioNave(float Cantidad);
+	void RecibirDanioNave(float Cantidad);
+	void RestaurarVida(float Cantidad);
 
 private:
-    uint32 bCanFire : 1;
+	uint32 bCanFire : 1;
 
-    FTimerHandle TimerHandle_ShotTimerExpired;
-    FTimerHandle TimerHandle_DisparoTriple;
-    FTimerHandle TimerHandle_SobreCargaApex;
+	FTimerHandle TimerHandle_ShotTimerExpired;
+	FTimerHandle TimerHandle_DisparoTriple;
+	FTimerHandle TimerHandle_SobreCargaApex;
 
-    // Observer
-    UPROPERTY()
-    class ASubject* SubjectVida;
+	// Observer
+	UPROPERTY()
+	class ASubject* SubjectVida;
 
-    UPROPERTY()
-    class UVidaObserver* ObservadorVida;
+	UPROPERTY()
+	class UVidaObserver* ObservadorVida;
 
-    float TiempoCargaAcumulado;
-    bool  bEstaCargando;
+	float TiempoCargaAcumulado;
+	bool  bEstaCargando;
 
-    UPROPERTY()
-    class AProyectilCarga* ProyectilCargaActual;
+	UPROPERTY()
+	class AProyectilCarga* ProyectilCargaActual;
 
 public:
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PowerUps")
-    bool bTieneDisparoTriple;
+	UPROPERTY(EditAnywhere, Category = "PowerUps")
+	bool bTieneDisparoTriple;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PowerUps")
-    bool bTieneSobreCargaApex;
+	UPROPERTY(EditAnywhere, Category = "PowerUps")
+	bool bTieneSobreCargaApex;
 
-    UPROPERTY(EditAnywhere, Category = "Configuracion Disparo")
-    TSubclassOf<class ACentCosmosProjectile> ClaseBalaBlueprint;
+	UPROPERTY(EditAnywhere, Category = "Armas")
+	TSubclassOf<class ACentCosmosProjectile> ClaseNormal;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armas")
-    TSubclassOf<class ACentCosmosProjectile> MiProyectilAmarilloBP;
+	UPROPERTY(EditAnywhere, Category = "Armas")
+	TSubclassOf<class AProyectilCarga> ClaseCarga;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armas")
-    TSubclassOf<class ACentCosmosProjectile> ClaseNormalBP;
+	float MoveSpeedBase;
+	float FireRateBase;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armas")
-    TSubclassOf<class AProyectilCarga> ClaseCargaBP;
+	bool bRalentizadoPorChispa = false;
+	bool bPuedeDisparar = true;
 
-    float MoveSpeedBase;
-    float FireRateBase;
-
-    bool bRalentizadoPorChispa = false;
-    bool bPuedeDisparar = true;
-
-    FORCEINLINE class UStaticMeshComponent* GetShipMeshComponent() const { return ShipMeshComponent; }
-    FORCEINLINE class UCameraComponent* GetCameraComponent()   const { return CameraComponent; }
-    FORCEINLINE class USpringArmComponent* GetCameraBoom()        const { return CameraBoom; }
+	FORCEINLINE class UStaticMeshComponent* GetShipMeshComponent() const { return ShipMeshComponent; }
+	FORCEINLINE class UCameraComponent* GetCameraComponent()   const { return CameraComponent; }
+	FORCEINLINE class USpringArmComponent* GetCameraBoom()        const { return CameraBoom; }
 };

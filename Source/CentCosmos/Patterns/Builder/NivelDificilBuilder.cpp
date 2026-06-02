@@ -2,53 +2,43 @@
 
 ANivelDificilBuilder::ANivelDificilBuilder()
 {
-    PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = false;
 }
 
 void ANivelDificilBuilder::Reset()
 {
-    NivelActual = FNivel();
-    EnemigosGenerados.Empty();
+	NivelActual = FNivel();
+	EnemigosGenerados.Empty();
 }
 
 void ANivelDificilBuilder::SetMetadatos(const FString& Nombre, float TiempoLimite)
 {
-    NivelActual.Nombre = Nombre;
-    NivelActual.TiempoLimite = TiempoLimite;
+	NivelActual.Nombre = Nombre;
+	NivelActual.TiempoLimite = TiempoLimite;
 }
 
 void ANivelDificilBuilder::SetDificultad(float Dificultad)
 {
-    NivelActual.Dificultad = Dificultad;
+	NivelActual.Dificultad = Dificultad;
 }
 
-void ANivelDificilBuilder::AgregarEnemigos(UWorld* World, const TArray<AActor*>& Plantillas)
+void ANivelDificilBuilder::AgregarEnemigos(UWorld* World)
 {
-    if (!World) return;
-
-    for (AActor* Plantilla : Plantillas)
-    {
-        FActorSpawnParameters Params;
-        Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-        AActor* Spawned = World->SpawnActor<AActor>(Plantilla->GetClass(), Plantilla->GetActorLocation(), Plantilla->GetActorRotation(), Params);
-        if (Spawned) EnemigosGenerados.Add(Spawned);
-    }
+	// Tu lógica de enemigos aquí
 }
 
-void ANivelDificilBuilder::AgregarBoss(UWorld* World, AActor* Boss)
+void ANivelDificilBuilder::AgregarAmbientacion(UWorld* World)
 {
-    if (!World || !Boss) return;
+	// Tu lógica de ambientación aquí
+}
 
-    FActorSpawnParameters Params;
-    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-    AActor* Spawned = World->SpawnActor<AActor>(Boss->GetClass(), Boss->GetActorLocation(), Boss->GetActorRotation(), Params);
-    if (Spawned) EnemigosGenerados.Add(Spawned);
+void ANivelDificilBuilder::AgregarBoss(UWorld* World)
+{
+	// Tu lógica del jefe aquí
 }
 
 FNivel ANivelDificilBuilder::ObtenerNivel()
 {
-    NivelActual.Enemigos = EnemigosGenerados;
-    return NivelActual;
+	NivelActual.Enemigos = EnemigosGenerados;
+	return NivelActual;
 }

@@ -1,15 +1,12 @@
 #include "VidaObserver.h"
 
-UVidaObserver::UVidaObserver()
+void UVidaObserver::OnNotify(FName EventType, float Valor)
 {
-    UmbralVidaCritica = 25.0f;
-}
-
-void UVidaObserver::OnNotify(FName EventType)
-{
-    if (EventType == "VidaActualizada")
+    if (EventType == FName("VidaActualizada"))
     {
         if (GEngine)
-            GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, TEXT("Vida actualizada"));
+            GEngine->AddOnScreenDebugMessage(
+                1, 3.f, FColor::Cyan,
+                FString::Printf(TEXT("Vida: %.0f"), Valor));
     }
 }

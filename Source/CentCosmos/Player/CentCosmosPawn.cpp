@@ -61,8 +61,8 @@ ACentCosmosPawn::ACentCosmosPawn()
 	bTieneDisparoTriple = false;
 	bTieneSobreCargaApex = false;
 
-	ClaseNormalBP = ACentCosmosProjectile::StaticClass();
-	ClaseCargaBP = AProyectilCarga::StaticClass();
+	ClaseNormal = ACentCosmosProjectile::StaticClass();
+	ClaseCarga = AProyectilCarga::StaticClass();
 
 	VidaMax = 100.f;
 	VidaActual = VidaMax;
@@ -152,8 +152,8 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 
 			if (ArmaActual == ETipoArma::Normal && bCanFire)
 			{
-				TSubclassOf<ACentCosmosProjectile> ClaseAUsar = ClaseNormalBP
-					? ClaseNormalBP
+				TSubclassOf<ACentCosmosProjectile> ClaseAUsar = ClaseNormal
+					? ClaseNormal
 					: TSubclassOf<ACentCosmosProjectile>(ACentCosmosProjectile::StaticClass());
 
 				FActorSpawnParameters Params;
@@ -163,19 +163,24 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 
 				if (bTieneDisparoTriple)
 				{
-					// Central
+					// Central — nace en SpawnLocation normal
 					World->SpawnActor<ACentCosmosProjectile>(ClaseAUsar, SpawnLocation, FireRotation, Params);
 
-					// Izquierda -20 grados
-					FRotator RotIzq = FireRotation; RotIzq.Yaw -= 20.f;
+					// Izquierda: rotamos -20 grados Y desplazamos el spawn lateralmente
+					// para que no nazca dentro de la malla grande de la nave
+					FRotator RotIzq = FireRotation;
+					RotIzq.Yaw -= 20.f;
+					FVector SpawnIzq = SpawnLocation + FRotator(0.f, FireRotation.Yaw - 90.f, 0.f).Vector() * 40.f;
 					ACentCosmosProjectile* PIzq = World->SpawnActor<ACentCosmosProjectile>(
-						ClaseAUsar, SpawnLocation, RotIzq, Params);
+						ClaseAUsar, SpawnIzq, RotIzq, Params);
 					if (PIzq) PIzq->ForzarDireccion(RotIzq.Vector(), 3000.f);
 
-					// Derecha +20 grados
-					FRotator RotDer = FireRotation; RotDer.Yaw += 20.f;
+					// Derecha: rotamos +20 grados Y desplazamos el spawn lateralmente
+					FRotator RotDer = FireRotation;
+					RotDer.Yaw += 20.f;
+					FVector SpawnDer = SpawnLocation + FRotator(0.f, FireRotation.Yaw + 90.f, 0.f).Vector() * 40.f;
 					ACentCosmosProjectile* PDer = World->SpawnActor<ACentCosmosProjectile>(
-						ClaseAUsar, SpawnLocation, RotDer, Params);
+						ClaseAUsar, SpawnDer, RotDer, Params);
 					if (PDer) PDer->ForzarDireccion(RotDer.Vector(), 3000.f);
 				}
 				else
@@ -215,8 +220,8 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 					bEstaCargando = true;
 					TiempoCargaAcumulado = 0.0f;
 
-					TSubclassOf<AProyectilCarga> ClaseCargaAUsar = ClaseCargaBP
-						? ClaseCargaBP
+					TSubclassOf<AProyectilCarga> ClaseCargaAUsar = ClaseCarga
+						? ClaseCarga
 						: TSubclassOf<AProyectilCarga>(AProyectilCarga::StaticClass());
 
 					ProyectilCargaActual = World->SpawnActor<AProyectilCarga>(
@@ -250,17 +255,40 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 			bCanFire = false;
 			GetWorld()->GetTimerManager().SetTimer(TimerHandle_ShotTimerExpired, this,
 				&ACentCosmosPawn::ShotTimerExpired, FireRate);
-
-			if (FireSound)
-				UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
 		}
+
+		if (FireSound)
+			UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
 
 		bEstaCargando = false;
 		TiempoCargaAcumulado = 0.0f;
 	}
 }
 
+void ACentCosmosPawn::RecibirDanioNave(float Cantidad)
+{
+	if (!Decorador) return;
+
+	// El Decorator aplica el daño regulando el mínimo (no negativo)
+	Decorador->RecibirDanio(Cantidad);
+	VidaActual = Decorador->GetVida();
+
+	// Notificar al Observer para que actualice el HUD
+	if (SubjectVida)
+	{
+		SubjectVida->NotifyObservers(FName("VidaActualizada"), VidaActual);
+	}
+
+	if (!Decorador->EstaVivo())
+	{
+		if (GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("LA NAVE HA SIDO DESTRUIDA!"));
+		Destroy();
+	}
+}
+
 void ACentCosmosPawn::FireShot(FVector FireDirection) {}
+
 void ACentCosmosPawn::ShotTimerExpired() { bCanFire = true; }
 
 void ACentCosmosPawn::DesactivarDisparoTriple()
@@ -279,19 +307,23 @@ void ACentCosmosPawn::DesactivarSobreCargaApex()
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("SobreCarga Apex Terminada."));
 }
 
-void ACentCosmosPawn::RecibirDanioNave(float Cantidad)
+void ACentCosmosPawn::RestaurarVida(float Cantidad)
 {
-	Decorador->RecibirDanio(Cantidad);
+	if (!Decorador) return;
+
+	// El Decorator regula que no pase de VidaMaxima
+	Decorador->RegenerarVida(Cantidad);
 	VidaActual = Decorador->GetVida();
+
+	// Notificar al Observer para que actualice el HUD
 	if (SubjectVida)
 	{
-		SubjectVida->NotifyObservers(FName("VidaActualizada"));
+		SubjectVida->NotifyObservers(FName("VidaActualizada"), VidaActual);
 	}
 
-	if (!Decorador->EstaVivo())
+	if (GEngine)
 	{
-		if (GEngine)
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("LA NAVE HA SIDO DESTRUIDA!"));
-		Destroy();
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, 
+			TEXT("Vida Restaurada!"));
 	}
 }

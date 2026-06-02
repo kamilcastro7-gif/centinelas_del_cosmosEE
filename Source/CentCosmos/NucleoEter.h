@@ -16,4 +16,7 @@ public:
 
 protected:
     virtual void AplicarEfecto(class ACentCosmosPawn* Nave) override;
+
+private:
+    float CantidadCuracion;
 };
