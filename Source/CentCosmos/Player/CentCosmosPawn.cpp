@@ -15,6 +15,8 @@
 #include "Sound/SoundBase.h"
 #include "Observer/Subject.h"
 #include "Observer/VidaObserver.h"
+#include "Decorator/EnemDecorador.h"
+#include "Decorator/EnemBaseComp.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Templates/SubclassOf.h"
 
@@ -75,7 +77,12 @@ ACentCosmosPawn::ACentCosmosPawn()
 void ACentCosmosPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	Decorador->AplicarVida(this, VidaMax);
+
+
+	// Implementacion del patrón Decorator para el sistema de salud
+	UEnemBaseComp* Base = NewObject<UEnemBaseComp>(this);
+	Base->Inicializar(VidaMax);
+	Decorador->Envolver(TScriptInterface<IEnemigo>(Base));
 
 	// Inicializar Observer
 	if (!SubjectVida)
@@ -269,20 +276,21 @@ void ACentCosmosPawn::RecibirDanioNave(float Cantidad)
 {
 	if (!Decorador) return;
 
-	// El Decorator aplica el daño regulando el mínimo (no negativo)
 	Decorador->RecibirDanio(Cantidad);
 	VidaActual = Decorador->GetVida();
 
-	// Notificar al Observer para que actualice el HUD
 	if (SubjectVida)
-	{
 		SubjectVida->NotifyObservers(FName("VidaActualizada"), VidaActual);
-	}
 
 	if (!Decorador->EstaVivo())
 	{
+		// Detach del observer antes de destruir — igual que RemoveMeFromTheList()
+		if (SubjectVida && ObservadorVida)
+			SubjectVida->RemoveObserver(ObservadorVida);
+
 		if (GEngine)
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("LA NAVE HA SIDO DESTRUIDA!"));
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,
+				TEXT("LA NAVE HA SIDO DESTRUIDA!"));
 		Destroy();
 	}
 }

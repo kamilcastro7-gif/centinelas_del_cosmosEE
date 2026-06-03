@@ -4,6 +4,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Patterns/Decorator/EnemDecorador.h"
+#include "Patterns/Decorator/EnemSobrecargaApex.h"
 
 APowerUpSobrecargaApex::APowerUpSobrecargaApex()
 {
@@ -21,9 +22,9 @@ void APowerUpSobrecargaApex::AplicarEfecto(ACentCosmosPawn* Nave)
 {
 	if (!Nave) return;
 
-	UEnemDecorador* Decorador = NewObject<UEnemDecorador>();
-	if (Decorador)
+	UEnemSobrecargaApex* Efecto = NewObject<UEnemSobrecargaApex>(Nave);
+	if (Efecto)
 	{
-		Decorador->AplicarSobrecargaApex(Nave);
+		Efecto->AplicarEfecto(Nave);
 	}
 }

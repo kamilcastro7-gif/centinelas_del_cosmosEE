@@ -6,6 +6,8 @@
 #include "Engine/World.h"
 #include "SobrecargaApex.h"
 #include "MunicionDispersion.h"
+#include "Decorator/EnemBaseComp.h"
+#include "Decorator/EnemDecorador.h"
 #include "NucleoEter.h"
 
 AEnjambre::AEnjambre()
@@ -31,7 +33,9 @@ void AEnjambre::BeginPlay()
 	// Inicializar la vida en el decorador
 	if (DecoradorVida)
 	{
-		DecoradorVida->AplicarVida(this, VidaActual);
+		UEnemBaseComp* Base = NewObject<UEnemBaseComp>(this);
+		Base->Inicializar(VidaActual);
+		DecoradorVida->Envolver(TScriptInterface<IEnemigo>(Base));
 	}
 }
 

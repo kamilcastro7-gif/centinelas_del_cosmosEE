@@ -1,28 +1,26 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "Patterns/Builder/NivelDirector.h"       
+#include "Patterns/Builder/NivelFacilBuilder.h"   
+#include "Facade.h"                               
 #include "CentCosmosGameMode.generated.h"
-
 UCLASS()
 class CENTCOSMOS_API ACentCosmosGameMode : public AGameModeBase
 {
-	GENERATED_BODY()
-
+    GENERATED_BODY()
 public:
-	ACentCosmosGameMode();
+    ACentCosmosGameMode();
 
 protected:
-	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
+    virtual void BeginPlay() override;
+    virtual void Tick(float DeltaTime) override;
 
 private:
-	UPROPERTY()
-	class ANivelDirector* Director;
+    // Builder
+    UPROPERTY() ANivelDirector* Director;
+    UPROPERTY() ANivelFacilBuilder* BuilderFacil;
+    UPROPERTY() AFacade* ManejadorHorda;
 
-	UPROPERTY()
-	class ANivelFacilBuilder* BuilderFacil;
 
-	UPROPERTY()
-	class AFacade* ManejadorHorda;
 };

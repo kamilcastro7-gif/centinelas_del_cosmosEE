@@ -2,17 +2,19 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "IObserver.h"
+#include "ISubject.h"
 #include "Subject.generated.h"
 
 UCLASS()
-class CENTCOSMOS_API ASubject : public AActor
+class CENTCOSMOS_API ASubject : public AActor, public ISubjectObservable
 {
     GENERATED_BODY()
 public:
-    void AddObserver(IObserver* Observer);
-    void RemoveObserver(IObserver* Observer);
-    void NotifyObservers(FName EventType, float Valor);
+    virtual void AddObserver(IObserver* Observer) override;
+    virtual void RemoveObserver(IObserver* Observer) override;
+    virtual void NotifyObservers(FName EventType, float Valor) override;
 
 private:
-    TArray<IObserver*> Observers;
+    UPROPERTY()
+    TArray<TScriptInterface<IObserver>> Observers;
 };

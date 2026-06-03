@@ -2,21 +2,32 @@
 
 void ASubject::AddObserver(IObserver* Observer)
 {
-    if (Observer && !Observers.Contains(Observer))
-        Observers.Add(Observer);
+    if (!Observer) return;
+
+    TScriptInterface<IObserver> Entry;
+    Entry.SetObject(Cast<UObject>(Observer));
+    Entry.SetInterface(Observer);
+
+    if (!Observers.Contains(Entry))
+        Observers.Add(Entry);
 }
 
 void ASubject::RemoveObserver(IObserver* Observer)
 {
-    if (Observer)
-        Observers.Remove(Observer);
+    if (!Observer) return;
+
+    TScriptInterface<IObserver> Entry;
+    Entry.SetObject(Cast<UObject>(Observer));
+    Entry.SetInterface(Observer);
+
+    Observers.Remove(Entry);
 }
 
 void ASubject::NotifyObservers(FName EventType, float Valor)
 {
-    for (IObserver* Observer : Observers)
+    for (TScriptInterface<IObserver>& Obs : Observers)
     {
-        if (Observer)
-            Observer->OnNotify(EventType, Valor);
+        if (Obs)
+            Obs->OnNotify(EventType, Valor);
     }
 }
