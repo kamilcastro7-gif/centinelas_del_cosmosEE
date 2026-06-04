@@ -18,9 +18,6 @@ void AFacade::MoverHorda() {
         if (auto* Vas = Cast<AEVastago_Del_infierno>(Actor)) Vas->moverVastago();
         else if (auto* Vig = Cast<AEVigia_Del_Vacio>(Actor)) Vig->moverVigia();
         else if (auto* Her = Cast<AEHeraldo_De_La_Ruina>(Actor)) Her->moverHeraldo();
-        else if (auto* Bom = Cast<ABombarderoFuego>(Actor)) Bom->moverBombardero();
-        else if (auto* Boy = Cast<ABoyaElectrostatica>(Actor)) Boy->moverBoya();
-
     }
 }
 
