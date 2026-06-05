@@ -5,6 +5,7 @@
 #include "GameFramework/Actor.h"
 #include "PAntimateria.generated.h"
 
+
 UCLASS()
 class CENTCOSMOS_API APAntimateria : public AActor
 {
@@ -19,4 +20,5 @@ public:
     // Exponemos esto para configurar la velocidad desde la Grieta
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
     class UProjectileMovementComponent* ProjectileMovement;
+    virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 };

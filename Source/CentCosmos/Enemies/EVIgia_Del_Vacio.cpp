@@ -15,7 +15,7 @@ AEVigia_Del_Vacio::AEVigia_Del_Vacio() {
     AmplitudPatrulla = 500.0f;
     Tags.Add(FName("Enemigo"));
 
-    VidaActual = 10.0f;
+    VidaActual = 11.0f;
     DanioDeChoque = 10.0f;
 
     static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_NarrowCapsule.Shape_NarrowCapsule'"));
@@ -23,7 +23,6 @@ AEVigia_Del_Vacio::AEVigia_Del_Vacio() {
         MallaEnemigo->SetStaticMesh(MeshAsset.Object);
     }
 
-    // 2. BALANCE: Aumentamos su tamaño 2.5 veces para que tenga una "hitbox" más generosa
     MallaEnemigo->SetRelativeScale3D(FVector(1.5f, 1.5f, 1.5f));
 
     MallaEnemigo->SetSimulatePhysics(false);

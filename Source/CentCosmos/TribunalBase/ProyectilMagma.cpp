@@ -7,6 +7,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/World.h"
+#include "../Player/CentCosmosPawn.h"
 
 AProyectilMagma::AProyectilMagma()
 {
@@ -48,94 +49,120 @@ void AProyectilMagma::BeginPlay()
 
 void AProyectilMagma::Tick(float DeltaTime)
 {
-    Super::Tick(DeltaTime);
+	Super::Tick(DeltaTime);
 
-    if (DireccionVuelo.IsZero()) return;
+	if (DireccionVuelo.IsZero()) return;
 
-    CronometroRastro += DeltaTime;
-    if (CronometroRastro >= IntervaloRastro)
-    {
-        SpawnRastroFuego();
-        CronometroRastro = 0.f;
-    }
+	CronometroRastro += DeltaTime;
+	if (CronometroRastro >= IntervaloRastro)
+	{
+		SpawnRastroFuego();
+		CronometroRastro = 0.f;
+	}
 
-    FVector PosicionActual = GetActorLocation();
-    FVector Desplazamiento = DireccionVuelo * Velocidad * DeltaTime;
-    FVector PosicionDestino = PosicionActual + Desplazamiento;
+	FVector PosicionActual = GetActorLocation();
+	FVector Desplazamiento = DireccionVuelo * Velocidad * DeltaTime;
+	FVector PosicionDestino = PosicionActual + Desplazamiento;
 
-    FHitResult HitResult;
-    FCollisionQueryParams QueryParams;
-    QueryParams.AddIgnoredActor(this);
+	FHitResult HitResult;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
 
-    if (JefeEmisor)
-    {
-        QueryParams.AddIgnoredActor(JefeEmisor);
-    }
+	if (JefeEmisor)
+	{
+		QueryParams.AddIgnoredActor(JefeEmisor);
+	}
 
-    FCollisionShape CollisionShape;
-    CollisionShape.SetSphere(100.f);
+	FCollisionShape CollisionShape;
+	CollisionShape.SetSphere(100.f);
 
-    bool bHuboChoque = GetWorld()->SweepSingleByProfile(
-        HitResult,
-        PosicionActual,
-        PosicionDestino,
-        FQuat::Identity,
-        TEXT("BlockAllDynamic"),
-        CollisionShape,
-        QueryParams
-    );
+	bool bHuboChoque = GetWorld()->SweepSingleByProfile(
+		HitResult,
+		PosicionActual,
+		PosicionDestino,
+		FQuat::Identity,
+		TEXT("BlockAllDynamic"),
+		CollisionShape,
+		QueryParams
+	);
 
-    if (bHuboChoque && HitResult.bBlockingHit)
-    {
-        AActor* Obstaculo = HitResult.GetActor();
+	if (bHuboChoque && HitResult.bBlockingHit)
+	{
+		AActor* Obstaculo = HitResult.GetActor();
 
-        if (Obstaculo && (Obstaculo == JefeEmisor || Obstaculo->IsA(ARastrosFuego::StaticClass()) || Obstaculo->IsA(ATribunal_Ira::StaticClass())))
-        {
-            SetActorLocation(PosicionDestino);
-            return;
-        }
+		// ==========================================================
+		// AQUÍ ENTRA EL DAÑO A LA NAVE JUGADOR (10 DE DAÑO)
+		if (Obstaculo && Obstaculo->IsA(ACentCosmosPawn::StaticClass()))
+		{
+			Cast<ACentCosmosPawn>(Obstaculo)->RecibirDanioNave(10.0f);
+			if (JefeEmisor) JefeEmisor->NotificarMuerteMagma();
+			Destroy();
+			return;
+		}
+		// ==========================================================
 
-        ContadorRebotes++;
+		if (Obstaculo && (Obstaculo == JefeEmisor || Obstaculo->IsA(ARastrosFuego::StaticClass()) || Obstaculo->IsA(ATribunal_Ira::StaticClass())))
+		{
+			SetActorLocation(PosicionDestino);
+			return;
+		}
 
-        if (ContadorRebotes >= 2)
-        {
-            if (JefeEmisor)
-            {
-                JefeEmisor->NotificarMuerteMagma();
-            }
-            Destroy();
-            return;
-        }
+		ContadorRebotes++;
 
-        FVector Normal = HitResult.ImpactNormal;
-        Normal.Z = 0.f;
-        Normal.Normalize();
+		if (ContadorRebotes >= 2)
+		{
+			if (JefeEmisor)
+			{
+				JefeEmisor->NotificarMuerteMagma();
+			}
+			Destroy();
+			return;
+		}
 
-        FVector DireccionReflejada = DireccionVuelo - 2.f * FVector::DotProduct(DireccionVuelo, Normal) * Normal;
-        DireccionReflejada.Z = 0.f;
-        DireccionReflejada.Normalize();
+		FVector Normal = HitResult.ImpactNormal;
+		Normal.Z = 0.f;
+		Normal.Normalize();
 
-        DireccionVuelo = DireccionReflejada;
+		FVector DireccionReflejada = DireccionVuelo - 2.f * FVector::DotProduct(DireccionVuelo, Normal) * Normal;
+		DireccionReflejada.Z = 0.f;
+		DireccionReflejada.Normalize();
 
-        SetActorRotation(DireccionVuelo.Rotation());
+		DireccionVuelo = DireccionReflejada;
 
-        SetActorLocation(HitResult.Location + (DireccionVuelo * 20.f));
-    }
-    else
-    {
-        SetActorLocation(PosicionDestino);
-    }
+		SetActorRotation(DireccionVuelo.Rotation());
+
+		SetActorLocation(HitResult.Location + (DireccionVuelo * 20.f));
+	}
+	else
+	{
+		SetActorLocation(PosicionDestino);
+	}
 }
 
 void AProyectilMagma::SpawnRastroFuego()
 {
     FVector PosicionSuelo = GetActorLocation();
 
-    PosicionSuelo.Z = 180.f;
+    PosicionSuelo.Z = 190.f;
 
     FActorSpawnParameters SpawnParams;
     SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
     GetWorld()->SpawnActor<ARastrosFuego>(ARastrosFuego::StaticClass(), PosicionSuelo, FRotator::ZeroRotator, SpawnParams);
+}
+
+void AProyectilMagma::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+	Super::NotifyActorBeginOverlap(OtherActor);
+
+	// Si toca la nave, ignora los rebotes, hace daño y muere de inmediato
+	if (OtherActor && OtherActor->IsA(ACentCosmosPawn::StaticClass()))
+	{
+		Cast<ACentCosmosPawn>(OtherActor)->RecibirDanioNave(10.0f);
+
+		if (JefeEmisor) JefeEmisor->NotificarMuerteMagma();
+
+		Destroy();
+	}
 }
 

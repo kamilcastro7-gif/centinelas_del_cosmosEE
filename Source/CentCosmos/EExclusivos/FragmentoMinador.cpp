@@ -3,6 +3,7 @@
 #include "FragmentoMinador.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Components/StaticMeshComponent.h"
+#include "../Player/CentCosmosPawn.h" // NECESARIO PARA HACER DAÑO A LA NAVE
 
 AFragmentoMinador::AFragmentoMinador()
 {
@@ -11,34 +12,48 @@ AFragmentoMinador::AFragmentoMinador()
 	FragmentoMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FragmentoMesh"));
 	RootComponent = FragmentoMesh;
 
-	// ¡MÁS VELOCIDAD! Subida de 600 a 1200 para que salgan disparados con furia
 	VelocidadFragmento = 1200.0f;
 	DireccionMovimiento = FVector::ZeroVector;
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
-	if (MeshAsset.Succeeded())
-	{
-		FragmentoMesh->SetStaticMesh(MeshAsset.Object);
-	}
+	if (MeshAsset.Succeeded()) FragmentoMesh->SetStaticMesh(MeshAsset.Object);
 
 	SetActorScale3D(FVector(0.4f, 0.4f, 0.4f));
-	FragmentoMesh->SetCollisionProfileName(TEXT("BlockAll"));
+
+	// Configuramos para que pueda hacer "Overlap" con la nave
+	FragmentoMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	FragmentoMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 }
 
 void AFragmentoMinador::BeginPlay()
 {
 	Super::BeginPlay();
-	SetLifeSpan(4.0f); // Se destruyen solos a los 4 segundos
+	SetLifeSpan(4.0f);
 }
 
 void AFragmentoMinador::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 	if (!DireccionMovimiento.IsZero())
 	{
 		FVector NuevaPosicion = GetActorLocation() + (DireccionMovimiento * VelocidadFragmento * DeltaTime);
 		SetActorLocation(NuevaPosicion);
+	}
+}
+
+// --- NUEVO: APLICAR DAÑO ---
+void AFragmentoMinador::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+	Super::NotifyActorBeginOverlap(OtherActor);
+
+	if (OtherActor && OtherActor->IsA(ACentCosmosPawn::StaticClass()))
+	{
+		ACentCosmosPawn* Nave = Cast<ACentCosmosPawn>(OtherActor);
+		if (Nave)
+		{
+			Nave->RecibirDanioNave(6.0f); // DAÑO SEGÚN LISTA
+			Destroy(); // Se destruye al impactar
+		}
 	}
 }
 

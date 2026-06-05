@@ -3,6 +3,7 @@
 #include "PRafaga.h"
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
+#include "../Player/CentCosmosPawn.h"
 
 APRafaga::APRafaga()
 {
@@ -43,3 +44,12 @@ void APRafaga::Tick(float DeltaTime)
     AddActorWorldOffset(NuevoDesplazamiento, true);
 }
 
+void APRafaga::NotifyActorBeginOverlap(AActor* OtherActor) // Haz lo mismo para APSupremo
+{
+    Super::NotifyActorBeginOverlap(OtherActor);
+    if (OtherActor && OtherActor->IsA(ACentCosmosPawn::StaticClass()))
+    {
+        Cast<ACentCosmosPawn>(OtherActor)->RecibirDanioNave(10.0f);
+        Destroy();
+    }
+}

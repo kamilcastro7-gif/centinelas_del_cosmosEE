@@ -4,6 +4,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
+#include "../Player/CentCosmosPawn.h"
 
 APAntimateria::APAntimateria()
 {
@@ -20,6 +21,8 @@ APAntimateria::APAntimateria()
     // 2. CONFIGURACIÓN CRÍTICA DE COLISIÓN
     // Esto hace que el proyectil sea "fantasma" y atraviese balas, jugadores y otros proyectiles
     ProyectilMesh->SetCollisionProfileName(TEXT("NoCollision"));
+    ProyectilMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+    ProyectilMesh->SetGenerateOverlapEvents(true);
 
     // 3. Componente de movimiento
     ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
@@ -30,4 +33,18 @@ APAntimateria::APAntimateria()
 
     // 4. Auto-destrucción
     InitialLifeSpan = 3.0f;
+}
+
+void APAntimateria::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+    Super::NotifyActorBeginOverlap(OtherActor);
+
+    if (OtherActor && OtherActor->IsA(ACentCosmosPawn::StaticClass()))
+    {
+        // Le aplica los 3 de daño
+        Cast<ACentCosmosPawn>(OtherActor)->RecibirDanioNave(3.0f);
+
+        // El proyectil se destruye
+        Destroy();
+    }
 }

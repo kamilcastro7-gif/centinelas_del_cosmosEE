@@ -27,7 +27,8 @@ ATribunalTormenta::ATribunalTormenta()
 
     ClasePlasma = AProyectilPlasma::StaticClass();
     ClaseRayo = AProyectilRayo::StaticClass();
-
+ 
+    Vida = 150.0f;
     VelocidadDesplazamiento = 250.f;
     RadioMaximoMovimiento = 500.f;
     TiempoEsperaEnPunto = 1.5f;

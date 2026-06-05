@@ -17,6 +17,7 @@ ATribunal_Ira::ATribunal_Ira()
     CronometroPFuego = 0.f;
     CadenciaPFuego = 5.0f;
 
+    Vida = 200.0f;
     VelocidadDesplazamiento = 250.f;
     RadioMaximoMovimiento = 500.f;
     TiempoEsperaEnPunto = 1.5f;

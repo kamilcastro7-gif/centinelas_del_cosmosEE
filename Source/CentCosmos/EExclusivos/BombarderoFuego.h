@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "../EExclusivo.h"
 #include "BombarderoFuego.generated.h"
 
 UCLASS()
-class CENTCOSMOS_API ABombarderoFuego : public AActor
+class CENTCOSMOS_API ABombarderoFuego : public AEExclusivo
 {
 	GENERATED_BODY()
 
@@ -19,16 +19,10 @@ protected:
 
 public:
 	virtual void Tick(float DeltaTime) override;
-	void moverBombardero();
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes", meta = (AllowPrivateAccess = "true"))
-	class UStaticMeshComponent* BombarderoMesh;
-
 	float VelocidadMovimiento;
-	float RangoBarrido;
-	FVector PosicionCentro;
-	bool bMoviendoDerecha;
+	FVector PosicionInicial; // Guardaremos su X y Z originales
 
 	FTimerHandle TimerAtaqueHandle;
 	void EjecutarDisparoFuego();

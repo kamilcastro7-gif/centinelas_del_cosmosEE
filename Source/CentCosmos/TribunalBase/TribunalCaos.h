@@ -43,4 +43,5 @@ private:
     void ReubicarActoresAlAzar();
 
     void DesactivarJefe();
+    virtual void Destroyed() override;
 };

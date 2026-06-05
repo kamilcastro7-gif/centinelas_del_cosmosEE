@@ -25,4 +25,5 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movimiento")
     float Velocidad;
+    virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 };

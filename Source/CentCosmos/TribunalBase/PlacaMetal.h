@@ -10,26 +10,30 @@
 UCLASS()
 class CENTCOSMOS_API APlacaMetal : public AActor
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
 public:
-    APlacaMetal();
+	APlacaMetal();
 
 protected:
-    virtual void BeginPlay() override;
+	virtual void BeginPlay() override;
 
 public:
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
-    UStaticMeshComponent* MallaPlaca;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
+	UStaticMeshComponent* MallaPlaca;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Atributos")
-    float VidaMax;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Atributos")
+	float VidaMax;
 
-    UPROPERTY(BlueprintReadOnly, Category = "Atributos")
-    float VidaActual;
+	UPROPERTY(BlueprintReadOnly, Category = "Atributos")
+	float VidaActual;
 
-    UFUNCTION(BlueprintCallable, Category = "Combate")
-    void RecibirDanioPlaca(float CantidadDanio);
+	UFUNCTION(BlueprintCallable, Category = "Combate")
+	void RecibirDanioPlaca(float CantidadDanio);
 
-    AActor* OwnerJefe;
+	// === BLINDAJE: Para avisar al jefe sin crashear ===
+	UPROPERTY()
+	AActor* OwnerJefe;
+
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 };

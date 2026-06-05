@@ -7,6 +7,7 @@
 
 ATribunalVigilante::ATribunalVigilante()
 {
+    Vida = 120.0f;
     PrimaryActorTick.bCanEverTick = true;
     VelocidadGiro = 60.f;
     RangoDeteccion = 2200.f;

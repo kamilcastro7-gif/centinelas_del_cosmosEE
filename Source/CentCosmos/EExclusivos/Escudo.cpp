@@ -21,8 +21,9 @@ AEscudo::AEscudo()
 	{
 		EscudoMesh->SetStaticMesh(CuboMesh.Object);
 	}
+	SetActorScale3D(FVector(1.5f, 1.5f, 1.5f));
 
-	VidaEscudo = 5.0f;
+	VidaEscudo = 10.0f;
 	EscudoMesh->SetCollisionProfileName(TEXT("BlockAll"));
 }
 

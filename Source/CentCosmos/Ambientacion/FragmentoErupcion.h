@@ -13,6 +13,7 @@ class CENTCOSMOS_API AFragmentoErupcion : public AActor
 
 public:
     AFragmentoErupcion();
+    virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 
 protected:
     virtual void BeginPlay() override;

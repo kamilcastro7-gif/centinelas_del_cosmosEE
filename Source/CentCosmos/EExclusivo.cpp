@@ -7,7 +7,6 @@ AEExclusivo::AEExclusivo()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	// CREAMOS EL SUBOBJETO BASE AQUÍ
 	EnemigoMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("EnemigoMesh"));
 	RootComponent = EnemigoMesh;
 
@@ -29,7 +28,7 @@ void AEExclusivo::Tick(float DeltaTime)
 	FVector PosicionActual = GetActorLocation();
 	FVector NuevaPosicion = FMath::VInterpTo(PosicionActual, DireccionObjetivo, DeltaTime, Velocidad / 100.f);
 
-	NuevaPosicion.Z = PosicionActual.Z; // Restringido al plano horizontal
+	NuevaPosicion.Z = PosicionActual.Z;
 	SetActorLocation(NuevaPosicion);
 
 	if (FVector::DistSquared(PosicionActual, DireccionObjetivo) < 900.0f)
@@ -43,6 +42,17 @@ void AEExclusivo::CalcularNuevaDireccion()
 	FVector Origen = GetActorLocation();
 	float RandomX = UKismetMathLibrary::RandomFloatInRange(-RangoMovimiento, RangoMovimiento);
 	float RandomY = UKismetMathLibrary::RandomFloatInRange(-RangoMovimiento, RangoMovimiento);
-
 	DireccionObjetivo = FVector(Origen.X + RandomX, Origen.Y + RandomY, Origen.Z);
+}
+
+// --- NUEVO: IMPLEMENTACIÓN DE DAÑO ---
+void AEExclusivo::RecibirDanoEnemigo(float CantidadDano)
+{
+	Vida -= CantidadDano;
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Orange, FString::Printf(TEXT("Enemigo recibio dano. Vida restante: %f"), Vida));
+
+	if (Vida <= 0.0f)
+	{
+		Destroy();
+	}
 }

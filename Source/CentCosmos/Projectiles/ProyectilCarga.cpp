@@ -10,6 +10,10 @@
 #include "ProyectilBase.h"
 #include "GrietaAntimateria.h" 
 #include "Enjambre.h" 
+#include "../EExclusivo.h"
+#include "TribunalBase/TribunalBase.h"
+#include "Escudo.h"
+#include "TribunalBase/PlacaMetal.h"
 
 AProyectilCarga::AProyectilCarga()
 {
@@ -55,19 +59,19 @@ void AProyectilCarga::LiberarProyectil(float TiempoCargaFinal, FVector Direccion
     float VelocidadLanzamiento;
 
     // 1. BALANCE ACTUALIZADO DE DAÑO
-    if (TiempoCargaFinal >= 6.0f)
+    if (TiempoCargaFinal >= 2.8f)
     {
-        DanoBase = 20.f; // Daño brutal para la carga máxima (opcional, premia aguantar 6s)
+        DanoBase = 15.f; // Daño brutal para la carga máxima (opcional, premia aguantar 6s)
         VelocidadLanzamiento = 2000.f;
     }
-    else if (TiempoCargaFinal >= 3.0f)
+    else if (TiempoCargaFinal >= 1.2f)
     {
-        DanoBase = 10.f; // SOLICITADO: La carga media ahora hace 10 de daño
+        DanoBase = 7.f; // SOLICITADO: La carga media ahora hace 10 de daño
         VelocidadLanzamiento = 2700.f;
     }
     else
     {
-        DanoBase = 2.f;  // Daño Mínimo
+        DanoBase = 1.f;  // Daño Mínimo
         VelocidadLanzamiento = 3400.f;
     }
 
@@ -108,13 +112,30 @@ void AProyectilCarga::AlChocar(UPrimitiveComponent* HitComponent, AActor* OtherA
             return;
         }
 
-        AProyectilBase* ProyectilEnemigo = Cast<AProyectilBase>(OtherActor);
-        if (ProyectilEnemigo)
+        AEExclusivo* EnemigoExclusivo = Cast<AEExclusivo>(OtherActor);
+        if (EnemigoExclusivo)
         {
-            ProyectilEnemigo->RecibirImpacto();
-            Destroy();
+            EnemigoExclusivo->RecibirDanoEnemigo(DanoBase);
+            Destroy(); return;
+        }
+
+        ATribunalBase* Tribunal = Cast<ATribunalBase>(OtherActor);
+        if (Tribunal)
+        {
+            Tribunal->RecibirDanioJefe(DanoBase);
+            Destroy(); return;
+        }
+
+        APlacaMetal* Placa = Cast<APlacaMetal>(OtherActor);
+        if (Placa)
+        {
+            Placa->RecibirDanioPlaca(DanoBase); // Usa DanoBase en el Proyectil de Carga
+            Destroy(); // La bala se destruye al chocar con la placa
             return;
         }
+
+        AEscudo* Escudo = Cast<AEscudo>(OtherActor);
+        if (Escudo) { Escudo->RecibirDanoEscudo(DanoBase); Destroy(); return; }
 
         AGrietaAntimateria* Grieta = Cast<AGrietaAntimateria>(OtherActor);
         if (Grieta)

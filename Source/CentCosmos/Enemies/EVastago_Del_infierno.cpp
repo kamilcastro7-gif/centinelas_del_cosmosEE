@@ -23,7 +23,7 @@ AEVastago_Del_infierno::AEVastago_Del_infierno() {
 
     // ESTADÍSTICAS VÁSTAGO
     VidaActual = 2.0f;
-    DanioDeChoque = 2.0f;
+    DanioDeChoque = 1.0f;
 
     static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cylinder.Shape_Cylinder'"));
     if (MeshAsset.Succeeded()) MallaEnemigo->SetStaticMesh(MeshAsset.Object);

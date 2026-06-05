@@ -27,4 +27,5 @@ public:
     float Velocidad;
 
     FVector DireccionVuelo;
+    virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 };

@@ -13,6 +13,7 @@ AEcoCorrupto::AEcoCorrupto()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
+	Vida = 22.0f;
 	VelocidadBase = 380.0f;
 	bEsInvulnerable = true;
 	bEstaHaciendoDash = false;
@@ -76,7 +77,7 @@ void AEcoCorrupto::TransformarEnNave()
 	{
 		GetWorld()->GetTimerManager().SetTimer(
 			TimerCicloAtaqueHandle, this,
-			&AEcoCorrupto::EjecutarAccionCorrupta, 1.5f, true);
+			&AEcoCorrupto::EjecutarAccionCorrupta, 2.5f, true);
 	}
 }
 
@@ -154,5 +155,13 @@ void AEcoCorrupto::Tick(float DeltaTime)
 	{
 		FVector NuevaPosicion = PosicionActual + (DireccionAlJugador * VelocidadBase * DeltaTime);
 		SetActorLocation(NuevaPosicion);
+	}
+}
+
+void AEcoCorrupto::RecibirDanoEnemigo(float CantidadDano)
+{
+	if (!bEsInvulnerable)
+	{
+		Super::RecibirDanoEnemigo(CantidadDano);
 	}
 }

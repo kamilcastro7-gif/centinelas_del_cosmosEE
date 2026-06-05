@@ -26,4 +26,9 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Configuracion")
     float LongitudMaxima;
+
+private:
+    bool bPuedeHacerDanio;
+    FTimerHandle TimerCooldownRayo;
+    void ResetearDanioRayo();
 };

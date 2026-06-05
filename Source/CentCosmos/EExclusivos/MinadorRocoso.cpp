@@ -9,6 +9,7 @@
 AMinadorRocoso::AMinadorRocoso()
 {
 	NivelExclusivo = 2;
+	Vida = 12.0f;
 	Velocidad = 400.0f;               // Velocidad de posicionamiento / persecución
 	VelocidadEmbestida = 2500.0f;     // ¡SÚPER VELOCIDAD! Un misil indetectable
 	DistanciaLargaFrenado = 1000.0f;  // Mantiene la distancia periférica ideal

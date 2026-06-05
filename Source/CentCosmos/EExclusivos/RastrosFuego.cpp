@@ -5,32 +5,26 @@
 #include "UObject/ConstructorHelpers.h"
 #include "../Player/CentCosmosPawn.h"
 #include "Engine/World.h"
+#include "TimerManager.h"
 
 ARastrosFuego::ARastrosFuego()
 {
 	PrimaryActorTick.bCanEverTick = false;
-
 	FuegoMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FuegoMesh"));
 	RootComponent = FuegoMesh;
 
 	FuegoMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	FuegoMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 
-	// IMPLEMENTACI�N: Malla del plano para el rastro de fuego en el suelo
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> PlaneMesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Plane.Shape_Plane'"));
-	if (PlaneMesh.Succeeded())
-	{
-		FuegoMesh->SetStaticMesh(PlaneMesh.Object);
-	}
+	if (PlaneMesh.Succeeded()) FuegoMesh->SetStaticMesh(PlaneMesh.Object);
 
-	DanoPorSegundo = 15.0f;
+	JugadorEnFuego = nullptr;
 }
 
 void ARastrosFuego::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// El rastro dura exactamente 4 segundos en el mapa
 	SetLifeSpan(4.0f);
 }
 
@@ -40,8 +34,29 @@ void ARastrosFuego::NotifyActorBeginOverlap(AActor* OtherActor)
 
 	if (OtherActor && OtherActor->IsA(ACentCosmosPawn::StaticClass()))
 	{
-		// Si tienes una funci�n para restar vida en tu nave, la llamas aqu�
-		// Cast<ACentCosmosPawn>(OtherActor)->RecibirDano(DanoPorSegundo);
+		JugadorEnFuego = Cast<ACentCosmosPawn>(OtherActor);
+		// Inicia el loop de daño: Daño inmediato y luego cada 2 segundos
+		GetWorld()->GetTimerManager().SetTimer(TimerDanoContinuo, this, &ARastrosFuego::AplicarDanoContinuo, 2.0f, true, 0.0f);
+	}
+}
+
+void ARastrosFuego::NotifyActorEndOverlap(AActor* OtherActor)
+{
+	Super::NotifyActorEndOverlap(OtherActor);
+
+	if (OtherActor && OtherActor == JugadorEnFuego)
+	{
+		// Si sale del fuego, cancelamos el timer
+		GetWorld()->GetTimerManager().ClearTimer(TimerDanoContinuo);
+		JugadorEnFuego = nullptr;
+	}
+}
+
+void ARastrosFuego::AplicarDanoContinuo()
+{
+	if (JugadorEnFuego)
+	{
+		JugadorEnFuego->RecibirDanioNave(3.0f); // DAÑO CONSTANTE SEGÚN LISTA
 	}
 }
 

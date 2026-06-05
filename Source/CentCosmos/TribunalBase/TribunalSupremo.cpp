@@ -26,6 +26,7 @@ ATribunalSupremo::ATribunalSupremo()
     }
 
     SetActorScale3D(FVector(3.5f, 3.5f, 3.5f));
+    Vida = 300.0f;
     VelocidadPatrulla = 600.f;
     AmplitudMovimiento = 600.f;
     DireccionMovimiento = 1.f;

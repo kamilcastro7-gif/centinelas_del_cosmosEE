@@ -4,6 +4,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "TimerManager.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "../Player/CentCosmosPawn.h"
 
 AAsteroide::AAsteroide()
 {
@@ -57,12 +58,17 @@ void AAsteroide::Tick(float DeltaTime)
     AddActorLocalRotation(FRotator(1.0f, 2.0f, 0.5f));
 }
 
-// Asegúrate de tener esta función si quieres que se destruya al tocar al jugador
-void AAsteroide::NotifyActorBeginOverlap(AActor* OtherActor)
+void AAsteroide::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
 {
-    Super::NotifyActorBeginOverlap(OtherActor);
-    if (OtherActor && OtherActor->ActorHasTag("Player"))
+    Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
+
+    // Si lo que golpeamos es la nave del jugador
+    if (Other && Other->IsA(ACentCosmosPawn::StaticClass()))
     {
+        // Aplicamos los 15 de daño brutal
+        Cast<ACentCosmosPawn>(Other)->RecibirDanioNave(15.0f);
+
+        // El asteroide se hace pedazos
         Destroy();
     }
 }

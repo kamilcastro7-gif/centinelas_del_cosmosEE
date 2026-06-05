@@ -9,6 +9,7 @@
 ABoyaElectrostatica::ABoyaElectrostatica()
 {
 	NivelExclusivo = 3;
+	Vida = 20.0f;
 	Velocidad = 380.0f;
 	RangoDistanciaJugador = 550.0f;
 	TiempoParaNuevoDestino = 0.0f;

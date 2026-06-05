@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 #include "TimerManager.h" // NECESARIO para que GetWorldTimerManager funcione
+#include "../Player/CentCosmosPawn.h"
 
 AFragmentoErupcion::AFragmentoErupcion()
 {
@@ -61,5 +62,19 @@ void AFragmentoErupcion::SoltarRastro()
     if (CurrentWorld)
     {
         CurrentWorld->SpawnActor<ARastrosFuego>(ARastrosFuego::StaticClass(), GetActorLocation(), FRotator::ZeroRotator);
+    }
+}
+
+void AFragmentoErupcion::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+    Super::NotifyActorBeginOverlap(OtherActor);
+
+    if (OtherActor && OtherActor->IsA(ACentCosmosPawn::StaticClass()))
+    {
+        // Le aplica los 15 de daño
+        Cast<ACentCosmosPawn>(OtherActor)->RecibirDanioNave(15.0f);
+
+        // Desaparece al chocar
+        Destroy();
     }
 }

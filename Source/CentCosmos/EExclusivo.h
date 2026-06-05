@@ -20,20 +20,28 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
-	// El componente de malla que van a heredar todos tus enemigos exclusivos
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
+	UPROPERTY(VisibleAnywhere, Category = "Componentes")
 	UStaticMeshComponent* EnemigoMesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Configuracion de Nivel")
+	UPROPERTY(EditAnywhere, Category = "Configuracion de Nivel")
 	int32 NivelExclusivo;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movimiento")
+	UPROPERTY(EditAnywhere, Category = "Movimiento")
 	float Velocidad;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movimiento")
+	UPROPERTY(EditAnywhere, Category = "Movimiento")
 	float RangoMovimiento;
+
+	// --- NUEVO: ATRIBUTO BASE DE VIDA ---
+	UPROPERTY(EditAnywhere, Category = "Atributos")
+	float Vida;
+
+	// --- NUEVO: FUNCIÓN PARA RECIBIR DAÑO ---
+	virtual void RecibirDanoEnemigo(float CantidadDano);
 
 protected:
 	FVector DireccionObjetivo;
 	virtual void CalcularNuevaDireccion();
 };
+
+

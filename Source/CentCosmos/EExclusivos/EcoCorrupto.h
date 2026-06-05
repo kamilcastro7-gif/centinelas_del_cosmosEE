@@ -21,7 +21,7 @@ public:
 
 	bool bEsInvulnerable;
 	TSubclassOf<AActor> ProyectilEstandarClass;
-
+	virtual void RecibirDanoEnemigo(float CantidadDano) override;
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Componentes")
 	class UStaticMeshComponent* MallaPiramide;

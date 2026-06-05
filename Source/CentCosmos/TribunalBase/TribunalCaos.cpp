@@ -14,6 +14,7 @@ ATribunalCaos::ATribunalCaos()
     bEstaActivo = false;
     PasoDisparoActual = 1;
     RangoDeteccionManual = 2200.f;
+    Vida = 180.0f;
 
     static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Wedge_B.Shape_Wedge_B'"));
     if (MallaTribunal)
@@ -207,4 +208,21 @@ void ATribunalCaos::EjecutarDisparoEnOrden()
     {
         PasoDisparoActual = 1;
     }
+}
+
+void ATribunalCaos::Destroyed()
+{
+    // 1. Destruimos los hologramas si es que existen en el nivel
+    if (Holograma1)
+    {
+        Holograma1->Destroy();
+    }
+
+    if (Holograma2)
+    {
+        Holograma2->Destroy();
+    }
+
+    // 2. Llamamos a la función original del motor para terminar de borrar al Jefe
+    Super::Destroyed();
 }

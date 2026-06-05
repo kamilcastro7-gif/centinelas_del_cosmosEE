@@ -3,6 +3,7 @@
 #include "PSupremo.h"
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
+#include "../Player/CentCosmosPawn.h"
 
 APSupremo::APSupremo()
 {
@@ -40,5 +41,15 @@ void APSupremo::Tick(float DeltaTime)
 
     FVector NuevoDesplazamiento = DireccionHaciaAdelante * Velocidad * DeltaTime;
     AddActorWorldOffset(NuevoDesplazamiento, true);
+}
+
+void APSupremo::NotifyActorBeginOverlap(AActor* OtherActor) // Haz lo mismo para APSupremo
+{
+    Super::NotifyActorBeginOverlap(OtherActor);
+    if (OtherActor && OtherActor->IsA(ACentCosmosPawn::StaticClass()))
+    {
+        Cast<ACentCosmosPawn>(OtherActor)->RecibirDanioNave(10.0f);
+        Destroy();
+    }
 }
 

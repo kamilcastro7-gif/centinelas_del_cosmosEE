@@ -3,6 +3,7 @@
 #include "FragCaos.h"
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
+#include "../Player/CentCosmosPawn.h"
 
 AFragCaos::AFragCaos()
 {
@@ -41,5 +42,15 @@ void AFragCaos::Tick(float DeltaTime)
 
     FVector NuevoDesplazamiento = DireccionHaciaAdelante * Velocidad * DeltaTime;
     AddActorWorldOffset(NuevoDesplazamiento, true);
+}
+
+void AFragCaos::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+    Super::NotifyActorBeginOverlap(OtherActor);
+    if (OtherActor && OtherActor->IsA(ACentCosmosPawn::StaticClass()))
+    {
+        Cast<ACentCosmosPawn>(OtherActor)->RecibirDanioNave(10.0f);
+        Destroy();
+    }
 }
 

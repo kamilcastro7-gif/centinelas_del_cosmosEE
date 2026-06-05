@@ -19,9 +19,10 @@ protected:
 
 public:
 	virtual void Tick(float DeltaTime) override;
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override; // NUEVO
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, Category = "Componentes")
 	class UStaticMeshComponent* ProyectilMesh;
 
 	float Velocidad;
@@ -29,3 +30,7 @@ private:
 
 	void SoltarRastro();
 };
+
+
+
+

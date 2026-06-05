@@ -20,13 +20,16 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
-	// Componente de malla independiente para este fragmento
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
+	// --- NUEVO: DETECCIÓN DE IMPACTO ---
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+
+	UPROPERTY(VisibleAnywhere, Category = "Componentes")
 	UStaticMeshComponent* FragmentoMesh;
 
-	// Dirección del eje cartesiano asignada al spawnear
 	FVector DireccionMovimiento;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movimiento")
+	UPROPERTY(EditAnywhere, Category = "Movimiento")
 	float VelocidadFragmento;
 };
+
+

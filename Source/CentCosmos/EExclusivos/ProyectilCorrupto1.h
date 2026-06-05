@@ -14,4 +14,5 @@ public:
     AProyectilCorrupto1();
     UPROPERTY(VisibleAnywhere) UStaticMeshComponent* Mesh;
     UPROPERTY(VisibleAnywhere) UProjectileMovementComponent* Movement;
+    virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 };

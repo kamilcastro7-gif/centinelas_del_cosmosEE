@@ -36,3 +36,14 @@ void ATribunalBase::OnConstruction(const FTransform& Transform)
     }
 }
 
+void ATribunalBase::RecibirDanioJefe(float Cantidad)
+{
+    Vida -= Cantidad;
+    if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("Tribunal impactado. Vida: %f"), Vida));
+
+    if (Vida <= 0.f)
+    {
+        Destroy(); // El Jefe ha sido derrotado
+    }
+}
+

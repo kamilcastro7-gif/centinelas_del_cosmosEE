@@ -9,25 +9,25 @@
 UCLASS()
 class CENTCOSMOS_API AEclipseSilencioso : public AActor
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
 public:
-    AEclipseSilencioso();
-    virtual void BeginPlay() override;
-    virtual void Tick(float DeltaTime) override;
+	AEclipseSilencioso();
+	virtual void BeginPlay() override;
 
-    // Usamos EclipseMesh para evitar conflictos
-    UPROPERTY(VisibleAnywhere)
-    UStaticMeshComponent* EclipseMesh;
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* EclipseMesh;
 
-    FTimerHandle DashTimerHandle;
+	FTimerHandle DashTimerHandle;
 
-    UPROPERTY(EditAnywhere)
-    float TiempoEntreDash = 3.0f;
+	UPROPERTY(EditAnywhere)
+	float TiempoEntreDash = 3.0f;
 
-    UPROPERTY(EditAnywhere)
-    float DistanciaPorDash = 400.0f;
+	UPROPERTY(EditAnywhere)
+	float DistanciaPorDash = 400.0f;
 
-    void RealizarDash();
-    void AplicarSilencio(AActor* OtherActor);
+	void RealizarDash();
+
+	// Cambiamos el Tick por el Overlap dinámico
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 };

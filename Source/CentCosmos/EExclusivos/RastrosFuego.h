@@ -19,10 +19,17 @@ protected:
 
 public:
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+	virtual void NotifyActorEndOverlap(AActor* OtherActor) override; // NUEVO
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, Category = "Componentes")
 	class UStaticMeshComponent* FuegoMesh;
 
-	float DanoPorSegundo;
+	// --- NUEVO: LOGICA DE DAÑO CONSTANTE ---
+	FTimerHandle TimerDanoContinuo;
+	class ACentCosmosPawn* JugadorEnFuego;
+	UFUNCTION()
+	void AplicarDanoContinuo();
 };
+
+

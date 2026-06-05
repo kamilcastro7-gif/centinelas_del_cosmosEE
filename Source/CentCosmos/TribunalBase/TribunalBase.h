@@ -22,6 +22,9 @@ public:
 
     UPROPERTY(BlueprintReadWrite, Category = "Tribunal")
     bool bEstaActivo;
+    float Vida;
+
+    virtual void RecibirDanioJefe(float Cantidad);
 
     virtual void ActivarJefe() { bEstaActivo = true; }
 };

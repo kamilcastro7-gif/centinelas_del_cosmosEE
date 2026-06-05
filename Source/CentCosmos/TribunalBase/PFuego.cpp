@@ -3,6 +3,7 @@
 #include "PFuego.h"
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
+#include "../Player/CentCosmosPawn.h"
 
 APFuego::APFuego()
 {
@@ -39,6 +40,16 @@ void APFuego::Tick(float DeltaTime)
     {
         FVector NuevaPosicion = GetActorLocation() + (DireccionVuelo * Velocidad * DeltaTime);
         SetActorLocation(NuevaPosicion, false);
+    }
+}
+
+void APFuego::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+    Super::NotifyActorBeginOverlap(OtherActor);
+    if (OtherActor && OtherActor->IsA(ACentCosmosPawn::StaticClass()))
+    {
+        Cast<ACentCosmosPawn>(OtherActor)->RecibirDanioNave(10.0f);
+        Destroy();
     }
 }
 

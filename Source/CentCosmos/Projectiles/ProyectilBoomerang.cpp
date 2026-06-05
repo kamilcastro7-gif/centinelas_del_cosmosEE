@@ -5,7 +5,11 @@
 #include "CentCosmosPawn.h"
 #include "UObject/ConstructorHelpers.h"
 #include "ProyectilBase.h" 
-#include "Enjambre.h" // <-- IMPORTANTE: Para dañar al enjambre
+#include "Enjambre.h" 
+#include "../EExclusivo.h"
+#include "TribunalBase/TribunalBase.h"
+#include "Escudo.h"
+#include "TribunalBase/PlacaMetal.h"
 
 AProyectilBoomerang::AProyectilBoomerang()
 {
@@ -17,15 +21,19 @@ AProyectilBoomerang::AProyectilBoomerang()
 
     if (TorusMesh.Succeeded()) ProyectilMesh->SetStaticMesh(TorusMesh.Object);
 
-    ProyectilMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
-    ProyectilMesh->OnComponentBeginOverlap.AddDynamic(this, &AProyectilBoomerang::OnOverlap);
+    // --- CORRECCIÓN 1: Colisión absoluta de superposición para que atraviese todo ---
+    ProyectilMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+    ProyectilMesh->SetCollisionResponseToAllChannels(ECR_Overlap);
 
-    Velocidad = 1500.f;
+    ProyectilMesh->OnComponentBeginOverlap.AddDynamic(this, &AProyectilBoomerang::OnOverlap);
+    ProyectilMesh->SetRelativeScale3D(FVector(1.8f, 1.8f, 1.8f));
+
+    Velocidad = 2000.f;
     TiempoDeGiro = 1.2f;
     TiempoEnVuelo = 0.f;
     bRegresando = false;
 
-    Danio = 3.0f;
+    Danio = 5.0f;
 }
 
 void AProyectilBoomerang::Tick(float DeltaTime)
@@ -64,16 +72,36 @@ void AProyectilBoomerang::OnOverlap(UPrimitiveComponent* OverlappedComponent, AA
         if (EnemigoImpactado)
         {
             EnemigoImpactado->RecibirDanioEnemigo(Danio);
-            // El Búmeran no se destruye aquí, ¡atraviesa!
         }
 
-        AProyectilBase* ProyectilEnemigo = Cast<AProyectilBase>(OtherActor);
-        if (ProyectilEnemigo) ProyectilEnemigo->RecibirImpacto();
+        // Enemigo Exclusivo
+        AEExclusivo* ExclusivoImpactado = Cast<AEExclusivo>(OtherActor);
+        if (ExclusivoImpactado)
+        {
+            ExclusivoImpactado->RecibirDanoEnemigo(Danio);
+        }
 
+        ATribunalBase* Tribunal = Cast<ATribunalBase>(OtherActor);
+        if (Tribunal)
+        {
+            Tribunal->RecibirDanioJefe(Danio);
+        }
+
+        APlacaMetal* Placa = Cast<APlacaMetal>(OtherActor);
+        if (Placa)
+        {
+            Placa->RecibirDanioPlaca(Danio);
+        }
+
+        // Escudos
+        AEscudo* Escudo = Cast<AEscudo>(OtherActor);
+        if (Escudo) Escudo->RecibirDanoEscudo(Danio);
+
+        // --- CORRECCIÓN 2: Destruir el boomerang cuando vuelve a tus manos ---
         if (bRegresando && OtherActor == NaveDueno)
         {
             if (NaveDueno) NaveDueno->bBoomerangEnVuelo = false;
-            Destroy();
+            Destroy(); // Esto hace que desaparezca correctamente.
         }
     }
 }

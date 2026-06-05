@@ -22,7 +22,7 @@ public:
 
     UPROPERTY(VisibleAnywhere)
     UProjectileMovementComponent* Movement;
-    virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+    virtual void NotifyHit(class UPrimitiveComponent* MyComp, AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit) override;
 
 protected:
     FTimerHandle TimerCambioDireccion;

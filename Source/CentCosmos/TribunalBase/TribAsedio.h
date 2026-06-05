@@ -10,61 +10,64 @@
 UCLASS()
 class CENTCOSMOS_API ATribAsedio : public ATribunalBase
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
 public:
-    ATribAsedio();
+	ATribAsedio();
 
 protected:
-    virtual void BeginPlay() override;
+	virtual void BeginPlay() override;
+
+	// --- NUEVO: Limpieza antes de morir ---
+	virtual void Destroyed() override;
 
 public:
-    virtual void Tick(float DeltaTime) override;
+	virtual void Tick(float DeltaTime) override;
+	virtual void RecibirDanioJefe(float Cantidad) override;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Configuracion Shield")
-    int32 TotalPlacas;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Configuracion Shield")
+	int32 TotalPlacas;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Configuracion Shield")
-    float RadioOrbita;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Configuracion Shield")
+	float RadioOrbita;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Configuracion Shield")
-    float VelocidadRotacion;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Configuracion Shield")
+	float VelocidadRotacion;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Configuracion")
-    float RangoDeteccion;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Configuracion")
+	float RangoDeteccion;
 
-    UPROPERTY(BlueprintReadOnly, Category = "Estado")
-    bool bEsVulnerable;
+	UPROPERTY(BlueprintReadOnly, Category = "Estado")
+	bool bEsVulnerable;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movimiento")
-    float VelocidadDesplazamiento;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movimiento")
+	float VelocidadDesplazamiento;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movimiento")
-    float RadioMaximoMovimiento;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movimiento")
+	float RadioMaximoMovimiento;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movimiento")
-    float TiempoEsperaEnPunto;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movimiento")
+	float TiempoEsperaEnPunto;
 
-    void EliminarPlacaDeArreglo(APlacaMetal* PlacaMuerta);
+	void EliminarPlacaDeArreglo(APlacaMetal* PlacaMuerta);
 
 private:
-    void SpawnEscudoPlacas();
-    void RegenerarEscudo();
-    void DesactivarYLimpiarEscudo();
+	void SpawnEscudoPlacas();
+	void RegenerarEscudo();
+	void DesactivarYLimpiarEscudo();
 
-    void CalcularNuevoPuntoAleatorio();
-    void PermitirSiguienteMovimiento();
+	void CalcularNuevoPuntoAleatorio();
 
-    UPROPERTY()
-    TArray<APlacaMetal*> ArregloPlacas;
+	UPROPERTY()
+	TArray<APlacaMetal*> ArregloPlacas;
 
-    FTimerHandle TimerVulnerabilidad;
-    FTimerHandle TimerEsperaMovimiento;
+	FTimerHandle TimerVulnerabilidad;
+	FTimerHandle TimerEsperaMovimiento;
 
-    float AnguloActualPlacas;
-    UStaticMeshComponent* MallaJefe;
+	float AnguloActualPlacas;
+	UStaticMeshComponent* MallaJefe;
 
-    FVector PosicionInicialAnclaje;
-    FVector PuntoDestinoActual;
-    bool bPuedeMoverse;
+	FVector PosicionInicialAnclaje;
+	FVector PuntoDestinoActual;
+	bool bPuedeMoverse;
 };

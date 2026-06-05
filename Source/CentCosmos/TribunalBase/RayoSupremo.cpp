@@ -5,6 +5,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "TimerManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "../Player/CentCosmosPawn.h"
 
 ARayoSupremo::ARayoSupremo()
 {
@@ -54,6 +55,7 @@ ARayoSupremo::ARayoSupremo()
     MallaLetalComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
     bEsRayoLetal = false;
+    MallaLetalComp->SetGenerateOverlapEvents(true);
 }
 
 void ARayoSupremo::BeginPlay()
@@ -75,9 +77,10 @@ void ARayoSupremo::Tick(float DeltaTime)
 
         for (AActor* Actor : ActoresSuperpuestos)
         {
-            if (Actor && Actor->IsValidLowLevel() && Actor != this && Actor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
+            if (Actor && Actor->IsValidLowLevel() && Actor != this && Actor->IsA(ACentCosmosPawn::StaticClass()))
             {
-                UGameplayStatics::ApplyDamage(Actor, 160.f * DeltaTime, nullptr, this, UDamageType::StaticClass());
+                // INSTA-KILL ABSOLUTO
+                Cast<ACentCosmosPawn>(Actor)->RecibirDanioNave(9999.0f);
             }
         }
     }

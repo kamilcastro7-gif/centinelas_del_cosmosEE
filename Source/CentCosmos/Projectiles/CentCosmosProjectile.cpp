@@ -4,9 +4,12 @@
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
-#include "Escudo.h"
-#include "GrietaAntimateria.h"
 #include "Enjambre.h"
+#include "Escudo.h"
+#include "../EExclusivo.h"
+#include "TribunalBase/TribunalBase.h"
+#include "GrietaAntimateria.h"
+#include "TribunalBase/PlacaMetal.h"
 
 ACentCosmosProjectile::ACentCosmosProjectile()
 {
@@ -28,7 +31,7 @@ ACentCosmosProjectile::ACentCosmosProjectile()
     ProjectileMovement->ProjectileGravityScale = 0.f;
 
     InitialLifeSpan = 3.0f;
-    Danio = 1.0f;
+    Danio = 2.0f;
 }
 
 void ACentCosmosProjectile::BeginPlay()
@@ -77,12 +80,34 @@ void ACentCosmosProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherAct
         return;
     }
 
+    AEExclusivo* EnemigoExclusivo = Cast<AEExclusivo>(OtherActor);
+    if (EnemigoExclusivo)
+    {
+        EnemigoExclusivo->RecibirDanoEnemigo(Danio); 
+        Destroy(); return;
+    }
+
+    ATribunalBase* Tribunal = Cast<ATribunalBase>(OtherActor);
+    if (Tribunal)
+    {
+        Tribunal->RecibirDanioJefe(Danio); 
+        Destroy(); return;
+    }
+
     AEscudo* EscudoImpactado = Cast<AEscudo>(OtherActor);
     if (EscudoImpactado != nullptr || OtherActor->GetName().Contains(TEXT("Escudo")))
     {
         if (EscudoImpactado == nullptr) EscudoImpactado = Cast<AEscudo>(OtherActor);
         if (EscudoImpactado != nullptr) EscudoImpactado->RecibirDanoEscudo(Danio);
         Destroy();
+        return;
+    }
+
+    APlacaMetal* Placa = Cast<APlacaMetal>(OtherActor);
+    if (Placa)
+    {
+        Placa->RecibirDanioPlaca(Danio); // Usa DanoBase en el Proyectil de Carga
+        Destroy(); // La bala se destruye al chocar con la placa
         return;
     }
 

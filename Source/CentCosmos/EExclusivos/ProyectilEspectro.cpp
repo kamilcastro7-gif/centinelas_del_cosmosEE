@@ -4,6 +4,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/World.h"
+#include "../Player/CentCosmosPawn.h"
 
 AProyectilEspectro::AProyectilEspectro()
 {
@@ -37,5 +38,19 @@ void AProyectilEspectro::Tick(float DeltaTime)
 	AActor::Tick(DeltaTime);
 	FVector NuevaPosicion = GetActorLocation() + (GetActorForwardVector() * Velocidad * DeltaTime);
 	SetActorLocation(NuevaPosicion);
+}
+
+void AProyectilEspectro::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+	Super::NotifyActorBeginOverlap(OtherActor);
+	if (OtherActor && OtherActor->IsA(ACentCosmosPawn::StaticClass()))
+	{
+		ACentCosmosPawn* Nave = Cast<ACentCosmosPawn>(OtherActor);
+		if (Nave)
+		{
+			Nave->RecibirDanioNave(15.0f); // DAÑO SEGÚN LISTA
+			Destroy();
+		}
+	}
 }
 

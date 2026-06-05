@@ -95,14 +95,12 @@ void AEHeraldo_De_La_Ruina::HerAtacar() {
 
     if (GranEsfera) {
         GranEsfera->bEsSeguidor = true;
-
-        GranEsfera->VidaProyectil = 8; // Mantiene sus 8 puntos de vida
         GranEsfera->Danio = 5.0f;      // Mantiene sus 5 puntos de daño a la nave
 
         // =========================================================================
-        // NUEVO BALANCE: Desaparece automáticamente tras 8 segundos de persecución
+        // NUEVO BALANCE: Desaparece automáticamente tras 6 segundos de persecución
         // =========================================================================
-        GranEsfera->SetLifeSpan(8.0f);
+        GranEsfera->SetLifeSpan(6.0f);
 
         if (GranEsfera->MovimientoProyectil) {
             // =========================================================================

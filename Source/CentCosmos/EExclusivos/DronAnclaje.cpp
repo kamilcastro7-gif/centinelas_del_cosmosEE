@@ -10,22 +10,19 @@
 ADronAnclaje::ADronAnclaje()
 {
 	NivelExclusivo = 1;
+	Vida = 15.0f; // --- VIDA ASIGNADA SEGÚN LISTA ---
 
-	// 1. Buscamos el asset estático de la tubería curva
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> TuberiaMesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Pipe_180.Shape_Pipe_180'"));
-
-	// 2. Si lo encuentra y el componente del padre existe, le asignamos la malla
 	if (TuberiaMesh.Succeeded() && EnemigoMesh != nullptr)
 	{
 		EnemigoMesh->SetStaticMesh(TuberiaMesh.Object);
 	}
+	SetActorScale3D(FVector(1.7f, 1.7f, 1.7f));
 }
 
 void ADronAnclaje::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// Timer repetitivo de 10 segundos
 	UWorld* const World = GetWorld();
 	if (World != nullptr)
 	{
@@ -39,17 +36,13 @@ void ADronAnclaje::OtorgarEscudoAEnemigo()
 	if (World == nullptr) return;
 
 	TArray<AActor*> EnemigosCandidatos;
-
 	for (TActorIterator<AActor> It(World); It; ++It)
 	{
 		AActor* ActorActual = *It;
 		if (ActorActual != nullptr && ActorActual != this && !ActorActual->IsPendingKill())
 		{
 			FString Nombre = ActorActual->GetName();
-
-			if (Nombre.Contains(TEXT("Vastago")) ||
-				Nombre.Contains(TEXT("Vigia")) ||
-				Nombre.Contains(TEXT("Heraldo")))
+			if (Nombre.Contains(TEXT("Vastago")) || Nombre.Contains(TEXT("Vigia")) || Nombre.Contains(TEXT("Heraldo")))
 			{
 				EnemigosCandidatos.Add(ActorActual);
 			}
@@ -69,17 +62,10 @@ void ADronAnclaje::OtorgarEscudoAEnemigo()
 			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 			AEscudo* NuevoEscudo = World->SpawnActor<AEscudo>(AEscudo::StaticClass(), EnemigoElegido->GetActorLocation(), EnemigoElegido->GetActorRotation(), SpawnParams);
-
 			if (NuevoEscudo != nullptr)
 			{
 				NuevoEscudo->AttachToActor(EnemigoElegido, FAttachmentTransformRules::KeepWorldTransform);
-				NuevoEscudo->AddActorLocalOffset(FVector(0.0f, 0.0f, 40.0f));
-
-				if (GEngine != nullptr)
-				{
-					GEngine->AddOnScreenDebugMessage(-1, 4.5f, FColor::Yellow,
-						FString::Printf(TEXT("¡[NIVEL 1] Dron Tubería acopló cubo escudo a: %s!"), *EnemigoElegido->GetName()));
-				}
+				NuevoEscudo->AddActorLocalOffset(FVector(0.0f, 0.0f, 0.0f));
 			}
 		}
 	}

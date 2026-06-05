@@ -31,6 +31,7 @@ public:
     FVector DireccionVuelo;
 
     ATribunal_Ira* JefeEmisor;
+    virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 
 private:
     int32 ContadorRebotes;
