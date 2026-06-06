@@ -2,7 +2,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "Patterns/Builder/NivelDirector.h"       
-#include "Patterns/Builder/NivelFacilBuilder.h"   
+#include "Patterns/Builder/Nivel1Builder.h"   
 #include "Facade.h"                               
 #include "CentCosmosGameMode.generated.h"
 UCLASS()
@@ -19,7 +19,7 @@ protected:
 private:
     // Builder
     UPROPERTY() ANivelDirector* Director;
-    UPROPERTY() ANivelFacilBuilder* BuilderFacil;
+    UPROPERTY() ANivel1Builder* BuilderFacil;
     UPROPERTY() AFacade* ManejadorHorda;
 
 

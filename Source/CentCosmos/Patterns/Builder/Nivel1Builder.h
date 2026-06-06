@@ -1,19 +1,19 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "INivelBuilder.h"
-#include "NivelFacilBuilder.generated.h"
+#include "Nivel1Builder.generated.h"
 
 class AEnemyFactory; // forward declaration — evita incluir el header completo aquí
 
 UCLASS()
-class CENTCOSMOS_API ANivelFacilBuilder : public AActor, public INivelBuilder
+class CENTCOSMOS_API ANivel1Builder : public AActor, public INivelBuilder
 {
     GENERATED_BODY()
 
 public:
-    ANivelFacilBuilder();
+    ANivel1Builder();
 
     // ── INivelBuilder interface ───────────────────────────────────────────────
     virtual void Reset() override;

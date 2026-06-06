@@ -3,15 +3,15 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "INivelBuilder.h"
-#include "NivelMedioBuilder.generated.h"
+#include "Nivel2Builder.generated.h"
 
 UCLASS()
-class CENTCOSMOS_API ANivelMedioBuilder : public AActor, public INivelBuilder
+class CENTCOSMOS_API ANivel2Builder : public AActor, public INivelBuilder
 {
     GENERATED_BODY()
 
 public:
-    ANivelMedioBuilder();
+    ANivel2Builder();
 
     virtual void Reset() override;
     virtual void SetMetadatos(const FString& Nombre, float TiempoLimite) override;

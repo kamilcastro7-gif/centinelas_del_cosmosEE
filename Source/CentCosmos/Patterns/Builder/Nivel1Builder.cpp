@@ -1,5 +1,5 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-#include "NivelFacilBuilder.h"
+// Fill out your copyright notice in the Description page of Project Settings.
+#include "Nivel1Builder.h"
 #include "Engine/World.h"
 #include "EnemyFactory.h"
 #include "GeneradorAmbientacion.h"
@@ -15,7 +15,7 @@
 // Constructor
 // ─────────────────────────────────────────────────────────────────────────────
 
-ANivelFacilBuilder::ANivelFacilBuilder()
+ANivel1Builder::ANivel1Builder()
 {
     PrimaryActorTick.bCanEverTick = true;
     bBossSpawneado = false;
@@ -26,7 +26,7 @@ ANivelFacilBuilder::ANivelFacilBuilder()
 // Equivalen a: Reset / ProducePart* / GetProduct del canónico
 // ─────────────────────────────────────────────────────────────────────────────
 
-void ANivelFacilBuilder::Reset()
+void ANivel1Builder::Reset()
 {
     NivelActual = FNivel();
     EnemigosGenerados.Empty();
@@ -34,18 +34,18 @@ void ANivelFacilBuilder::Reset()
     bBossSpawneado = false;
 }
 
-void ANivelFacilBuilder::SetMetadatos(const FString& Nombre, float TiempoLimite)
+void ANivel1Builder::SetMetadatos(const FString& Nombre, float TiempoLimite)
 {
     NivelActual.Nombre = Nombre;
     NivelActual.TiempoLimite = TiempoLimite;
 }
 
-void ANivelFacilBuilder::SetDificultad(float Dificultad)
+void ANivel1Builder::SetDificultad(float Dificultad)
 {
     NivelActual.Dificultad = Dificultad;
 }
 
-void ANivelFacilBuilder::AgregarAmbientacion(UWorld* World)
+void ANivel1Builder::AgregarAmbientacion(UWorld* World)
 {
     if (!World) return;
 
@@ -62,12 +62,12 @@ void ANivelFacilBuilder::AgregarAmbientacion(UWorld* World)
 
     if (GEngine)
         GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::White,
-            TEXT("[NivelFacil] Ambientación generada."));
+            TEXT("[Nivel1] Ambientación generada."));
 }
 
 // AgregarEnemigos — equivale a BuildFullFeaturedProduct() del canónico.
 // Solo coordina; el trabajo real está en los pasos atómicos privados.
-void ANivelFacilBuilder::AgregarEnemigos(UWorld* World)
+void ANivel1Builder::AgregarEnemigos(UWorld* World)
 {
     if (!World) return;
 
@@ -86,10 +86,10 @@ void ANivelFacilBuilder::AgregarEnemigos(UWorld* World)
 
     if (GEngine)
         GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange,
-            FString::Printf(TEXT("[NivelFacil] Ola 1 generada: %d enemigos."), EnemigosOla1.Num()));
+            FString::Printf(TEXT("[Nivel1] Ola 1 generada: %d enemigos."), EnemigosOla1.Num()));
 }
 
-FNivel ANivelFacilBuilder::ObtenerNivel()
+FNivel ANivel1Builder::ObtenerNivel()
 {
     NivelActual.Enemigos = EnemigosGenerados;
     return NivelActual;
@@ -100,7 +100,7 @@ FNivel ANivelFacilBuilder::ObtenerNivel()
 // Cada uno tiene una única responsabilidad: spawnear UN tipo de enemigo.
 // ─────────────────────────────────────────────────────────────────────────────
 
-void ANivelFacilBuilder::SpawnVastagos(AEnemyFactory* Factory, int32 Cantidad)
+void ANivel1Builder::SpawnVastagos(AEnemyFactory* Factory, int32 Cantidad)
 {
     for (int32 i = 0; i < Cantidad; i++)
     {
@@ -118,7 +118,7 @@ void ANivelFacilBuilder::SpawnVastagos(AEnemyFactory* Factory, int32 Cantidad)
     }
 }
 
-void ANivelFacilBuilder::SpawnVigias(AEnemyFactory* Factory, int32 Cantidad)
+void ANivel1Builder::SpawnVigias(AEnemyFactory* Factory, int32 Cantidad)
 {
     for (int32 i = 0; i < Cantidad; i++)
     {
@@ -136,7 +136,7 @@ void ANivelFacilBuilder::SpawnVigias(AEnemyFactory* Factory, int32 Cantidad)
     }
 }
 
-void ANivelFacilBuilder::SpawnHeraldos(AEnemyFactory* Factory, int32 Cantidad)
+void ANivel1Builder::SpawnHeraldos(AEnemyFactory* Factory, int32 Cantidad)
 {
     for (int32 i = 0; i < Cantidad; i++)
     {
@@ -158,7 +158,7 @@ void ANivelFacilBuilder::SpawnHeraldos(AEnemyFactory* Factory, int32 Cantidad)
 // Monitoreo de ola — lógica de juego post-construcción
 // ─────────────────────────────────────────────────────────────────────────────
 
-void ANivelFacilBuilder::Tick(float DeltaTime)
+void ANivel1Builder::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
@@ -171,7 +171,7 @@ void ANivelFacilBuilder::Tick(float DeltaTime)
     VerificarYSpawnearBoss(World);
 }
 
-void ANivelFacilBuilder::VerificarYSpawnearBoss(UWorld* World)
+void ANivel1Builder::VerificarYSpawnearBoss(UWorld* World)
 {
     // Contamos cuántos enemigos de la ola 1 siguen vivos
     int32 Vivos = 0;
@@ -205,7 +205,7 @@ void ANivelFacilBuilder::VerificarYSpawnearBoss(UWorld* World)
 
     if (GEngine)
         GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan,
-            TEXT("[NivelFacil] Ambientación eliminada."));
+            TEXT("[Nivel1] Ambientación eliminada."));
 
     // 2. Spawnear arena de combate (centro del mapa)
     World->SpawnActor<AArenaCombate>(
@@ -222,6 +222,6 @@ void ANivelFacilBuilder::VerificarYSpawnearBoss(UWorld* World)
 
         if (GEngine)
             GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,
-                TEXT("[NivelFacil] OLA 1 COMPLETADA — ¡Arena y TribunalVigilante aparecen!"));
+                TEXT("[Nivel1] OLA 1 COMPLETADA — ¡Arena y TribunalVigilante aparecen!"));
     }
 }

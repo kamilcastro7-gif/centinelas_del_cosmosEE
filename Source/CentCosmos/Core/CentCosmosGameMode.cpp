@@ -22,7 +22,7 @@ void ACentCosmosGameMode::BeginPlay()
     Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
     Director = Mundo->SpawnActor<ANivelDirector>(ANivelDirector::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
-    BuilderFacil = Mundo->SpawnActor<ANivelFacilBuilder>(ANivelFacilBuilder::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
+    BuilderFacil = Mundo->SpawnActor<ANivel1Builder>(ANivel1Builder::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
     ManejadorHorda = Mundo->SpawnActor<AFacade>(AFacade::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
 
     if (Director && BuilderFacil)

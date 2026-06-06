@@ -3,28 +3,28 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "INivelBuilder.h"
-#include "NivelDificilBuilder.generated.h"
+#include "Nivel3Builder.generated.h"
 
 UCLASS()
-class CENTCOSMOS_API ANivelDificilBuilder : public AActor, public INivelBuilder
+class CENTCOSMOS_API ANivel3Builder : public AActor, public INivelBuilder
 {
     GENERATED_BODY()
 
 public:
-    ANivelDificilBuilder();
+    ANivel3Builder();
 
 	virtual void Reset() override;
 	virtual void SetMetadatos(const FString& Nombre, float TiempoLimite) override;
 	virtual void SetDificultad(float Dificultad) override;
 
-	// A estas dos funciones QUÕTALES cualquier par·metro extra. Solo deben recibir UWorld*
+	// A estas dos funciones QU√çTALES cualquier par√°metro extra. Solo deben recibir UWorld*
 	virtual void AgregarEnemigos(UWorld* World) override;
 	virtual void AgregarAmbientacion(UWorld* World) override;
 
 	virtual FNivel ObtenerNivel() override;
 
-	// Si tienes AgregarBoss, QUÕTALE la palabra 'override' al final, 
-	// ya que es una funciÛn exclusiva de esta clase, no de la interfaz.
+	// Si tienes AgregarBoss, QU√çTALE la palabra 'override' al final, 
+	// ya que es una funci√≥n exclusiva de esta clase, no de la interfaz.
 	void AgregarBoss(UWorld* World);
 
 private:
