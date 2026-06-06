@@ -2,7 +2,6 @@
 
 #include "RayoSupremo.h"
 #include "Components/StaticMeshComponent.h"
-#include "UObject/ConstructorHelpers.h"
 #include "TimerManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "../Player/CentCosmosPawn.h"
@@ -23,10 +22,9 @@ ARayoSupremo::ARayoSupremo()
         MallaAdvertenciaComp->SetStaticMesh(MeshAdvAsset.Object);
     }
 
-    static ConstructorHelpers::FObjectFinder<UMaterialInterface> MatAdvAsset(TEXT("Material'/Game/StarterContent/Materials/M_Tech_Hex_Tile_Pulse.M_Tech_Hex_Tile_Pulse'"));
-    if (MatAdvAsset.Succeeded())
+    if (MaterialAdvertencia)
     {
-        MallaAdvertenciaComp->SetMaterial(0, MatAdvAsset.Object);
+        MallaAdvertenciaComp->SetMaterial(0, MaterialAdvertencia);
     }
 
     MallaAdvertenciaComp->SetRelativeScale3D(FVector(35.0f, 0.05f, 0.2f));
@@ -43,10 +41,9 @@ ARayoSupremo::ARayoSupremo()
         MallaLetalComp->SetStaticMesh(MeshLetalAsset.Object);
     }
 
-    static ConstructorHelpers::FObjectFinder<UMaterialInterface> MatLetalAsset(TEXT("Material'/Game/StarterContent/Materials/M_Lava_With_Blends.M_Lava_With_Blends'"));
-    if (MatLetalAsset.Succeeded())
+    if (MaterialLetal)
     {
-        MallaLetalComp->SetMaterial(0, MatLetalAsset.Object);
+        MallaLetalComp->SetMaterial(0, MaterialLetal);
     }
 
     MallaLetalComp->SetRelativeScale3D(FVector(35.0f, 2.5f, 3.0f));

@@ -29,6 +29,12 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
     class UStaticMeshComponent* MallaLetalComp;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materiales")
+    UMaterialInterface* MaterialAdvertencia;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materiales")
+    UMaterialInterface* MaterialLetal;
+
 private:
     FTimerHandle TimerFaseLetal;
     bool bEsRayoLetal;
