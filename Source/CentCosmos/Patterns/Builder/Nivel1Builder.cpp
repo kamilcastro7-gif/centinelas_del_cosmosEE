@@ -9,22 +9,13 @@
 #include "ObstaculoSatelite.h"
 #include "ObstaculoRestos.h"
 #include "Kismet/GameplayStatics.h"
-// Nota: EnemyFactory.h ya viene incluido transitivamente desde Nivel1Builder.h
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Constructor
-// ─────────────────────────────────────────────────────────────────────────────
 
 ANivel1Builder::ANivel1Builder()
 {
     PrimaryActorTick.bCanEverTick = true;
     bBossSpawneado = false;
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// INivelBuilder — pasos de construcción principales
-// Equivalen a: Reset / ProducePart* / GetProduct del canónico
-// ─────────────────────────────────────────────────────────────────────────────
 
 void ANivel1Builder::Reset()
 {
@@ -52,19 +43,21 @@ void ANivel1Builder::AgregarAmbientacion(UWorld* World)
     FActorSpawnParameters Params;
     Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-    // AGeneradorAmbientacion implementa IAbstractFactory.
-    // Su BeginPlay ya spawna 30 obstáculos automáticamente — no hacemos nada más.
-    World->SpawnActor<AGeneradorAmbientacion>(
+    AGeneradorAmbientacion* Gen = World->SpawnActor<AGeneradorAmbientacion>(
         AGeneradorAmbientacion::StaticClass(),
-        FVector::ZeroVector,
-        FRotator::ZeroRotator,
-        Params);
+        FVector::ZeroVector, FRotator::ZeroRotator, Params);
+
+    if (!Gen) return;
+
+    // El builder decide cuántos de cada tipo
+    SpawnNaves(Gen, 10);
+    SpawnSatelites(Gen, 10);
+    SpawnRestos(Gen, 10);
 
     if (GEngine)
         GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::White,
-            TEXT("[Nivel1] Ambientación generada."));
+            TEXT("[Nivel1] Ambientación generada: 30 obstáculos."));
 }
-
 // AgregarEnemigos — equivale a BuildFullFeaturedProduct() del canónico.
 // Solo coordina; el trabajo real está en los pasos atómicos privados.
 void ANivel1Builder::AgregarEnemigos(UWorld* World)
@@ -83,6 +76,7 @@ void ANivel1Builder::AgregarEnemigos(UWorld* World)
     SpawnVastagos(Factory, 12);
     SpawnVigias(Factory, 2);
     SpawnHeraldos(Factory, 1);
+    SpawnDronAnclaje(Factory, 2);
 
     if (GEngine)
         GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange,
@@ -153,10 +147,58 @@ void ANivel1Builder::SpawnHeraldos(AEnemyFactory* Factory, int32 Cantidad)
         }
     }
 }
+void ANivel1Builder::SpawnDronAnclaje(AEnemyFactory* Factory, int32 Cantidad)
+{
+    for (int32 i = 0; i < Cantidad; i++)
+    {
+        FVector Pos = FVector(
+            FMath::RandRange(-1000, 1000),
+            FMath::RandRange(-1000, 1000),
+            150.f);
+        AActor* E = Factory->FabricarDronAnclaje(Pos, FRotator::ZeroRotator);
+        if (E)
+        {
+            EnemigosGenerados.Add(E);
+            EnemigosOla1.Add(E);
+        }
+    }
+}
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Monitoreo de ola — lógica de juego post-construcción
-// ─────────────────────────────────────────────────────────────────────────────
+void ANivel1Builder::SpawnNaves(AGeneradorAmbientacion* Gen, int32 Cantidad)
+{
+    for (int32 i = 0; i < Cantidad; i++)
+    {
+        FVector Pos = FVector(
+            FMath::RandRange(-2000, 2000),
+            FMath::RandRange(-2000, 2000),
+            150.f);
+        Gen->FabricarNave(Pos, FRotator::ZeroRotator);
+    }
+}
+
+void ANivel1Builder::SpawnSatelites(AGeneradorAmbientacion* Gen, int32 Cantidad)
+{
+    for (int32 i = 0; i < Cantidad; i++)
+    {
+        FVector Pos = FVector(
+            FMath::RandRange(-2000, 2000),
+            FMath::RandRange(-2000, 2000),
+            150.f);
+        Gen->FabricarSatelite(Pos, FRotator::ZeroRotator);
+    }
+}
+
+void ANivel1Builder::SpawnRestos(AGeneradorAmbientacion* Gen, int32 Cantidad)
+{
+    for (int32 i = 0; i < Cantidad; i++)
+    {
+        FVector Pos = FVector(
+            FMath::RandRange(-2000, 2000),
+            FMath::RandRange(-2000, 2000),
+            150.f);
+        Gen->FabricarRestos(Pos, FRotator::ZeroRotator);
+    }
+}
 
 void ANivel1Builder::Tick(float DeltaTime)
 {

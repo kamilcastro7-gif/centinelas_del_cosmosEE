@@ -10,21 +10,15 @@ class CENTCOSMOS_API AEnemyFactory : public AActor
     GENERATED_BODY()
 public:
     AEnemyFactory();
-
-    // --- Enemigos básicos ---
     AActor* FabricarVastago(const FVector& Posicion, const FRotator& Rotacion);
     AActor* FabricarVigia(const FVector& Posicion, const FRotator& Rotacion);
     AActor* FabricarHeraldo(const FVector& Posicion, const FRotator& Rotacion);
-
-    // --- Tribunales ---
     AActor* FabricarTribunalIra(const FVector& Posicion, const FRotator& Rotacion);
     AActor* FabricarTribunalCaos(const FVector& Posicion, const FRotator& Rotacion);
     AActor* FabricarTribAsedio(const FVector& Posicion, const FRotator& Rotacion);
     AActor* FabricarTribunalSupremo(const FVector& Posicion, const FRotator& Rotacion);
     AActor* FabricarTribunalTormenta(const FVector& Posicion, const FRotator& Rotacion);
     AActor* FabricarTribunalVigilante(const FVector& Posicion, const FRotator& Rotacion);
-
-    // --- Enemigos exclusivos ---
     AActor* FabricarDronAnclaje(const FVector& Posicion, const FRotator& Rotacion);
     AActor* FabricarMinadorRocoso(const FVector& Posicion, const FRotator& Rotacion);
     AActor* FabricarBoyaElectrostatica(const FVector& Posicion, const FRotator& Rotacion);
