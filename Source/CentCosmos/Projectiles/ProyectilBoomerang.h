@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "ProyectilBoomerang.generated.h"
 
+class UNiagaraComponent; // NUEVO: Para el sistema de partículas Niagara
+
 UCLASS()
 class CENTCOSMOS_API AProyectilBoomerang : public AActor
 {
@@ -15,6 +17,10 @@ public:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
     class UStaticMeshComponent* ProyectilMesh;
+
+    // --- EFECTO VISUAL NIAGARA ---
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
+    UNiagaraComponent* EfectoNiagara;
 
     UPROPERTY()
     class ACentCosmosPawn* NaveDueno;

@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "ProyectilCarga.generated.h"
 
+class UNiagaraComponent; // NUEVO: Para el efecto Niagara
+
 UCLASS()
 class CENTCOSMOS_API AProyectilCarga : public AActor
 {
@@ -15,6 +17,10 @@ public:
 
     UPROPERTY()
     class UStaticMeshComponent* ProyectilMesh;
+
+    // --- EFECTO VISUAL NIAGARA ---
+    UPROPERTY(VisibleAnywhere, Category = "Componentes")
+    UNiagaraComponent* EfectoNiagara;
 
     UPROPERTY()
     class UProjectileMovementComponent* ProjectileMovement;

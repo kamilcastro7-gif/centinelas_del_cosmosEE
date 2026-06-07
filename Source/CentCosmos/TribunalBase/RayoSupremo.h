@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "RayoSupremo.generated.h"
 
+class UNiagaraComponent; // Declaración adelantada de Niagara
+
 UCLASS()
 class CENTCOSMOS_API ARayoSupremo : public AActor
 {
@@ -28,6 +30,10 @@ public:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
     class UStaticMeshComponent* MallaLetalComp;
+
+    // --- NUEVO: Componente del láser visual Supremo ---
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
+    UNiagaraComponent* EfectoRayoNiagara;
 
 private:
     FTimerHandle TimerFaseLetal;

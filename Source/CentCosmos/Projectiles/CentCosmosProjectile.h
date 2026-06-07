@@ -8,14 +8,20 @@
 
 class UProjectileMovementComponent;
 class UStaticMeshComponent;
+class UNiagaraComponent; // NUEVO: Para el sistema de partículas Niagara
 
 UCLASS(config = Game)
 class ACentCosmosProjectile : public AActor
 {
 	GENERATED_BODY()
 
+	// --- HITBOX INVISIBLE ---
 	UPROPERTY()
 	UStaticMeshComponent* ProjectileMesh;
+
+	// --- EFECTO VISUAL NIAGARA ---
+	UPROPERTY(VisibleAnywhere, Category = "Componentes")
+	UNiagaraComponent* EfectoNiagara;
 
 	UPROPERTY()
 	UProjectileMovementComponent* ProjectileMovement;
@@ -30,10 +36,10 @@ public:
 
 	void ForzarDireccion(FVector Direccion, float Velocidad);
 
-	// ATRIBUTO DE DA�O
+	// ATRIBUTO DE DAÑO
 	UPROPERTY()
 	float Danio;
 
-	FORCEINLINE UStaticMeshComponent* GetProjectileMesh()      const { return ProjectileMesh; }
-	FORCEINLINE UProjectileMovementComponent* GetProjectileMovement()  const { return ProjectileMovement; }
+	FORCEINLINE UStaticMeshComponent* GetProjectileMesh() const { return ProjectileMesh; }
+	FORCEINLINE UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovement; }
 };

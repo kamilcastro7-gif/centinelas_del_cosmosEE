@@ -6,6 +6,9 @@
 #include "GameFramework/Actor.h"
 #include "ProyectilBase.generated.h"
 
+// NUEVO: Declaramos Niagara para poder usarlo
+class UNiagaraComponent;
+
 UCLASS()
 class CENTCOSMOS_API AProyectilBase : public AActor
 {
@@ -22,6 +25,10 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
     class UStaticMeshComponent* MallaProyectil;
 
+    // NUEVO: Componente para el efecto de energía visual
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
+    UNiagaraComponent* EfectoProyectil;
+
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movimiento")
     class UProjectileMovementComponent* MovimientoProyectil;
 
@@ -31,7 +38,6 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Estadisticas")
     bool bEsSeguidor;
 
-    // NUEVO: Daño que causará a la nave al impactar
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Estadisticas")
     float Danio;
 

@@ -1,17 +1,20 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "ProyectilRayo.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "Components/StaticMeshComponent.h"
 #include "TimerManager.h"
 #include "UObject/ConstructorHelpers.h"
+// --- NUEVOS INCLUDES ---
+#include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
 
 AProyectilRayo::AProyectilRayo()
 {
     PrimaryActorTick.bCanEverTick = true;
 
+    // 1. HITBOX INVISIBLE
     MallaRayo = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MallaRayo"));
     RootComponent = MallaRayo;
 
@@ -20,6 +23,19 @@ AProyectilRayo::AProyectilRayo()
 
     static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Pipe.Shape_Pipe'"));
     if (MeshAsset.Succeeded()) MallaRayo->SetStaticMesh(MeshAsset.Object);
+
+    // Ocultamos la malla
+    MallaRayo->SetHiddenInGame(true);
+
+    // 2. EFECTO VISUAL NIAGARA
+    EfectoNiagara = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EfectoNiagara"));
+    EfectoNiagara->SetupAttachment(RootComponent);
+
+    static ConstructorHelpers::FObjectFinder<UNiagaraSystem> NiagaraAsset(TEXT("NiagaraSystem'/Game/sA_Rayvfx/Fx/NiagaraSystems/NS_Hit_1.NS_Hit_1'"));
+    if (NiagaraAsset.Succeeded())
+    {
+        EfectoNiagara->SetAsset(NiagaraAsset.Object);
+    }
 
     VelocidadProyectil = 1500.f;
     DireccionVuelo = FVector::ZeroVector;

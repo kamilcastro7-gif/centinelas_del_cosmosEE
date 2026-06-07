@@ -5,11 +5,15 @@
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/World.h"
+// --- NUEVOS INCLUDES PARA NIAGARA ---
+#include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
 
 AProyectilCaos::AProyectilCaos()
 {
     PrimaryActorTick.bCanEverTick = true;
 
+    // 1. HITBOX INVISIBLE: La cápsula base
     MallaProyectil = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MallaProyectil"));
     RootComponent = MallaProyectil;
 
@@ -22,7 +26,19 @@ AProyectilCaos::AProyectilCaos()
         MallaProyectil->SetStaticMesh(MeshAsset.Object);
     }
 
+    // Ocultamos la cápsula visualmente
+    MallaProyectil->SetHiddenInGame(true);
     SetActorScale3D(FVector(2.0f, 2.0f, 2.0f));
+
+    // 2. EFECTO VISUAL NIAGARA
+    EfectoNiagara = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EfectoNiagara"));
+    EfectoNiagara->SetupAttachment(RootComponent);
+
+    static ConstructorHelpers::FObjectFinder<UNiagaraSystem> NiagaraAsset(TEXT("NiagaraSystem'/Game/sA_Rayvfx/Fx/NiagaraSystems/NS_Hit_3.NS_Hit_3'"));
+    if (NiagaraAsset.Succeeded())
+    {
+        EfectoNiagara->SetAsset(NiagaraAsset.Object);
+    }
 
     Velocidad = 800.f;
     DireccionVuelo = FVector::ZeroVector;

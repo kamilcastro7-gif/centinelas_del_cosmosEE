@@ -4,52 +4,70 @@
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "../Player/CentCosmosPawn.h"
+// --- NUEVOS INCLUDES PARA NIAGARA ---
+#include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
 
 APSupremo::APSupremo()
 {
-    PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = true;
 
-    MallaProyectil = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MallaPSupremo"));
-    RootComponent = MallaProyectil;
+	// 1. HITBOX INVISIBLE
+	MallaProyectil = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MallaPSupremo"));
+	RootComponent = MallaProyectil;
 
-    MallaProyectil->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
-    MallaProyectil->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	MallaProyectil->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+	MallaProyectil->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	MallaProyectil->SetGenerateOverlapEvents(true); // Forzamos colisiones para que siga detectando el impacto
 
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Trim_90_Out.Shape_Trim_90_Out'"));
-    if (MeshAsset.Succeeded())
-    {
-        MallaProyectil->SetStaticMesh(MeshAsset.Object);
-    }
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Trim_90_Out.Shape_Trim_90_Out'"));
+	if (MeshAsset.Succeeded())
+	{
+		MallaProyectil->SetStaticMesh(MeshAsset.Object);
+	}
 
-    SetActorScale3D(FVector(0.7f, 0.7f, 0.7f));
-    Velocidad = 1000.f;
+	// Ocultamos la malla visualmente
+	MallaProyectil->SetHiddenInGame(true);
+	SetActorScale3D(FVector(0.7f, 0.7f, 0.7f));
+
+	// 2. EFECTO VISUAL NIAGARA
+	EfectoNiagara = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EfectoNiagara"));
+	EfectoNiagara->SetupAttachment(RootComponent);
+
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> NiagaraAsset(TEXT("NiagaraSystem'/Game/sA_Rayvfx/Fx/NiagaraSystems/NS_Hit_1.NS_Hit_1'"));
+	if (NiagaraAsset.Succeeded())
+	{
+		EfectoNiagara->SetAsset(NiagaraAsset.Object);
+	}
+
+	Velocidad = 1000.f;
 }
 
 void APSupremo::BeginPlay()
 {
-    Super::BeginPlay();
-    SetLifeSpan(4.0f);
+	Super::BeginPlay();
+	SetLifeSpan(4.0f);
 }
 
 void APSupremo::Tick(float DeltaTime)
 {
-    Super::Tick(DeltaTime);
+	Super::Tick(DeltaTime);
 
-    FVector DireccionHaciaAdelante = GetActorForwardVector();
-    DireccionHaciaAdelante.Z = 0.f;
-    DireccionHaciaAdelante.Normalize();
+	FVector DireccionHaciaAdelante = GetActorForwardVector();
+	DireccionHaciaAdelante.Z = 0.f;
+	DireccionHaciaAdelante.Normalize();
 
-    FVector NuevoDesplazamiento = DireccionHaciaAdelante * Velocidad * DeltaTime;
-    AddActorWorldOffset(NuevoDesplazamiento, true);
+	FVector NuevoDesplazamiento = DireccionHaciaAdelante * Velocidad * DeltaTime;
+	AddActorWorldOffset(NuevoDesplazamiento, true);
 }
 
-void APSupremo::NotifyActorBeginOverlap(AActor* OtherActor) // Haz lo mismo para APSupremo
+void APSupremo::NotifyActorBeginOverlap(AActor* OtherActor)
 {
-    Super::NotifyActorBeginOverlap(OtherActor);
-    if (OtherActor && OtherActor->IsA(ACentCosmosPawn::StaticClass()))
-    {
-        Cast<ACentCosmosPawn>(OtherActor)->RecibirDanioNave(10.0f);
-        Destroy();
-    }
+	Super::NotifyActorBeginOverlap(OtherActor);
+	if (OtherActor && OtherActor->IsA(ACentCosmosPawn::StaticClass()))
+	{
+		Cast<ACentCosmosPawn>(OtherActor)->RecibirDanioNave(10.0f);
+		Destroy();
+	}
 }
 

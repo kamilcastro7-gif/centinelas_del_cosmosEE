@@ -6,6 +6,9 @@
 #include "Enjambre.h"
 #include "EVigia_Del_Vacio.generated.h"
 
+class AProyectilBase;
+class USkeletalMeshComponent; // NUEVO: Para la malla visual del dron
+
 UCLASS()
 class CENTCOSMOS_API AEVigia_Del_Vacio : public AEnjambre
 {
@@ -24,6 +27,11 @@ protected:
 
     UPROPERTY(EditAnywhere, Category = "Movimiento")
     float AmplitudPatrulla;
+
+public:
+    // --- COMPONENTE VISUAL DEL DRON ---
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
+    USkeletalMeshComponent* MallaDrone;
 
 private:
     FVector PosicionInicialSpawn;

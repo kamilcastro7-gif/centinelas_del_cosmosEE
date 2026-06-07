@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "ProyectilPlasma.generated.h"
 
+class UNiagaraComponent; // NUEVO: Sistema de partículas
+
 UCLASS()
 class CENTCOSMOS_API AProyectilPlasma : public AActor
 {
@@ -20,8 +22,13 @@ protected:
 public:
     virtual void Tick(float DeltaTime) override;
 
+    // --- HITBOX INVISIBLE ---
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
     UStaticMeshComponent* MallaPlasma;
+
+    // --- EFECTO VISUAL NIAGARA ---
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
+    UNiagaraComponent* EfectoNiagara;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movimiento")
     float VelocidadProyectil;

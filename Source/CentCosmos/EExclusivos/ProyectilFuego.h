@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "ProyectilFuego.generated.h"
 
+class UNiagaraComponent; // NUEVO: Para el sistema de partículas Niagara
+
 UCLASS()
 class CENTCOSMOS_API AProyectilFuego : public AActor
 {
@@ -19,11 +21,16 @@ protected:
 
 public:
 	virtual void Tick(float DeltaTime) override;
-	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override; // NUEVO
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 
 private:
+	// --- HITBOX INVISIBLE ---
 	UPROPERTY(VisibleAnywhere, Category = "Componentes")
 	class UStaticMeshComponent* ProyectilMesh;
+
+	// --- EFECTO VISUAL NIAGARA ---
+	UPROPERTY(VisibleAnywhere, Category = "Componentes")
+	UNiagaraComponent* EfectoFuego;
 
 	float Velocidad;
 	FTimerHandle TimerRastrosHandle;

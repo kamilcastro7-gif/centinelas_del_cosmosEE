@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "FragCaos.generated.h"
 
+class UNiagaraComponent; // NUEVO
+
 UCLASS()
 class CENTCOSMOS_API AFragCaos : public AActor
 {
@@ -20,8 +22,13 @@ protected:
 public:
     virtual void Tick(float DeltaTime) override;
 
+    // --- HITBOX INVISIBLE ---
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
     class UStaticMeshComponent* MallaProyectil;
+
+    // --- EFECTO VISUAL NIAGARA ---
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
+    UNiagaraComponent* EfectoNiagara;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movimiento")
     float Velocidad;

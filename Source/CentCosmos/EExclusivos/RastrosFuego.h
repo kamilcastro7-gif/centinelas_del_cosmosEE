@@ -19,15 +19,20 @@ protected:
 
 public:
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
-	virtual void NotifyActorEndOverlap(AActor* OtherActor) override; // NUEVO
+	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Componentes")
 	class UStaticMeshComponent* FuegoMesh;
 
-	// --- NUEVO: LOGICA DE DAÑO CONSTANTE ---
+	// --- NUEVO: Componente visual para la partícula ---
+	UPROPERTY(VisibleAnywhere, Category = "Componentes")
+	class UParticleSystemComponent* EfectoFuego;
+
+	// --- LOGICA DE DAÑO CONSTANTE ---
 	FTimerHandle TimerDanoContinuo;
 	class ACentCosmosPawn* JugadorEnFuego;
+
 	UFUNCTION()
 	void AplicarDanoContinuo();
 };

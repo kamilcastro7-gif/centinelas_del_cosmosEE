@@ -14,11 +14,15 @@
 #include "TribunalBase/TribunalBase.h"
 #include "Escudo.h"
 #include "TribunalBase/PlacaMetal.h"
+// --- NUEVOS INCLUDES ---
+#include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
 
 AProyectilCarga::AProyectilCarga()
 {
     PrimaryActorTick.bCanEverTick = false;
 
+    // 1. HITBOX INVISIBLE
     static ConstructorHelpers::FObjectFinder<UStaticMesh> SphereMesh(
         TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
 
@@ -27,8 +31,20 @@ AProyectilCarga::AProyectilCarga()
 
     if (SphereMesh.Succeeded()) ProyectilMesh->SetStaticMesh(SphereMesh.Object);
 
+    // Ocultamos la esfera
+    ProyectilMesh->SetHiddenInGame(true);
     ProyectilMesh->SetCollisionProfileName(TEXT("Projectile"));
     ProyectilMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+
+    // 2. EFECTO VISUAL NIAGARA
+    EfectoNiagara = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EfectoNiagara"));
+    EfectoNiagara->SetupAttachment(RootComponent);
+
+    static ConstructorHelpers::FObjectFinder<UNiagaraSystem> NiagaraAsset(TEXT("NiagaraSystem'/Game/sA_Rayvfx/Fx/NiagaraSystems/NS_Hit_4.NS_Hit_4'"));
+    if (NiagaraAsset.Succeeded())
+    {
+        EfectoNiagara->SetAsset(NiagaraAsset.Object);
+    }
 
     ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
     ProjectileMovement->UpdatedComponent = ProyectilMesh;
@@ -42,6 +58,8 @@ AProyectilCarga::AProyectilCarga()
     DanoBase = 2.f;
     InitialLifeSpan = 4.0f;
 }
+
+// ... (El resto de tus funciones InicializarCarga, LiberarProyectil y AlChocar se mantienen exactamente igual) ...
 
 void AProyectilCarga::InicializarCarga(float TiempoCarga)
 {
@@ -58,20 +76,19 @@ void AProyectilCarga::LiberarProyectil(float TiempoCargaFinal, FVector Direccion
 {
     float VelocidadLanzamiento;
 
-    // 1. BALANCE ACTUALIZADO DE DAÑO
     if (TiempoCargaFinal >= 2.8f)
     {
-        DanoBase = 15.f; // Daño brutal para la carga máxima (opcional, premia aguantar 6s)
+        DanoBase = 15.f;
         VelocidadLanzamiento = 2000.f;
     }
     else if (TiempoCargaFinal >= 1.2f)
     {
-        DanoBase = 7.f; // SOLICITADO: La carga media ahora hace 10 de daño
+        DanoBase = 7.f;
         VelocidadLanzamiento = 2700.f;
     }
     else
     {
-        DanoBase = 1.f;  // Daño Mínimo
+        DanoBase = 1.f;
         VelocidadLanzamiento = 3400.f;
     }
 
@@ -105,45 +122,22 @@ void AProyectilCarga::AlChocar(UPrimitiveComponent* HitComponent, AActor* OtherA
     if (OtherActor && OtherActor != this)
     {
         AEnjambre* EnemigoImpactado = Cast<AEnjambre>(OtherActor);
-        if (EnemigoImpactado)
-        {
-            EnemigoImpactado->RecibirDanioEnemigo(DanoBase);
-            Destroy();
-            return;
-        }
+        if (EnemigoImpactado) { EnemigoImpactado->RecibirDanioEnemigo(DanoBase); Destroy(); return; }
 
         AEExclusivo* EnemigoExclusivo = Cast<AEExclusivo>(OtherActor);
-        if (EnemigoExclusivo)
-        {
-            EnemigoExclusivo->RecibirDanoEnemigo(DanoBase);
-            Destroy(); return;
-        }
+        if (EnemigoExclusivo) { EnemigoExclusivo->RecibirDanoEnemigo(DanoBase); Destroy(); return; }
 
         ATribunalBase* Tribunal = Cast<ATribunalBase>(OtherActor);
-        if (Tribunal)
-        {
-            Tribunal->RecibirDanioJefe(DanoBase);
-            Destroy(); return;
-        }
+        if (Tribunal) { Tribunal->RecibirDanioJefe(DanoBase); Destroy(); return; }
 
         APlacaMetal* Placa = Cast<APlacaMetal>(OtherActor);
-        if (Placa)
-        {
-            Placa->RecibirDanioPlaca(DanoBase); // Usa DanoBase en el Proyectil de Carga
-            Destroy(); // La bala se destruye al chocar con la placa
-            return;
-        }
+        if (Placa) { Placa->RecibirDanioPlaca(DanoBase); Destroy(); return; }
 
         AEscudo* Escudo = Cast<AEscudo>(OtherActor);
         if (Escudo) { Escudo->RecibirDanoEscudo(DanoBase); Destroy(); return; }
 
         AGrietaAntimateria* Grieta = Cast<AGrietaAntimateria>(OtherActor);
-        if (Grieta)
-        {
-            Grieta->ProcesarImpacto();
-            Destroy();
-            return;
-        }
+        if (Grieta) { Grieta->ProcesarImpacto(); Destroy(); return; }
     }
 
     Destroy();

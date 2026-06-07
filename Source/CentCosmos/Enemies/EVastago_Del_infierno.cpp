@@ -4,6 +4,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/SkeletalMeshComponent.h" 
+#include "Animation/AnimSequence.h"            
 #include "UObject/ConstructorHelpers.h"
 #include "ProyectilBase.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -20,21 +22,57 @@ AEVastago_Del_infierno::AEVastago_Del_infierno() {
     TimerEstado = 0.0f;
     bEstaRodeando = false;
     bOlaCargaIniciada = false;
+    EstadoAnimacionActual = -1;
 
-    // ESTADÍSTICAS VÁSTAGO
     VidaActual = 2.0f;
     DanioDeChoque = 1.0f;
 
     static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cylinder.Shape_Cylinder'"));
-    if (MeshAsset.Succeeded()) MallaEnemigo->SetStaticMesh(MeshAsset.Object);
+    if (MeshAsset.Succeeded()) {
+        MallaEnemigo->SetStaticMesh(MeshAsset.Object);
+    }
+
+    if (MallaEnemigo) {
+        MallaEnemigo->SetHiddenInGame(true);
+        MallaEnemigo->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+        MallaEnemigo->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+        MallaEnemigo->SetGenerateOverlapEvents(true);
+    }
+
+    MallaAvispa = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MallaAvispa"));
+    if (RootComponent) {
+        MallaAvispa->SetupAttachment(RootComponent);
+    }
+
+    static ConstructorHelpers::FObjectFinder<USkeletalMesh> AvispaAsset(TEXT("SkeletalMesh'/Game/Robot_Bee/meshes/SK_Robot_Bee.SK_Robot_Bee'"));
+    if (AvispaAsset.Succeeded()) MallaAvispa->SetSkeletalMesh(AvispaAsset.Object);
+    MallaAvispa->SetRelativeScale3D(FVector(1.5f));
+
+    // --- CORRECCIÓN DE ROTACIÓN ---
+    // Giramos LA MALLA internamente -90 grados. Así el "Actor" sigue apuntando perfectamente
+    // hacia el frente (Eje X), haciendo que todas las matemáticas de disparo sean perfectas.
+    MallaAvispa->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
+
+    MallaAvispa->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+    MallaAvispa->SetAnimationMode(EAnimationMode::AnimationSingleNode);
+    static ConstructorHelpers::FObjectFinder<UAnimSequence> FwdAnim(TEXT("AnimSequence'/Game/Robot_Bee/animations/AS_Air_forward.AS_Air_forward'"));
+    if (FwdAnim.Succeeded()) AnimAdelante = FwdAnim.Object;
+
+    static ConstructorHelpers::FObjectFinder<UAnimSequence> BwdAnim(TEXT("AnimSequence'/Game/Robot_Bee/animations/AS_Air_backward.AS_Air_backward'"));
+    if (BwdAnim.Succeeded()) AnimAtras = BwdAnim.Object;
 
     ProyectilFalso = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ProyectilFalso"));
+
+    // --- CORRECCIÓN DE POSICIÓN ---
+    // Lo anclamos a la Raíz para que no herede rotaciones raras de la malla
     ProyectilFalso->SetupAttachment(RootComponent);
 
     static ConstructorHelpers::FObjectFinder<UStaticMesh> SphereAsset(TEXT("StaticMesh'/Engine/BasicShapes/Sphere.Sphere'"));
     if (SphereAsset.Succeeded()) ProyectilFalso->SetStaticMesh(SphereAsset.Object);
 
-    ProyectilFalso->SetRelativeLocation(FVector(60.f, 0.f, 0.f));
+    // Lo empujamos 100 unidades hacia el frente para que quede en la punta del cañón
+    ProyectilFalso->SetRelativeLocation(FVector(100.f, 0.f, 0.f));
     ProyectilFalso->SetRelativeScale3D(FVector(0.01f));
     ProyectilFalso->SetVisibility(false);
     ProyectilFalso->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -60,6 +98,12 @@ void AEVastago_Del_infierno::Tick(float DeltaTime)
         bEstaRodeando = !bEstaRodeando;
         bOlaCargaIniciada = false;
         DireccionDispersion = FVector(FMath::RandRange(-1.0f, 1.0f), FMath::RandRange(-1.0f, 1.0f), 0.0f).GetSafeNormal();
+
+        // --- SEGURO ANTI-BUGS ---
+        // Al terminar el ataque, forzamos la desaparición del proyectil falso sí o sí.
+        if (ProyectilFalso) {
+            ProyectilFalso->SetVisibility(false);
+        }
     }
 
     if (bEstaRodeando && TimerEstado >= 1.5f && !bOlaCargaIniciada) {
@@ -67,6 +111,19 @@ void AEVastago_Del_infierno::Tick(float DeltaTime)
     }
 
     moverVastago();
+
+    if (bEstaRodeando) {
+        if (EstadoAnimacionActual != 1 && AnimAtras) {
+            MallaAvispa->PlayAnimation(AnimAtras, true);
+            EstadoAnimacionActual = 1;
+        }
+    }
+    else {
+        if (EstadoAnimacionActual != 0 && AnimAdelante) {
+            MallaAvispa->PlayAnimation(AnimAdelante, true);
+            EstadoAnimacionActual = 0;
+        }
+    }
 }
 
 void AEVastago_Del_infierno::moverVastago() {
@@ -89,6 +146,9 @@ void AEVastago_Del_infierno::moverVastago() {
     SetActorLocation(NuevaPos);
 
     FRotator RotacionHaciaJugador = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Jugador->GetActorLocation());
+
+    // ELIMINADO EL HACK DE "-90" AQUÍ. 
+    // Ahora el Actor mira limpia y matemáticamente hacia el jugador.
     SetActorRotation(RotacionHaciaJugador);
 }
 
@@ -126,7 +186,9 @@ void AEVastago_Del_infierno::IntentarLiderarCarga() {
 }
 
 void AEVastago_Del_infierno::CargarAtaque() {
-    if (ProyectilFalso) {
+    // --- SEGURO ANTI-RETRASOS ---
+    // Solo permitimos que se muestre el proyectil falso si el enemigo SIGUE en modo ataque.
+    if (ProyectilFalso && bEstaRodeando) {
         ProyectilFalso->SetVisibility(true);
         ProyectilFalso->SetRelativeScale3D(FVector(0.3f, 0.3f, 0.3f));
     }
@@ -141,19 +203,19 @@ void AEVastago_Del_infierno::EjecutarDisparo() {
     if (!Jugador) return;
 
     FVector DirHaciaJugador = (Jugador->GetActorLocation() - GetActorLocation());
-    DirHaciaJugador.Z = 0.f;
     DirHaciaJugador.Normalize();
 
-    FVector Ubicacion = GetActorLocation() + (DirHaciaJugador * 80.f);
+    FVector Ubicacion = GetActorLocation() + (DirHaciaJugador * 150.f);
     FRotator RotacionHaciaJugador = DirHaciaJugador.Rotation();
 
     FActorSpawnParameters SpawnParams;
     SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+    SpawnParams.Instigator = GetInstigator();
 
     AProyectilBase* Proy = GetWorld()->SpawnActor<AProyectilBase>(AProyectilBase::StaticClass(), Ubicacion, RotacionHaciaJugador, SpawnParams);
 
     if (Proy) {
-        Proy->Danio = 2.0f; // Daño del Vástago
+        Proy->Danio = 2.0f;
 
         if (Proy->MallaProyectil) {
             Proy->MallaProyectil->SetRelativeScale3D(FVector(0.3f, 0.3f, 0.3f));

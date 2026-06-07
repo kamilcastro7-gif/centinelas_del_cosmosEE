@@ -1,17 +1,19 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "RayoVigia.h"
-#include "DrawDebugHelpers.h"
+#include "DrawDebugHelpers.h" 
 #include "UObject/ConstructorHelpers.h"
-#include "Player/CentCosmosPawn.h"
+#include "Player/CentCosmosPawn.h" 
 #include "TimerManager.h" 
 #include "Engine/World.h" 
+#include "Kismet/GameplayStatics.h" 
+#include "NiagaraComponent.h"
+#include "NiagaraSystem.h" 
 
 ARayoVigia::ARayoVigia()
 {
-	PrimaryActorTick.bCanEverTick = false;
-	LongitudMaxima = 500.f;
-
+	PrimaryActorTick.bCanEverTick = true;
+	LongitudMaxima = 5000.f;
 	bPuedeHacerDanio = true;
 
 	USceneComponent* EscenaRaiz = CreateDefaultSubobject<USceneComponent>(TEXT("EscenaRaiz"));
@@ -21,16 +23,17 @@ ARayoVigia::ARayoVigia()
 	MallaRayo->SetupAttachment(RootComponent);
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube'"));
-	if (CubeAsset.Succeeded())
-	{
-		MallaRayo->SetStaticMesh(CubeAsset.Object);
-	}
+	if (CubeAsset.Succeeded()) MallaRayo->SetStaticMesh(CubeAsset.Object);
 
 	MallaRayo->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	MallaRayo->SetCollisionResponseToAllChannels(ECR_Ignore);
+	MallaRayo->SetHiddenInGame(true);
 
-	MallaRayo->SetHiddenInGame(false);
-	SetActorHiddenInGame(false);
+	EfectoRayoNiagara = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EfectoRayoNiagara"));
+	EfectoRayoNiagara->SetupAttachment(RootComponent);
+
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> RayoAsset(TEXT("NiagaraSystem'/Game/sA_Rayvfx/Fx/NiagaraSystems/NS_Ray_4.NS_Ray_4'"));
+	if (RayoAsset.Succeeded()) EfectoRayoNiagara->SetAsset(RayoAsset.Object);
 }
 
 void ARayoVigia::BeginPlay()
@@ -38,22 +41,48 @@ void ARayoVigia::BeginPlay()
 	Super::BeginPlay();
 }
 
+void ARayoVigia::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	ACentCosmosPawn* Jugador = Cast<ACentCosmosPawn>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+	if (Jugador)
+	{
+		float Distancia = FVector::Dist(GetActorLocation(), Jugador->GetActorLocation());
+
+		if (Distancia <= DistanciaActivacion)
+		{
+			EfectoRayoNiagara->SetVisibility(true);
+			if (!EfectoRayoNiagara->IsActive())
+			{
+				EfectoRayoNiagara->Activate(true);
+			}
+			ActualizarLongitudRayo();
+		}
+		else
+		{
+			EfectoRayoNiagara->SetVisibility(false);
+			MallaRayo->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		}
+	}
+}
+
 void ARayoVigia::ActualizarLongitudRayo()
 {
 	if (!MallaRayo) return;
+	MallaRayo->SetHiddenInGame(true);
 
-	MallaRayo->SetHiddenInGame(false);
+	FVector OriginLocation = GetActorLocation();
+	FVector DireccionDisparo = GetActorForwardVector();
 
-	FVector OriginLocation = MallaRayo->GetComponentLocation();
-	FVector DireccionDisparo = MallaRayo->GetRightVector();
-
-	FVector StartLocation = OriginLocation + (DireccionDisparo * 150.f);
+	float OffsetInicio = 0.f;
+	FVector StartLocation = OriginLocation + (DireccionDisparo * OffsetInicio);
 	FVector EndLocation = StartLocation + (DireccionDisparo * LongitudMaxima);
 
-	FHitResult HitResult;
 	FCollisionQueryParams CollisionParams;
-
 	CollisionParams.AddIgnoredActor(this);
+	CollisionParams.bTraceComplex = false;
+
 	if (GetOwner())
 	{
 		CollisionParams.AddIgnoredActor(GetOwner());
@@ -63,41 +92,47 @@ void ARayoVigia::ActualizarLongitudRayo()
 	}
 
 	float LongitudActual = LongitudMaxima;
+	FCollisionShape FormaRayo = FCollisionShape::MakeSphere(15.0f);
 
-	// === EL TRUCO: Un rayo "grueso" de 50 de radio para no fallar el tiro ===
-	FCollisionShape FormaRayo = FCollisionShape::MakeSphere(50.0f);
+	FCollisionObjectQueryParams ObjectParams;
+	ObjectParams.AddObjectTypesToQuery(ECC_Pawn);
+	ObjectParams.AddObjectTypesToQuery(ECC_PhysicsBody);
+	ObjectParams.AddObjectTypesToQuery(ECC_WorldDynamic);
 
-	// === BUSCAR SOLO NAVES (Ignoramos paredes y escudos irrelevantes) ===
-	FCollisionObjectQueryParams ObjectParams(ECollisionChannel::ECC_Pawn);
+	TArray<FHitResult> HitResults;
 
-	// Usamos SweepSingleByObjectType en lugar de LineTrace
-	if (GetWorld()->SweepSingleByObjectType(HitResult, StartLocation, EndLocation, FQuat::Identity, ObjectParams, FormaRayo, CollisionParams))
+	if (GetWorld()->SweepMultiByObjectType(HitResults, StartLocation, EndLocation, FQuat::Identity, ObjectParams, FormaRayo, CollisionParams))
 	{
-		LongitudActual = HitResult.Distance + 150.f;
-
-		// CHIVATO: Esto imprimirá en amarillo qué está tocando el rayo
-		if (GEngine && HitResult.GetActor())
+		for (const FHitResult& Hit : HitResults)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Yellow, FString::Printf(TEXT("Rayo Vigia toco a: %s"), *HitResult.GetActor()->GetName()));
-		}
+			AActor* ActorGolpeado = Hit.GetActor();
 
-		// Si lo que tocó fue tu nave, le restamos la vida
-		ACentCosmosPawn* NaveImpactada = Cast<ACentCosmosPawn>(HitResult.GetActor());
-		if (NaveImpactada)
-		{
-			if (bPuedeHacerDanio)
+			if (ActorGolpeado && ActorGolpeado->IsA(ACentCosmosPawn::StaticClass()))
 			{
-				NaveImpactada->RecibirDanioNave(15.0f);
-				bPuedeHacerDanio = false;
-				GetWorld()->GetTimerManager().SetTimer(TimerCooldownRayo, this, &ARayoVigia::ResetearDanioRayo, 2.0f, false);
+				ACentCosmosPawn* NaveImpactada = Cast<ACentCosmosPawn>(ActorGolpeado);
+				LongitudActual = Hit.Distance;
+
+				if (bPuedeHacerDanio)
+				{
+					if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("¡Nave detectada por el Vigia! Aplicando Daño..."));
+
+					NaveImpactada->RecibirDanioNave(15.0f);
+					bPuedeHacerDanio = false;
+					GetWorld()->GetTimerManager().SetTimer(TimerCooldownRayo, this, &ARayoVigia::ResetearDanioRayo, 2.0f, false);
+				}
+				break;
 			}
 		}
 	}
 
 	float FactorEscalaY = LongitudActual / 100.f;
+	float DesplazamientoVisualY = (LongitudActual * 0.5f) + OffsetInicio;
 
 	MallaRayo->SetRelativeScale3D(FVector(0.15f, FactorEscalaY, 0.15f));
-	MallaRayo->SetRelativeLocation(FVector(0.f, LongitudActual * 0.5f, 0.f));
+	MallaRayo->SetRelativeLocation(FVector(DesplazamientoVisualY, 0.f, 0.f));
+
+	EfectoRayoNiagara->SetRelativeScale3D(FVector(1.0f, 1.0f, 1.0f));
+	EfectoRayoNiagara->SetRelativeLocation(FVector(OffsetInicio, 0.f, 0.f));
 }
 
 void ARayoVigia::ResetearDanioRayo()

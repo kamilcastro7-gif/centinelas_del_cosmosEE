@@ -6,7 +6,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "UObject/ConstructorHelpers.h"
-#include "CentCosmosPawn.h" // <-- IMPORTANTE: Para poder dañar a tu nave
+#include "CentCosmosPawn.h" 
+#include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
 
 AProyectilBase::AProyectilBase()
 {
@@ -23,6 +25,16 @@ AProyectilBase::AProyectilBase()
     MallaProyectil->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
     MallaProyectil->OnComponentBeginOverlap.AddDynamic(this, &AProyectilBase::OnOverlap);
 
+    MallaProyectil->SetHiddenInGame(true);
+
+    EfectoProyectil = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EfectoProyectil"));
+    EfectoProyectil->SetupAttachment(RootComponent);
+
+    static ConstructorHelpers::FObjectFinder<UNiagaraSystem> EnergiaAsset(TEXT("NiagaraSystem'/Game/sA_Rayvfx/Fx/NiagaraSystems/NS_Energy_1.NS_Energy_1'"));
+    if (EnergiaAsset.Succeeded()) {
+        EfectoProyectil->SetAsset(EnergiaAsset.Object);
+    }
+
     MovimientoProyectil = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("MovimientoProyectil"));
     MovimientoProyectil->bRotationFollowsVelocity = true;
     MovimientoProyectil->ProjectileGravityScale = 0.0f;
@@ -38,17 +50,16 @@ void AProyectilBase::BeginPlay() { Super::BeginPlay(); }
 void AProyectilBase::Tick(float DeltaTime) {
     Super::Tick(DeltaTime);
 
-    FVector NuevaUbicacion = GetActorLocation() + (GetActorForwardVector() * MovimientoProyectil->InitialSpeed * DeltaTime);
-    // TODO: Conflicto con UProjectileMovementComponent activo.
-    // Usar solo uno: o el componente o este movimiento manual.
-    SetActorLocation(NuevaUbicacion);
-
     if (bEsSeguidor) {
         AActor* Jugador = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
         if (Jugador) {
+            
             FRotator RotacionObjetivo = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Jugador->GetActorLocation());
             FRotator NuevaRotacion = FMath::RInterpTo(GetActorRotation(), RotacionObjetivo, DeltaTime, 2.0f);
+
             SetActorRotation(NuevaRotacion);
+
+            MovimientoProyectil->Velocity = NuevaRotacion.Vector() * MovimientoProyectil->MaxSpeed;
         }
     }
 }
@@ -61,7 +72,7 @@ void AProyectilBase::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
         if (NaveJugador)
         {
             NaveJugador->RecibirDanioNave(Danio);
-            Destroy();
+            Destroy(); 
         }
     }
 }

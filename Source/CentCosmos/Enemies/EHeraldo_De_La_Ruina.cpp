@@ -5,10 +5,14 @@
 #include "ProyectilBase.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/SkeletalMeshComponent.h" // NUEVO
 #include "GameFramework/ProjectileMovementComponent.h"
 
 AEHeraldo_De_La_Ruina::AEHeraldo_De_La_Ruina() {
-    VelocidadHeraldo = 350.0f;
+    // Es importante activar el Tick para este enemigo
+    PrimaryActorTick.bCanEverTick = true;
+
+    VelocidadHeraldo = 150.0f;
     bEstaPersiguiendo = true;
     TimerEstadoHeraldo = 0.0f;
     Tags.Add(FName("Enemigo"));
@@ -16,16 +20,49 @@ AEHeraldo_De_La_Ruina::AEHeraldo_De_La_Ruina() {
     VidaActual = 40.0f;
     DanioDeChoque = 5.0f;
 
+    // 1. EL TRUCO DE LA HITBOX: El cubo base se vuelve invisible
     static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube'"));
     if (MeshAsset.Succeeded()) {
         MallaEnemigo->SetStaticMesh(MeshAsset.Object);
     }
+
+    if (MallaEnemigo) {
+        MallaEnemigo->SetHiddenInGame(true);
+        MallaEnemigo->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+        MallaEnemigo->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+        MallaEnemigo->SetGenerateOverlapEvents(true);
+    }
+
+    // 2. MALLA DEL HERALDO: Solo visual
+    MallaHeraldo = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MallaHeraldo"));
+    if (RootComponent) {
+        MallaHeraldo->SetupAttachment(RootComponent); // Se pega al cubo invisible
+    }
+
+    static ConstructorHelpers::FObjectFinder<USkeletalMesh> DroneAsset(TEXT("SkeletalMesh'/Game/Scifi_Survey_Drones/Drone_02/Meshes/SK_Sci-fi_Survey_Drone_02.SK_Sci-fi_Survey_Drone_02'"));
+    if (DroneAsset.Succeeded()) {
+        MallaHeraldo->SetSkeletalMesh(DroneAsset.Object);
+    }
+
+    // --- ESCALA DEL ASSET --- 
+    // Lo hacemos x4 veces más grande (Puedes subir a 5.0f o bajar a 3.0f según prefieras)
+    MallaHeraldo->SetRelativeScale3D(FVector(4.0f, 4.0f, 4.0f));
+
+    // Apagamos la colisión visual para que el cubo haga todo el trabajo matemático
+    MallaHeraldo->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AEHeraldo_De_La_Ruina::BeginPlay() {
     Super::BeginPlay();
     FTimerHandle TimerHandle_Ataque;
     GetWorld()->GetTimerManager().SetTimer(TimerHandle_Ataque, this, &AEHeraldo_De_La_Ruina::HerAtacar, 10.0f, true);
+}
+
+// NUEVO: Ejecutamos el movimiento en cada frame
+void AEHeraldo_De_La_Ruina::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+    moverHeraldo();
 }
 
 void AEHeraldo_De_La_Ruina::moverHeraldo()
@@ -91,21 +128,21 @@ void AEHeraldo_De_La_Ruina::HerAtacar() {
     FVector Ubicacion = GetActorLocation() + (GetActorForwardVector() * 200.f);
     FRotator Rotacion = GetActorRotation();
 
-    AProyectilBase* GranEsfera = GetWorld()->SpawnActor<AProyectilBase>(AProyectilBase::StaticClass(), Ubicacion, Rotacion);
+    // Parámetros de aparición para no lastimarse a sí mismo
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+    SpawnParams.Instigator = GetInstigator();
+
+    AProyectilBase* GranEsfera = GetWorld()->SpawnActor<AProyectilBase>(AProyectilBase::StaticClass(), Ubicacion, Rotacion, SpawnParams);
 
     if (GranEsfera) {
         GranEsfera->bEsSeguidor = true;
-        GranEsfera->Danio = 5.0f;      // Mantiene sus 5 puntos de daño a la nave
+        GranEsfera->Danio = 5.0f;
 
-        // =========================================================================
-        // NUEVO BALANCE: Desaparece automáticamente tras 6 segundos de persecución
-        // =========================================================================
+        // Desaparece automáticamente tras 6 segundos de persecución
         GranEsfera->SetLifeSpan(6.0f);
 
         if (GranEsfera->MovimientoProyectil) {
-            // =========================================================================
-            // NUEVO BALANCE: Mayor velocidad inicial y máxima para presionar al jugador
-            // =========================================================================
             GranEsfera->MovimientoProyectil->InitialSpeed = 950.f;
             GranEsfera->MovimientoProyectil->MaxSpeed = 1200.f;
             GranEsfera->MovimientoProyectil->bShouldBounce = false;
@@ -114,7 +151,7 @@ void AEHeraldo_De_La_Ruina::HerAtacar() {
             GranEsfera->MovimientoProyectil->bIsHomingProjectile = true;
             GranEsfera->MovimientoProyectil->HomingTargetComponent = Jugador->GetRootComponent();
 
-            // Fuerza de aceleración del giro para que no pierda el rastro a altas velocidades
+            // Fuerza de aceleración del giro
             GranEsfera->MovimientoProyectil->HomingAccelerationMagnitude = 4500.f;
         }
     }

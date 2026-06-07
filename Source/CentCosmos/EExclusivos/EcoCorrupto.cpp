@@ -26,7 +26,7 @@ AEcoCorrupto::AEcoCorrupto()
 	MallaPiramide = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MallaPiramide"));
 	RootComponent = MallaPiramide;
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> PiramideAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_QuadPyramid.Shape_QuadPyramid'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> PiramideAsset(TEXT("StaticMesh'/Game/TwinStick/Meshes/TwinStickUFO.TwinStickUFO'"));
 	if (PiramideAsset.Succeeded())
 	{
 		MallaPiramide->SetStaticMesh(PiramideAsset.Object);
@@ -38,7 +38,7 @@ AEcoCorrupto::AEcoCorrupto()
 	MallaNaveEco->SetRelativeScale3D(FVector(0.8f, 0.8f, 0.8f));
 
 	// Aquí deberías colocar la ruta de tu malla de nave real
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> NaveAsset(TEXT("StaticMesh'/Game/TwinStick/Meshes/TwinStickUFO.TwinStickUFO'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> NaveAsset(TEXT("/Game/StarterContent/Shapes/Meshy_AI_Nebula_Vanguard_0525182523_generate.Meshy_AI_Nebula_Vanguard_0525182523_generate"));
 	if (NaveAsset.Succeeded())
 	{
 		MallaNaveEco->SetStaticMesh(NaveAsset.Object);

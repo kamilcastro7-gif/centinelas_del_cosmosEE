@@ -5,11 +5,15 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/World.h"
 #include "../Player/CentCosmosPawn.h"
+// --- NUEVOS INCLUDES PARA NIAGARA ---
+#include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
 
 AProyectilEspectro::AProyectilEspectro()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
+	// 1. HITBOX INVISIBLE: La esfera base
 	ProyectilMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ProyectilMesh"));
 	RootComponent = ProyectilMesh;
 
@@ -19,23 +23,36 @@ AProyectilEspectro::AProyectilEspectro()
 		ProyectilMesh->SetStaticMesh(SphereMesh.Object);
 	}
 
+	// Ocultamos la esfera visualmente
+	ProyectilMesh->SetHiddenInGame(true);
 	ProyectilMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	ProyectilMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 
 	SetActorScale3D(FVector(0.4f, 0.4f, 0.4f));
-	// Cambia esta línea dentro del constructor AProyectilEspectro::AProyectilEspectro()
-	Velocidad = 2300.0f; // Ataque ráfaga veloz para poner a prueba los reflejos del jugador
+
+	// 2. EFECTO VISUAL NIAGARA
+	EfectoNiagara = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EfectoNiagara"));
+	EfectoNiagara->SetupAttachment(RootComponent);
+
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> NiagaraAsset(TEXT("NiagaraSystem'/Game/sA_Rayvfx/Fx/NiagaraSystems/NS_Energy_3.NS_Energy_3'"));
+	if (NiagaraAsset.Succeeded())
+	{
+		EfectoNiagara->SetAsset(NiagaraAsset.Object);
+	}
+
+	// Velocidad del proyectil (Ráfaga veloz)
+	Velocidad = 2300.0f;
 }
 
 void AProyectilEspectro::BeginPlay()
 {
-	AActor::BeginPlay();
+	Super::BeginPlay();
 	SetLifeSpan(3.0f); // Límite para que no viaje al infinito
 }
 
 void AProyectilEspectro::Tick(float DeltaTime)
 {
-	AActor::Tick(DeltaTime);
+	Super::Tick(DeltaTime);
 	FVector NuevaPosicion = GetActorLocation() + (GetActorForwardVector() * Velocidad * DeltaTime);
 	SetActorLocation(NuevaPosicion);
 }

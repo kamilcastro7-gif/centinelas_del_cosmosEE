@@ -3,6 +3,7 @@
 #include "RastrosFuego.h"
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Particles/ParticleSystemComponent.h" // NUEVO: Librería de partículas
 #include "../Player/CentCosmosPawn.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
@@ -10,6 +11,8 @@
 ARastrosFuego::ARastrosFuego()
 {
 	PrimaryActorTick.bCanEverTick = false;
+
+	// --- 1. CONFIGURACIÓN DE LA ZONA DE DAÑO (INVISIBLE) ---
 	FuegoMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FuegoMesh"));
 	RootComponent = FuegoMesh;
 
@@ -18,6 +21,19 @@ ARastrosFuego::ARastrosFuego()
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> PlaneMesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Plane.Shape_Plane'"));
 	if (PlaneMesh.Succeeded()) FuegoMesh->SetStaticMesh(PlaneMesh.Object);
+
+	// Lo hacemos invisible durante el juego, pero su colisión sigue activa
+	FuegoMesh->SetHiddenInGame(true);
+
+	// --- 2. CONFIGURACIÓN DEL EFECTO VISUAL (PARTÍCULA) ---
+	EfectoFuego = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("EfectoFuego"));
+	EfectoFuego->SetupAttachment(RootComponent); // Se pega al centro de la malla invisible
+
+	// Inyectamos la partícula exacta que quieres
+	static ConstructorHelpers::FObjectFinder<UParticleSystem> ParticulaAsset(TEXT("ParticleSystem'/Game/AuraFX01/Particles/P_ky_aura05.P_ky_aura05'"));
+	if (ParticulaAsset.Succeeded()) {
+		EfectoFuego->SetTemplate(ParticulaAsset.Object);
+	}
 
 	JugadorEnFuego = nullptr;
 }

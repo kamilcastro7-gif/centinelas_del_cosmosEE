@@ -6,6 +6,8 @@
 #include "../EExclusivo.h"
 #include "DronAnclaje.generated.h"
 
+class USkeletalMeshComponent; // NUEVO: Para la malla visual del Fighter Drone
+
 UCLASS()
 class CENTCOSMOS_API ADronAnclaje : public AEExclusivo
 {
@@ -16,6 +18,11 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
+public:
+	// --- COMPONENTE VISUAL DEL DRON ---
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
+	USkeletalMeshComponent* MallaFighterDrone;
 
 private:
 	FTimerHandle TimerEscudoHandle;

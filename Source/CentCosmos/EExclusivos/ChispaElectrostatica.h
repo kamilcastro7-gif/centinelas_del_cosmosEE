@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "ChispaElectrostatica.generated.h"
 
+class UNiagaraComponent; // NUEVO: Para el sistema de partículas Niagara
+
 UCLASS()
 class CENTCOSMOS_API AChispaElectrostatica : public AActor
 {
@@ -22,8 +24,13 @@ public:
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 
 private:
+	// --- HITBOX INVISIBLE ---
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes", meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* ChispaMesh;
+
+	// --- EFECTO VISUAL NIAGARA ---
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes", meta = (AllowPrivateAccess = "true"))
+	UNiagaraComponent* EfectoNiagara;
 
 	FVector PosicionInicial;
 	float AmplitudFlotacion;

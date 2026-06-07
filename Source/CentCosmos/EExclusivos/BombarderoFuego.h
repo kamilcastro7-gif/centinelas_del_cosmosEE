@@ -6,6 +6,8 @@
 #include "../EExclusivo.h"
 #include "BombarderoFuego.generated.h"
 
+class USkeletalMeshComponent; // NUEVO: Declaración para la malla visual
+
 UCLASS()
 class CENTCOSMOS_API ABombarderoFuego : public AEExclusivo
 {
@@ -19,6 +21,10 @@ protected:
 
 public:
 	virtual void Tick(float DeltaTime) override;
+
+	// --- COMPONENTE VISUAL DEL DRON ---
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
+	USkeletalMeshComponent* MallaBombardero;
 
 private:
 	float VelocidadMovimiento;

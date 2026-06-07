@@ -10,16 +10,23 @@
 #include "TribunalBase/TribunalBase.h"
 #include "Escudo.h"
 #include "TribunalBase/PlacaMetal.h"
+// --- NUEVOS INCLUDES PARA NIAGARA ---
+#include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
 
 AProyectilBoomerang::AProyectilBoomerang()
 {
     PrimaryActorTick.bCanEverTick = true;
 
+    // 1. HITBOX INVISIBLE: Torus base
     static ConstructorHelpers::FObjectFinder<UStaticMesh> TorusMesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Torus.Shape_Torus'"));
     ProyectilMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BoomerangMesh"));
     RootComponent = ProyectilMesh;
 
     if (TorusMesh.Succeeded()) ProyectilMesh->SetStaticMesh(TorusMesh.Object);
+
+    // Ocultamos la malla visualmente
+    ProyectilMesh->SetHiddenInGame(true);
 
     // --- CORRECCIÓN 1: Colisión absoluta de superposición para que atraviese todo ---
     ProyectilMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -27,6 +34,16 @@ AProyectilBoomerang::AProyectilBoomerang()
 
     ProyectilMesh->OnComponentBeginOverlap.AddDynamic(this, &AProyectilBoomerang::OnOverlap);
     ProyectilMesh->SetRelativeScale3D(FVector(1.8f, 1.8f, 1.8f));
+
+    // 2. EFECTO VISUAL NIAGARA
+    EfectoNiagara = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EfectoNiagara"));
+    EfectoNiagara->SetupAttachment(RootComponent);
+
+    static ConstructorHelpers::FObjectFinder<UNiagaraSystem> NiagaraAsset(TEXT("NiagaraSystem'/Game/sA_Rayvfx/Fx/NiagaraSystems/NS_Energy_4.NS_Energy_4'"));
+    if (NiagaraAsset.Succeeded())
+    {
+        EfectoNiagara->SetAsset(NiagaraAsset.Object);
+    }
 
     Velocidad = 2000.f;
     TiempoDeGiro = 1.2f;
@@ -69,31 +86,17 @@ void AProyectilBoomerang::OnOverlap(UPrimitiveComponent* OverlappedComponent, AA
     if (OtherActor && OtherActor != this)
     {
         AEnjambre* EnemigoImpactado = Cast<AEnjambre>(OtherActor);
-        if (EnemigoImpactado)
-        {
-            EnemigoImpactado->RecibirDanioEnemigo(Danio);
-        }
+        if (EnemigoImpactado) { EnemigoImpactado->RecibirDanioEnemigo(Danio); }
 
-        // Enemigo Exclusivo
         AEExclusivo* ExclusivoImpactado = Cast<AEExclusivo>(OtherActor);
-        if (ExclusivoImpactado)
-        {
-            ExclusivoImpactado->RecibirDanoEnemigo(Danio);
-        }
+        if (ExclusivoImpactado) { ExclusivoImpactado->RecibirDanoEnemigo(Danio); }
 
         ATribunalBase* Tribunal = Cast<ATribunalBase>(OtherActor);
-        if (Tribunal)
-        {
-            Tribunal->RecibirDanioJefe(Danio);
-        }
+        if (Tribunal) { Tribunal->RecibirDanioJefe(Danio); }
 
         APlacaMetal* Placa = Cast<APlacaMetal>(OtherActor);
-        if (Placa)
-        {
-            Placa->RecibirDanioPlaca(Danio);
-        }
+        if (Placa) { Placa->RecibirDanioPlaca(Danio); }
 
-        // Escudos
         AEscudo* Escudo = Cast<AEscudo>(OtherActor);
         if (Escudo) Escudo->RecibirDanoEscudo(Danio);
 
@@ -101,7 +104,7 @@ void AProyectilBoomerang::OnOverlap(UPrimitiveComponent* OverlappedComponent, AA
         if (bRegresando && OtherActor == NaveDueno)
         {
             if (NaveDueno) NaveDueno->bBoomerangEnVuelo = false;
-            Destroy(); // Esto hace que desaparezca correctamente.
+            Destroy();
         }
     }
 }
