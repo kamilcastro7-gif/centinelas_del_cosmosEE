@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "Nivel1Builder.h"
 #include "Engine/World.h"
-#include "EnemyFactory.h"
 #include "GeneradorAmbientacion.h"
 #include "TribunalVigilante.h"
 #include "Engine/Engine.h"
@@ -10,6 +9,7 @@
 #include "ObstaculoSatelite.h"
 #include "ObstaculoRestos.h"
 #include "Kismet/GameplayStatics.h"
+// Nota: EnemyFactory.h ya viene incluido transitivamente desde Nivel1Builder.h
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constructor
@@ -140,7 +140,7 @@ void ANivel1Builder::SpawnHeraldos(AEnemyFactory* Factory, int32 Cantidad)
 {
     for (int32 i = 0; i < Cantidad; i++)
     {
-        FVector Pos = FVector(
+        FVector Pos = FVector(   
             FMath::RandRange(-800, 800),
             FMath::RandRange(-800, 800),
             150.f);
@@ -213,7 +213,7 @@ void ANivel1Builder::VerificarYSpawnearBoss(UWorld* World)
 
     // 3. Spawnear jefe (elevado para no quedar enterrado en el suelo)
     ATribunalVigilante* Boss = World->SpawnActor<ATribunalVigilante>(
-        ATribunalVigilante::StaticClass(), FVector(0.f, 0.f, 250.f), FRotator::ZeroRotator, Params);
+        ATribunalVigilante::StaticClass(), FVector(0.f, 0.f,0.f), FRotator::ZeroRotator, Params);
 
     if (Boss)
     {
