@@ -5,11 +5,10 @@
 #include "ProyectilBase.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Components/StaticMeshComponent.h"
-#include "Components/SkeletalMeshComponent.h" // NUEVO
+#include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
 AEHeraldo_De_La_Ruina::AEHeraldo_De_La_Ruina() {
-    // Es importante activar el Tick para este enemigo
     PrimaryActorTick.bCanEverTick = true;
 
     VelocidadHeraldo = 150.0f;
@@ -20,23 +19,28 @@ AEHeraldo_De_La_Ruina::AEHeraldo_De_La_Ruina() {
     VidaActual = 40.0f;
     DanioDeChoque = 5.0f;
 
-    // 1. EL TRUCO DE LA HITBOX: El cubo base se vuelve invisible
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube'"));
+    // =========================================================================
+    // 1. CORRECCIÓN DE HITBOX RAÍZ: Usar Esfera y escala uniforme (1.0)
+    // =========================================================================
+    // Reemplaza Cube por Shape_Sphere
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
     if (MeshAsset.Succeeded()) {
         MallaEnemigo->SetStaticMesh(MeshAsset.Object);
     }
 
     if (MallaEnemigo) {
+        // Escala uniforme 1.0f para la hitbox para evitar shearing
+        MallaEnemigo->SetRelativeScale3D(FVector(1.0f, 1.0f, 1.0f));
         MallaEnemigo->SetHiddenInGame(true);
         MallaEnemigo->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
         MallaEnemigo->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
         MallaEnemigo->SetGenerateOverlapEvents(true);
     }
 
-    // 2. MALLA DEL HERALDO: Solo visual
+    // 2. MALLA DEL HERALDO VISUAL
     MallaHeraldo = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MallaHeraldo"));
     if (RootComponent) {
-        MallaHeraldo->SetupAttachment(RootComponent); // Se pega al cubo invisible
+        MallaHeraldo->SetupAttachment(RootComponent); // Se pega a la esfera invisible
     }
 
     static ConstructorHelpers::FObjectFinder<USkeletalMesh> DroneAsset(TEXT("SkeletalMesh'/Game/Scifi_Survey_Drones/Drone_02/Meshes/SK_Sci-fi_Survey_Drone_02.SK_Sci-fi_Survey_Drone_02'"));
@@ -44,11 +48,16 @@ AEHeraldo_De_La_Ruina::AEHeraldo_De_La_Ruina() {
         MallaHeraldo->SetSkeletalMesh(DroneAsset.Object);
     }
 
-    // --- ESCALA DEL ASSET --- 
-    // Lo hacemos x4 veces más grande (Puedes subir a 5.0f o bajar a 3.0f según prefieras)
+    // =========================================================================
+    // CORRECCIÓN DE ALINEAMIENTO: Girar -90 grados a la MALLA VISUAL
+    // =========================================================================
+    // Basado en image_8.png, este dron mira hacia la derecha, lo compensamos con -90 yaw (rotar izquierda).
+    MallaHeraldo->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
+
+    // Escala del dron: Ajustado a 4.0 para que sea grande como querías, pero sin la esfera gigante.
     MallaHeraldo->SetRelativeScale3D(FVector(4.0f, 4.0f, 4.0f));
 
-    // Apagamos la colisión visual para que el cubo haga todo el trabajo matemático
+    // Apagamos la colisión visual
     MallaHeraldo->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 

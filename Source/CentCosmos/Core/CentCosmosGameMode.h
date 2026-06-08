@@ -3,7 +3,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "Patterns/Builder/NivelDirector.h"       
 #include "Patterns/Builder/Nivel1Builder.h"   
-#include "Facade.h"                               
+#include "Facade.h"
+#include "GestorNiveles.h"
 #include "CentCosmosGameMode.generated.h"
 
 UCLASS()
@@ -21,6 +22,8 @@ private:
     UPROPERTY() ANivelDirector* Director;
     UPROPERTY() ANivel1Builder* BuilderFacil;
     UPROPERTY() AFacade* ManejadorHorda;
+
+    AGestorNiveles* GestorNiveles;
 
     FTimerHandle TimerHandle_InputFix;
     void RestaurarInputJugador();

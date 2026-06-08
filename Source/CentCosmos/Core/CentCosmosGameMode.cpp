@@ -2,6 +2,7 @@
 #include "CentCosmosPawn.h"
 #include "CentCosmos.h"
 #include "Engine/World.h"
+#include "GestorNiveles.h" // AGREGADO: Para la música y el Patrón State
 
 ACentCosmosGameMode::ACentCosmosGameMode()
 {
@@ -10,6 +11,7 @@ ACentCosmosGameMode::ACentCosmosGameMode()
     Director = nullptr;
     BuilderFacil = nullptr;
     ManejadorHorda = nullptr;
+    GestorNiveles = nullptr; // AGREGADO: Inicialización segura
 }
 
 void ACentCosmosGameMode::BeginPlay()
@@ -26,10 +28,13 @@ void ACentCosmosGameMode::BeginPlay()
     BuilderFacil = Mundo->SpawnActor<ANivel1Builder>(ANivel1Builder::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
     ManejadorHorda = Mundo->SpawnActor<AFacade>(AFacade::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
 
+    // AGREGADO: Instanciamos el Gestor Central. Él mismo activará el EstadoNivel1 y la música.
+    GestorNiveles = Mundo->SpawnActor<AGestorNiveles>(AGestorNiveles::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
+
     if (Director && BuilderFacil)
     {
         Director->SetBuilder(TScriptInterface<INivelBuilder>(BuilderFacil));
-        Director->ConstruirNivel(Mundo, TEXT("Nivel_Facil"), 300.0f, 1.0f);
+        Director->ConstruirNivel(Mundo, TEXT("Nivel_Facil"), 300.0f, 1.0f); // INTACTO: Tus parámetros originales
     }
 
     // Esperar un frame para que el PC y el Pawn estén completamente inicializados
