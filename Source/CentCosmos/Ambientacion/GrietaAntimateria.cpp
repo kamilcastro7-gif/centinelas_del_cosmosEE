@@ -13,17 +13,22 @@ AGrietaAntimateria::AGrietaAntimateria()
     MeshGrieta = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshGrieta"));
     RootComponent = MeshGrieta;
 
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Assetssss/A2/Meshy_AI_Celestial_Rift_in_Sto_0607091125_texture.Meshy_AI_Celestial_Rift_in_Sto_0607091125_texture'"));
     if (MeshAsset.Succeeded())
     {
         MeshGrieta->SetStaticMesh(MeshAsset.Object);
-        MeshGrieta->SetWorldScale3D(FVector(2.0f, 2.0f, 2.0f));
+
+        // Mantienes tu escala original (Nota: mejor usar SetRelativeScale3D en el constructor)
+        MeshGrieta->SetRelativeScale3D(FVector(2.0f, 2.0f, 2.0f));
+
+        // --- AQUÍ ESTÁ LA MAGIA ---
+        // Rotamos la malla 90 grados para que la cara frontal mire hacia la cámara
+        // Si no queda exactamente de frente, cambia el 90.0f al segundo valor (Yaw) o al tercero (Roll)
+        MeshGrieta->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));
     }
 
     MeshGrieta->SetCollisionProfileName(TEXT("BlockAll"));
     MeshGrieta->SetGenerateOverlapEvents(true);
-
-    // ELIMIN� EL PROJECTILEMOVEMENT AQU� PORQUE LA GRIETA NO SE MUEVE
 }
 
 void AGrietaAntimateria::ProcesarImpacto()

@@ -6,6 +6,8 @@
 #include "../EExclusivo.h" 
 #include "EspectroErrante.generated.h"
 
+class UParticleSystemComponent; // NUEVO: Para el sistema de partículas Cascade
+
 UCLASS()
 class CENTCOSMOS_API AEspectroErrante : public AEExclusivo
 {
@@ -29,8 +31,13 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Componentes")
 	class UStaticMeshComponent* MallaCuerpo;
 
+	// --- HITBOX INVISIBLE DEL NÚCLEO ---
 	UPROPERTY(VisibleAnywhere, Category = "Componentes")
 	class UStaticMeshComponent* MallaNucleo;
+
+	// --- EFECTO VISUAL DEL AURA ---
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes", meta = (AllowPrivateAccess = "true"))
+	UParticleSystemComponent* EfectoAura;
 
 	float VelocidadFlotacion;
 	FTimerHandle TimerFaseInvisibleHandle;

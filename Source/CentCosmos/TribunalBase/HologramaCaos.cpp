@@ -16,7 +16,7 @@ AHologramaCaos::AHologramaCaos()
 
     MallaHolograma->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Wedge_B.Shape_Wedge_B'"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Assetssss/A17/Meshy_AI_Nebula_Leviathan_0607222721_texture.Meshy_AI_Nebula_Leviathan_0607222721_texture'"));
     if (MeshAsset.Succeeded())
     {
         MallaHolograma->SetStaticMesh(MeshAsset.Object);

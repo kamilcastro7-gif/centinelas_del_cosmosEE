@@ -6,17 +6,23 @@
 #include "PowerUp.h"
 #include "NucleoEter.generated.h"
 
+class UParticleSystemComponent; // NUEVO: Sistema de partículas Cascade
+
 UCLASS()
 class CENTCOSMOS_API ANucleoEter : public APowerUp
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
 public:
-    ANucleoEter();
+	ANucleoEter();
 
 protected:
-    virtual void AplicarEfecto(class ACentCosmosPawn* Nave) override;
+	virtual void AplicarEfecto(class ACentCosmosPawn* Nave) override;
 
 private:
-    float CantidadCuracion;
+	// --- EFECTO VISUAL AURA ---
+	UPROPERTY(VisibleAnywhere, Category = "Componentes")
+	UParticleSystemComponent* EfectoAura;
+
+	float CantidadCuracion;
 };

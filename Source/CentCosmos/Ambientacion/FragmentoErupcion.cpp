@@ -15,7 +15,7 @@ AFragmentoErupcion::AFragmentoErupcion()
     FragmentoMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FragmentoMesh"));
     RootComponent = FragmentoMesh;
 
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMesh(TEXT("StaticMesh'/Engine/BasicShapes/Cube.Cube'"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMesh(TEXT("StaticMesh'/Game/Assetssss/A1/Meshy_AI_Emberfall_Asteroid_0607090308_texture.Meshy_AI_Emberfall_Asteroid_0607090308_texture'"));
     if (CubeMesh.Succeeded()) FragmentoMesh->SetStaticMesh(CubeMesh.Object);
 
     FragmentoMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));

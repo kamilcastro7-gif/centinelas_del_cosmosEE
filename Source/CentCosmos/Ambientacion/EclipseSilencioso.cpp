@@ -5,23 +5,40 @@
 #include "TimerManager.h"
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
+// --- NUEVOS INCLUDES PARA CASCADE ---
+#include "Particles/ParticleSystemComponent.h"
+#include "Particles/ParticleSystem.h"
 
 AEclipseSilencioso::AEclipseSilencioso()
 {
-	PrimaryActorTick.bCanEverTick = false; // Ya no necesitamos Tick
+	PrimaryActorTick.bCanEverTick = false;
 
+	// 1. HITBOX INVISIBLE
 	EclipseMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("EclipseMesh"));
 	RootComponent = EclipseMesh;
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Game/StarterContent/Shapes/Shape_Cone.Shape_Cone"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cone.Shape_Cone'"));
 	if (MeshAsset.Succeeded())
 	{
 		EclipseMesh->SetStaticMesh(MeshAsset.Object);
 	}
 
+	// Ocultamos el cono visualmente
+	EclipseMesh->SetHiddenInGame(true);
+
 	// --- ACTIVAMOS EL SENSOR DE COLISIÓN ---
 	EclipseMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 	EclipseMesh->SetGenerateOverlapEvents(true);
+
+	// 2. EFECTO VISUAL (AURA CASCADE)
+	EfectoAura = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("EfectoAura"));
+	EfectoAura->SetupAttachment(RootComponent);
+
+	static ConstructorHelpers::FObjectFinder<UParticleSystem> AuraAsset(TEXT("ParticleSystem'/Game/AuraFX01/Particles/P_ky_aura26.P_ky_aura26'"));
+	if (AuraAsset.Succeeded())
+	{
+		EfectoAura->SetTemplate(AuraAsset.Object);
+	}
 }
 
 void AEclipseSilencioso::BeginPlay()
@@ -53,6 +70,7 @@ void AEclipseSilencioso::NotifyActorBeginOverlap(AActor* OtherActor)
 		Nave->bPuedeDisparar = false;
 
 		// 2. Escondemos el Eclipse y apagamos su colisión (parecerá que se destruyó)
+		// ¡Esto ocultará automáticamente el EfectoAura!
 		SetActorHiddenInGame(true);
 		SetActorEnableCollision(false);
 		GetWorldTimerManager().ClearTimer(DashTimerHandle); // Detenemos el dash

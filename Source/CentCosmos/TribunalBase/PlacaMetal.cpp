@@ -12,7 +12,7 @@ APlacaMetal::APlacaMetal()
 	MallaPlaca = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MallaPlaca"));
 	RootComponent = MallaPlaca;
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> SphereAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> SphereAsset(TEXT("StaticMesh'/Game/Assetssss/A11/Meshy_AI_Cosmic_Portal_Disk_0607221525_texture.Meshy_AI_Cosmic_Portal_Disk_0607221525_texture'"));
 	if (SphereAsset.Succeeded())
 	{
 		MallaPlaca->SetStaticMesh(SphereAsset.Object);

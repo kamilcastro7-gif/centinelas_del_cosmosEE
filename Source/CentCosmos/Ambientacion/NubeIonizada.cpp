@@ -12,7 +12,7 @@ ANubeIonizada::ANubeIonizada()
     MallaNube = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MallaNube"));
     RootComponent = MallaNube;
 
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> PlaneAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube'"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> PlaneAsset(TEXT("StaticMesh'/Game/Assetssss/A3/Meshy_AI_Ember_Nebula_0607042041_texture.Meshy_AI_Ember_Nebula_0607042041_texture'"));
     if (PlaneAsset.Succeeded()) MallaNube->SetStaticMesh(PlaneAsset.Object);
 
     // --- CONFIGURACI�N DE COLISI�N ---
@@ -22,7 +22,7 @@ ANubeIonizada::ANubeIonizada()
     MallaNube->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
     MallaNube->SetGenerateOverlapEvents(true);
 
-    MallaNube->SetRelativeScale3D(FVector(15.0f, 15.0f, 0.7f));
+    MallaNube->SetRelativeScale3D(FVector(6.0f, 6.0f, 6.0f));
 
     // Valores por defecto
     VelocidadY = 200.0f;

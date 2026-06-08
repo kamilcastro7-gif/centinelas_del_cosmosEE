@@ -29,7 +29,7 @@ ATribunal_Ira::ATribunal_Ira()
     if (MallaTribunal)
     {
         MallaTribunal->SetMobility(EComponentMobility::Movable);
-        static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Wedge_A.Shape_Wedge_A'"));
+        static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Assetssss/A15/Meshy_AI_Crimson_Leviathan_0607221113_texture.Meshy_AI_Crimson_Leviathan_0607221113_texture'"));
         if (MeshAsset.Succeeded())
         {
             MallaTribunal->SetStaticMesh(MeshAsset.Object);

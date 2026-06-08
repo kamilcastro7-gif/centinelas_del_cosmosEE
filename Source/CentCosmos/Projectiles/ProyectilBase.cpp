@@ -22,7 +22,11 @@ AProyectilBase::AProyectilBase()
         MallaProyectil->SetStaticMesh(MeshAsset.Object);
     }
 
-    MallaProyectil->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+    MallaProyectil->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+    MallaProyectil->SetCollisionResponseToAllChannels(ECR_Ignore); 
+    MallaProyectil->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); 
+    MallaProyectil->SetGenerateOverlapEvents(true);
+
     MallaProyectil->OnComponentBeginOverlap.AddDynamic(this, &AProyectilBase::OnOverlap);
 
     MallaProyectil->SetHiddenInGame(true);
@@ -53,7 +57,7 @@ void AProyectilBase::Tick(float DeltaTime) {
     if (bEsSeguidor) {
         AActor* Jugador = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
         if (Jugador) {
-            
+
             FRotator RotacionObjetivo = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Jugador->GetActorLocation());
             FRotator NuevaRotacion = FMath::RInterpTo(GetActorRotation(), RotacionObjetivo, DeltaTime, 2.0f);
 
@@ -72,7 +76,7 @@ void AProyectilBase::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
         if (NaveJugador)
         {
             NaveJugador->RecibirDanioNave(Danio);
-            Destroy(); 
+            Destroy();
         }
     }
 }

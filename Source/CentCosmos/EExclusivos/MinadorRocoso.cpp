@@ -16,12 +16,13 @@ AMinadorRocoso::AMinadorRocoso()
 
 	EstadoActual = EMinadorEstado::Posicionandose;
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> PipeMesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Pipe.Shape_Pipe'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> PipeMesh(TEXT("StaticMesh'/Game/Assetssss/A6/Meshy_AI_Deep_Space_Asteroid_M_0607153836_texture.Meshy_AI_Deep_Space_Asteroid_M_0607153836_texture'"));
 
 	if (PipeMesh.Succeeded() && EnemigoMesh != nullptr)
 	{
 		EnemigoMesh->SetStaticMesh(PipeMesh.Object);
 	}
+	SetActorScale3D(FVector(2.f, 2.f, 2.f));
 }
 
 void AMinadorRocoso::BeginPlay()

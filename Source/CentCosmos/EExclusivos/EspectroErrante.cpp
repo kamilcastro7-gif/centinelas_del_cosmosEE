@@ -6,6 +6,8 @@
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "ProyectilEspectro.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Particles/ParticleSystem.h"
 
 AEspectroErrante::AEspectroErrante()
 {
@@ -15,10 +17,11 @@ AEspectroErrante::AEspectroErrante()
 	MallaCuerpo = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MallaCuerpo"));
 	RootComponent = MallaCuerpo;
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> TrimMesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Trim.Shape_Trim'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> TrimMesh(TEXT("StaticMesh'/Game/Assetssss/A9/Meshy_AI_Crimson_Wing_Starfigh_0607190303_texture.Meshy_AI_Crimson_Wing_Starfigh_0607190303_texture'"));
 	if (TrimMesh.Succeeded()) MallaCuerpo->SetStaticMesh(TrimMesh.Object);
 	MallaCuerpo->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+	// 1. HITBOX INVISIBLE: Malla del Núcleo
 	MallaNucleo = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MallaNucleo"));
 	MallaNucleo->SetupAttachment(RootComponent);
 
@@ -26,7 +29,23 @@ AEspectroErrante::AEspectroErrante()
 	if (BasicSphere.Succeeded()) MallaNucleo->SetStaticMesh(BasicSphere.Object);
 
 	MallaNucleo->SetRelativeLocation(FVector(0.0f, 0.0f, 45.0f));
-	MallaNucleo->SetRelativeScale3D(FVector(0.5f, 0.5f, 0.5f));
+
+	// ¡AUMENTAMOS EL TAMAÑO DE LA HITBOX! Y la volvemos invisible
+	MallaNucleo->SetRelativeScale3D(FVector(1.5f, 1.5f, 1.5f));
+	MallaNucleo->SetHiddenInGame(true);
+	MallaNucleo->SetGenerateOverlapEvents(true);
+
+	// 2. EFECTO VISUAL: El Aura
+	EfectoAura = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("EfectoAura"));
+	EfectoAura->SetupAttachment(MallaNucleo); // Se pega a la hitbox del núcleo
+
+	static ConstructorHelpers::FObjectFinder<UParticleSystem> AuraAsset(TEXT("ParticleSystem'/Game/AuraFX01/Particles/P_ky_aura18.P_ky_aura18'"));
+	if (AuraAsset.Succeeded())
+	{
+		EfectoAura->SetTemplate(AuraAsset.Object);
+	}
+	// Empieza apagado porque nace en fase invisible
+	EfectoAura->SetAutoActivate(false);
 
 	VelocidadFlotacion = 220.0f;
 	bEsInvulnerable = true;
@@ -88,8 +107,14 @@ void AEspectroErrante::EntrarFaseInvisible()
 
 	if (MallaNucleo)
 	{
-		MallaNucleo->SetHiddenInGame(true);
+		// Solo apagamos las colisiones, porque la malla ya está permanentemente invisible
 		MallaNucleo->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+
+	// Apagamos el Aura
+	if (EfectoAura)
+	{
+		EfectoAura->Deactivate();
 	}
 
 	if (MallaCuerpo) MallaCuerpo->SetScalarParameterValueOnMaterials(TEXT("Opacity"), 0.15f);
@@ -103,9 +128,15 @@ void AEspectroErrante::EntrarFaseExpuesto()
 
 	if (MallaNucleo)
 	{
-		MallaNucleo->SetHiddenInGame(false);
+		// Reactivamos las colisiones para que la hitbox invisible detecte los golpes
 		MallaNucleo->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		MallaNucleo->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+	}
+
+	// Encendemos el Aura
+	if (EfectoAura)
+	{
+		EfectoAura->Activate(true);
 	}
 
 	if (MallaCuerpo) MallaCuerpo->SetScalarParameterValueOnMaterials(TEXT("Opacity"), 1.0f);

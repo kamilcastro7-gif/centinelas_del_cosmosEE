@@ -16,7 +16,7 @@ ATribunalCaos::ATribunalCaos()
     RangoDeteccionManual = 2200.f;
     Vida = 180.0f;
 
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Wedge_B.Shape_Wedge_B'"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Assetssss/A17/Meshy_AI_Nebula_Leviathan_0607222721_texture.Meshy_AI_Nebula_Leviathan_0607222721_texture'"));
     if (MallaTribunal)
     {
         MallaTribunal->SetCollisionProfileName(TEXT("BlockAll"));

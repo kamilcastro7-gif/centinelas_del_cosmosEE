@@ -14,7 +14,7 @@ AAsteroide::AAsteroide()
     // Tamaño: He añadido la escala grande aquí mismo
     Mesh->SetRelativeScale3D(FVector(3.0f, 3.0f, 3.0f));
 
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> Asset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Torus.Shape_Torus'"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> Asset(TEXT("StaticMesh'/Game/Mallas_para_el_juego/Carp1/Meshy_AI_Cosmic_Vein_0607025636_texture_0.Meshy_AI_Cosmic_Vein_0607025636_texture_0'"));
     if (Asset.Succeeded()) Mesh->SetStaticMesh(Asset.Object);
 
     // Configuración de Movimiento

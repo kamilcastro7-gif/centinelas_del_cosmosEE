@@ -15,10 +15,10 @@ AFragmentoMinador::AFragmentoMinador()
 	VelocidadFragmento = 1200.0f;
 	DireccionMovimiento = FVector::ZeroVector;
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Assetssss/A7/Meshy_AI_Asteroid_Miner_0607154422_texture.Meshy_AI_Asteroid_Miner_0607154422_texture'"));
 	if (MeshAsset.Succeeded()) FragmentoMesh->SetStaticMesh(MeshAsset.Object);
 
-	SetActorScale3D(FVector(0.4f, 0.4f, 0.4f));
+	SetActorScale3D(FVector(0.9f, 0.9f, 0.9f));
 
 	// Configuramos para que pueda hacer "Overlap" con la nave
 	FragmentoMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);

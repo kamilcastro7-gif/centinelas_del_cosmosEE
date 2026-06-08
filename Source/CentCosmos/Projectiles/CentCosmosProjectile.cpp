@@ -48,7 +48,7 @@ ACentCosmosProjectile::ACentCosmosProjectile()
 	ProjectileMovement->ProjectileGravityScale = 0.f;
 
 	InitialLifeSpan = 3.0f;
-	Danio = 2.0f;
+	Danio = 1.0f;
 }
 
 void ACentCosmosProjectile::BeginPlay()

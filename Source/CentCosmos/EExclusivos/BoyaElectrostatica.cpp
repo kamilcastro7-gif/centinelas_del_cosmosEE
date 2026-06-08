@@ -5,6 +5,8 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
+// --- NUEVO INCLUDE PARA LA MATEMÁTICA DE ROTACIÓN ---
+#include "Kismet/KismetMathLibrary.h" 
 
 ABoyaElectrostatica::ABoyaElectrostatica()
 {
@@ -13,10 +15,10 @@ ABoyaElectrostatica::ABoyaElectrostatica()
 	Velocidad = 380.0f;
 	RangoDistanciaJugador = 550.0f;
 	TiempoParaNuevoDestino = 0.0f;
-	bEstaElevandose = false;          // Bandera de par�n est�tico
+	bEstaElevandose = false;          // Bandera de parón estático
 	TiempoElevacion = 0.0f;
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> WedgeMesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Wedge_A.Shape_Wedge_A'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> WedgeMesh(TEXT("StaticMesh'/Game/Assetssss/A8/Meshy_AI_Nebula_Vanguard_0607190219_texture.Meshy_AI_Nebula_Vanguard_0607190219_texture'"));
 
 	if (WedgeMesh.Succeeded() && EnemigoMesh != nullptr)
 	{
@@ -42,8 +44,19 @@ void ABoyaElectrostatica::Tick(float DeltaTime)
 	if (!PlayerPawn) return;
 
 	FVector PosicionActual = GetActorLocation();
+	FRotator RotacionAlJugador = UKismetMathLibrary::FindLookAtRotation(PosicionActual, PlayerPawn->GetActorLocation());
 
-	// 1. MANEJO DEL PAR�N DE CARGA DE 2 SEGUNDOS
+	// Mantenemos Pitch y Roll en 0 para que la nave gire solo sobre su eje Z (como un trompo)
+	// y no se entierre apuntando hacia el suelo o el techo.
+	RotacionAlJugador.Pitch = 0.0f;
+	RotacionAlJugador.Roll = 0.0f;
+
+	RotacionAlJugador.Yaw += 180.0f;
+
+	SetActorRotation(RotacionAlJugador);
+
+
+	// 1. MANEJO DEL PARÓN DE CARGA DE 2 SEGUNDOS
 	if (bEstaElevandose)
 	{
 		TiempoElevacion += DeltaTime;
@@ -62,7 +75,7 @@ void ABoyaElectrostatica::Tick(float DeltaTime)
 			TiempoElevacion = 0.0f;
 		}
 
-		return; // Bloquea persecuci�n durante la carga
+		return; // Bloquea persecución durante la carga
 	}
 
 	// 2. MOVIMIENTO DE ACOSO CONSTANTE
@@ -144,7 +157,7 @@ void ABoyaElectrostatica::SpawnChispasAlRededor()
 	// =========================================================================
 	for (int32 i = 0; i < 3; i++)
 	{
-		// �ngulos variados para envolver a la nave del jugador
+		// Ángulos variados para envolver a la nave del jugador
 		float AnguloJugador = FMath::FRandRange(0.0f, 2.0f * 3.14159f);
 		// Distancia corta (entre 100 y 160 unidades) para forzar maniobra de escape
 		float DistanciaAlJugador = FMath::FRandRange(100.0f, 160.0f);
@@ -160,7 +173,7 @@ void ABoyaElectrostatica::SpawnChispasAlRededor()
 	}
 
 	// =========================================================================
-	// CHISPAS RESTANTES (2): GENERADAS PERIF�RICAS CERCA DE LA BOYA
+	// CHISPAS RESTANTES (2): GENERADAS PERIFÉRICAS CERCA DE LA BOYA
 	// =========================================================================
 	for (int32 i = 0; i < 2; i++)
 	{

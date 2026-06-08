@@ -17,7 +17,7 @@ ATribunalSupremo::ATribunalSupremo()
 
     RangoDeteccionManual = 2500.f;
 
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cone.Shape_Cone'"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Assetssss/A16/Meshy_AI_The_Ember_Spire_0607221638_texture.Meshy_AI_The_Ember_Spire_0607221638_texture'"));
     if (MallaTribunal && MeshAsset.Succeeded())
     {
         MallaTribunal->SetStaticMesh(MeshAsset.Object);
@@ -154,18 +154,27 @@ void ATribunalSupremo::ControlarFases()
             APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(World, 0);
             FRotator RotacionHaciaJugador = FRotator(0.f, -90.f, 0.f);
 
+            // Valor por defecto por si no hay jugador
+            float AlturaZ = GetActorLocation().Z;
+
             if (PlayerPawn)
             {
                 RotacionHaciaJugador = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerPawn->GetActorLocation());
                 RotacionHaciaJugador.Pitch = 0.f;
                 RotacionHaciaJugador.Roll = 0.f;
+                // Capturamos la altura del jugador
+                AlturaZ = PlayerPawn->GetActorLocation().Z;
             }
 
             FActorSpawnParameters SpawnParams;
             SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
             FVector UbicacionSpawn = GetActorLocation() + (RotacionHaciaJugador.Vector() * 100.f);
-            UbicacionSpawn.Z += 150.f;
+
+            // =========================================================================
+            // CORRECCIÓN: EL RAYO NACE A LA ALTURA DEL JUGADOR
+            // =========================================================================
+            UbicacionSpawn.Z = AlturaZ;
 
             World->SpawnActor<ARayoSupremo>(ARayoSupremo::StaticClass(), UbicacionSpawn, RotacionHaciaJugador, SpawnParams);
 
@@ -184,6 +193,9 @@ void ATribunalSupremo::DispararPuntaSecuencial()
     UWorld* World = GetWorld();
     if (!World) return;
 
+    APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(World, 0);
+    float AlturaZ = PlayerPawn ? PlayerPawn->GetActorLocation().Z : GetActorLocation().Z;
+
     FActorSpawnParameters SpawnParams;
     SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
@@ -196,6 +208,12 @@ void ATribunalSupremo::DispararPuntaSecuencial()
         FVector DerechaEstrella = FRotator(0.f, AnguloBasePunta + 90.f, 0.f).Vector();
 
         FVector UbicacionSpawn = GetActorLocation() + (DireccionEstrella * 120.f) + (DerechaEstrella * SeparacionLateral);
+
+        // =========================================================================
+        // CORRECCIÓN: LAS RÁFAGAS EN ESTRELLA NACEN A LA ALTURA DEL JUGADOR
+        // =========================================================================
+        UbicacionSpawn.Z = AlturaZ;
+
         World->SpawnActor<APRafaga>(APRafaga::StaticClass(), UbicacionSpawn, FRotator(0.f, AnguloBasePunta, 0.f), SpawnParams);
     }
 
@@ -213,6 +231,9 @@ void ATribunalSupremo::DispararPSupremoContinuo()
     UWorld* World = GetWorld();
     if (!World) return;
 
+    APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(World, 0);
+    float AlturaZ = PlayerPawn ? PlayerPawn->GetActorLocation().Z : GetActorLocation().Z;
+
     FActorSpawnParameters SpawnParams;
     SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
@@ -224,6 +245,11 @@ void ATribunalSupremo::DispararPSupremoContinuo()
 
     FVector DireccionDisparo = RotacionFinalProyectil.Vector();
     FVector UbicacionSpawn = GetActorLocation() + (DireccionDisparo * 130.f);
+
+    // =========================================================================
+    // CORRECCIÓN: LAS BALAS CONTINUAS NACEN A LA ALTURA DEL JUGADOR
+    // =========================================================================
+    UbicacionSpawn.Z = AlturaZ;
 
     World->SpawnActor<APSupremo>(APSupremo::StaticClass(), UbicacionSpawn, RotacionFinalProyectil, SpawnParams);
 

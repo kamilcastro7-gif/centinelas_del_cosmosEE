@@ -13,7 +13,7 @@ ATribunalVigilante::ATribunalVigilante()
     RangoDeteccion = 2200.f;
     bEstaActivo = false;
 
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> PyramidAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_QuadPyramid.Shape_QuadPyramid'"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> PyramidAsset(TEXT("StaticMesh'/Game/Assetssss/A10/Meshy_AI_Orbital_Pyramid_of_Li_0607221452_texture.Meshy_AI_Orbital_Pyramid_of_Li_0607221452_texture'"));
     if (PyramidAsset.Succeeded() && MallaTribunal)
     {
         MallaTribunal->SetStaticMesh(PyramidAsset.Object);

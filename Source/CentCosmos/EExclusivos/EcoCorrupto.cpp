@@ -37,8 +37,15 @@ AEcoCorrupto::AEcoCorrupto()
 	MallaNaveEco->SetupAttachment(RootComponent);
 	MallaNaveEco->SetRelativeScale3D(FVector(0.8f, 0.8f, 0.8f));
 
+	// =========================================================================
+	// CORRECCIÓN VISUAL: GIRAR EL ASSET 180 GRADOS 
+	// Al ser un componente hijo, esta rotación relativa SÍ funcionará 
+	// permanentemente sin pelear con el Tick.
+	// =========================================================================
+	MallaNaveEco->SetRelativeRotation(FRotator(0.0f, 180.0f, 0.0f));
+
 	// Aquí deberías colocar la ruta de tu malla de nave real
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> NaveAsset(TEXT("/Game/StarterContent/Shapes/Meshy_AI_Nebula_Vanguard_0525182523_generate.Meshy_AI_Nebula_Vanguard_0525182523_generate"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> NaveAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Meshy_AI_Nebula_Vanguard_0525182523_generate.Meshy_AI_Nebula_Vanguard_0525182523_generate'"));
 	if (NaveAsset.Succeeded())
 	{
 		MallaNaveEco->SetStaticMesh(NaveAsset.Object);
@@ -97,7 +104,6 @@ void AEcoCorrupto::EjecutarAccionCorrupta()
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
-	// BORRAMOS EL INSTIGATOR PORQUE TU ENEMIGO ES ACTOR, NO PAWN
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	if (FMath::RandBool())

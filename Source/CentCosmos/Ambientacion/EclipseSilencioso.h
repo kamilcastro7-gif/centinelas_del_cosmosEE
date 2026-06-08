@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "EclipseSilencioso.generated.h"
 
+class UParticleSystemComponent; // NUEVO: Para el sistema de partículas Cascade
+
 UCLASS()
 class CENTCOSMOS_API AEclipseSilencioso : public AActor
 {
@@ -15,8 +17,13 @@ public:
 	AEclipseSilencioso();
 	virtual void BeginPlay() override;
 
+	// --- HITBOX INVISIBLE ---
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* EclipseMesh;
+
+	// --- EFECTO VISUAL AURA ---
+	UPROPERTY(VisibleAnywhere, Category = "Componentes")
+	UParticleSystemComponent* EfectoAura;
 
 	FTimerHandle DashTimerHandle;
 
@@ -28,6 +35,5 @@ public:
 
 	void RealizarDash();
 
-	// Cambiamos el Tick por el Overlap dinámico
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 };

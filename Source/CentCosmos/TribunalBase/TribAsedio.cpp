@@ -13,7 +13,7 @@ ATribAsedio::ATribAsedio()
 	MallaJefe = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MallaJefe"));
 	RootComponent = MallaJefe;
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> TorusAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Torus.Shape_Torus'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> TorusAsset(TEXT("StaticMesh'/Game/Assetssss/A12/Meshy_AI_Orbital_Portal_Nexus_0607221551_texture.Meshy_AI_Orbital_Portal_Nexus_0607221551_texture'"));
 	if (TorusAsset.Succeeded())
 	{
 		MallaJefe->SetStaticMesh(TorusAsset.Object);

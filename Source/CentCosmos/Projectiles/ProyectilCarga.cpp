@@ -55,7 +55,7 @@ AProyectilCarga::AProyectilCarga()
 
     ProjectileMovement->SetActive(false);
 
-    DanoBase = 2.f;
+    DanoBase = 0.5f;
     InitialLifeSpan = 4.0f;
 }
 
@@ -88,7 +88,7 @@ void AProyectilCarga::LiberarProyectil(float TiempoCargaFinal, FVector Direccion
     }
     else
     {
-        DanoBase = 1.f;
+        DanoBase = 0.5f;
         VelocidadLanzamiento = 3400.f;
     }
 

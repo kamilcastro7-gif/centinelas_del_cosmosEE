@@ -17,11 +17,11 @@ ATribunalTormenta::ATribunalTormenta()
     RootComponent = MiMalla;
     MiMalla->SetMobility(EComponentMobility::Movable);
 
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cylinder.Shape_Cylinder'"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Assetssss/A13/Meshy_AI_Crimson_Vortex_Gate_0607221607_texture.Meshy_AI_Crimson_Vortex_Gate_0607221607_texture'"));
     if (MeshAsset.Succeeded())
     {
         MiMalla->SetStaticMesh(MeshAsset.Object);
-        MiMalla->SetRelativeScale3D(FVector(2.f, 2.f, 3.f));
+        MiMalla->SetRelativeScale3D(FVector(2.f, 2.f, 2.f));
         MiMalla->SetCollisionProfileName(TEXT("BlockAll"));
     }
 
@@ -151,7 +151,11 @@ void ATribunalTormenta::DispararRayo()
         Direccion.Normalize();
 
         FVector PuntoSpawnExterior = MiPosicion + (Direccion * 350.f);
-        PuntoSpawnExterior.Z = MiPosicion.Z;
+
+        // =========================================================================
+        // CORRECCIÓN: FORZAR LA ALTURA DEL PROYECTIL AL NIVEL DEL JUGADOR
+        // =========================================================================
+        PuntoSpawnExterior.Z = Jugador->GetActorLocation().Z;
 
         FRotator RotacionPlana = Direccion.Rotation();
         RotacionPlana.Pitch = 0.f;
@@ -199,7 +203,11 @@ void ATribunalTormenta::SpawnPlasma()
             DireccionProyectil.Normalize();
 
             FVector PuntoSpawnExterior = MiPosicion + (DireccionProyectil * 350.f);
-            PuntoSpawnExterior.Z = MiPosicion.Z;
+
+            // =========================================================================
+            // CORRECCIÓN: FORZAR LA ALTURA DE LOS PLASMAS AL NIVEL DEL JUGADOR
+            // =========================================================================
+            PuntoSpawnExterior.Z = Jugador->GetActorLocation().Z;
 
             AProyectilPlasma* Proyectil = GetWorld()->SpawnActor<AProyectilPlasma>(ClasePlasma, PuntoSpawnExterior, RotacionDisparo, SpawnParams);
             if (Proyectil)

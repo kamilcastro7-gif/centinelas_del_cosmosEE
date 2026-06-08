@@ -6,7 +6,7 @@
 
 AObstaculoRestos::AObstaculoRestos()
 {
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> CuboMesh(TEXT("StaticMesh'/Engine/BasicShapes/Cube.Cube'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> CuboMesh(TEXT("StaticMesh'/Game/Assetssss/A5/Meshy_AI_Wrecked_Satellite_in__0607095234_texture.Meshy_AI_Wrecked_Satellite_in__0607095234_texture'"));
 	if (CuboMesh.Succeeded() && MallaObstaculo)
 	{
 		MallaObstaculo->SetStaticMesh(CuboMesh.Object);
