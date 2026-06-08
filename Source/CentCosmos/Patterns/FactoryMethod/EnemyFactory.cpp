@@ -8,8 +8,15 @@
 #include "TribAsedio.h"
 #include "TribunalSupremo.h"
 #include "TribunalTormenta.h"
+#include "DronAnclaje.h"
 #include "TribunalVigilante.h"
+#include "MinadorRocoso.h"
+#include "BoyaElectrostatica.h"
+#include "BombarderoFuego.h"
+#include "EspectroErrante.h"
+#include "EcoCorrupto.h"
 #include "Engine/World.h"
+
 
 AEnemyFactory::AEnemyFactory()
 {
@@ -23,6 +30,92 @@ AEnemyFactory::AEnemyFactory()
 	ClaseTribSupremo = ATribunalSupremo::StaticClass();
 	ClaseTribTormenta = ATribunalTormenta::StaticClass();
 	ClaseTribVigilante = ATribunalVigilante::StaticClass();
+	ClaseDronAnclaje = ADronAnclaje::StaticClass();
+	ClaseMinadorRocoso = AMinadorRocoso::StaticClass();
+	ClaseBoyaElectrostatica = ABoyaElectrostatica::StaticClass();
+	ClaseBombarderoFuego = ABombarderoFuego::StaticClass();
+	ClaseEspectroErrante = AEspectroErrante::StaticClass();
+	ClaseEcoCorrupto = AEcoCorrupto::StaticClass();
+
+}
+
+AActor* AEnemyFactory::FabricarEcoCorrupto(
+	const FVector& Posicion, const FRotator& Rotacion)
+{
+	UWorld* Mundo = GetWorld();
+	if (!Mundo) return nullptr;
+
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride =
+		ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	return Mundo->SpawnActor<AEcoCorrupto>(
+		ClaseEcoCorrupto, Posicion, Rotacion, Params);
+}
+
+
+AActor* AEnemyFactory::FabricarEspectroErrante(
+	const FVector& Posicion, const FRotator& Rotacion)
+{
+	UWorld* Mundo = GetWorld();
+	if (!Mundo) return nullptr;
+
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride =
+		ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	return Mundo->SpawnActor<AEspectroErrante>(
+		ClaseEspectroErrante, Posicion, Rotacion, Params);
+}
+
+AActor* AEnemyFactory::FabricarBombarderoFuego(
+	const FVector& Posicion, const FRotator& Rotacion)
+{
+	UWorld* Mundo = GetWorld();
+	if (!Mundo) return nullptr;
+
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride =
+		ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	return Mundo->SpawnActor<ABombarderoFuego>(
+		ClaseBombarderoFuego, Posicion, Rotacion, Params);
+}
+
+AActor* AEnemyFactory::FabricarBoyaElectrostatica(
+	const FVector& Posicion, const FRotator& Rotacion)
+{
+	UWorld* Mundo = GetWorld();
+	if (!Mundo) return nullptr;
+
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride =
+		ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	return Mundo->SpawnActor<ABoyaElectrostatica>(
+		ClaseBoyaElectrostatica, Posicion, Rotacion, Params);
+}
+
+AActor* AEnemyFactory::FabricarMinadorRocoso(const FVector& Posicion, const FRotator& Rotacion)
+{
+	UWorld* Mundo = GetWorld();
+	if (!Mundo) return nullptr;
+
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	return Mundo->SpawnActor<AMinadorRocoso>(ClaseMinadorRocoso, Posicion, Rotacion, Params);
+}
+
+AActor* AEnemyFactory::FabricarDronAnclaje(const FVector& Posicion, const FRotator& Rotacion)
+{
+	UWorld* Mundo = GetWorld();
+	if (!Mundo) return nullptr;
+
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	return Mundo->SpawnActor<ADronAnclaje>(ClaseDronAnclaje, Posicion, Rotacion, Params);
 }
 
 AActor* AEnemyFactory::FabricarVastago(const FVector& Posicion, const FRotator& Rotacion)
