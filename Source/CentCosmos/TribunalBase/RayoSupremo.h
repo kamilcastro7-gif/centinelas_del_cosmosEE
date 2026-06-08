@@ -37,6 +37,12 @@ public:
     UFUNCTION()
     void ActivarRayoLetal();
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materiales")
+    UMaterialInterface* MaterialAdvertencia;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materiales")
+    UMaterialInterface* MaterialLetal;
+
 private:
     FTimerHandle TimerFaseLetal;
     bool bEsRayoLetal;
