@@ -1,26 +1,29 @@
 #pragma once
 #include "CoreMinimal.h"
-#include "GameFramework/GameModeBase.h"
-#include "Patterns/Builder/NivelDirector.h"       
-#include "Patterns/Builder/Nivel1Builder.h"   
-#include "Facade.h"                               
+#include "BaseLevelGameMode.h"
+#include "CentCosmosPawn.h"
+#include "NivelDirector.h"
+#include "Nivel1Builder.h"
+#include "Facade.h"
 #include "CentCosmosGameMode.generated.h"
 
 UCLASS()
-class CENTCOSMOS_API ACentCosmosGameMode : public AGameModeBase
+class CENTCOSMOS_API ACentCosmosGameMode : public ABaseLevelGameMode
 {
     GENERATED_BODY()
 public:
     ACentCosmosGameMode();
-protected:
     virtual void BeginPlay() override;
-    virtual void Tick(float DeltaTime) override;
     virtual void PostLogin(APlayerController* NewPlayer) override;
+    virtual void Tick(float DeltaTime) override;
 
 private:
-    UPROPERTY() ANivelDirector* Director;
-    UPROPERTY() ANivel1Builder* BuilderFacil;
-    UPROPERTY() AFacade* ManejadorHorda;
+    UPROPERTY()
+    ANivelDirector* Director;
+    UPROPERTY()
+    ANivel1Builder* BuilderFacil;
+    UPROPERTY()
+    AFacade* ManejadorHorda;
 
     FTimerHandle TimerHandle_InputFix;
     void RestaurarInputJugador();

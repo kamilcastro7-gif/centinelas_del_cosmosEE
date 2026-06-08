@@ -31,8 +31,6 @@ void ACentCosmosGameMode::BeginPlay()
         Director->SetBuilder(TScriptInterface<INivelBuilder>(BuilderFacil));
         Director->ConstruirNivel(Mundo, TEXT("Nivel_Facil"), 300.0f, 1.0f);
     }
-
-    // Esperar un frame para que el PC y el Pawn estén completamente inicializados
     Mundo->GetTimerManager().SetTimer(
         TimerHandle_InputFix,
         this,
@@ -49,8 +47,6 @@ void ACentCosmosGameMode::RestaurarInputJugador()
 
     APlayerController* PC = Mundo->GetFirstPlayerController();
     if (!PC) return;
-
-    // Si el pawn no fue poseído automáticamente, lo spawneamos y poseemos
     if (!PC->GetPawn())
     {
         FActorSpawnParameters SpawnParams;
