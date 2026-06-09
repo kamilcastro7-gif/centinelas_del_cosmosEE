@@ -21,6 +21,10 @@ public:
     virtual void BeginPlay() override;
     virtual void PostLogin(APlayerController* NewPlayer) override;
     virtual void Tick(float DeltaTime) override;
+    void IniciarNivel(int32 NumeroNivel);
+
+protected:
+    UPROPERTY() AFacade* FacadeMaestro;
 
 private:
     UPROPERTY() ANivelDirector* Director;

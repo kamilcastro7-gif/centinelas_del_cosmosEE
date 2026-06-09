@@ -15,7 +15,7 @@ ADronAnclaje::ADronAnclaje()
 	Vida = 15.0f;
 
 	// 1. EL TRUCO DE LA HITBOX: La Tubería será nuestra colisión invisible
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> TuberiaMesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Pipe_180.Shape_Pipe_180'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> TuberiaMesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube'"));
 	if (TuberiaMesh.Succeeded() && EnemigoMesh != nullptr)
 	{
 		EnemigoMesh->SetStaticMesh(TuberiaMesh.Object);

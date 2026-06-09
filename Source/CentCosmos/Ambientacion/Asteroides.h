@@ -17,6 +17,8 @@ public:
     virtual void Tick(float DeltaTime) override;
     virtual void BeginPlay() override;
 
+    void CambiarDireccion();
+
     UPROPERTY(VisibleAnywhere)
     UStaticMeshComponent* Mesh;
 
@@ -26,5 +28,4 @@ public:
 
 protected:
     FTimerHandle TimerCambioDireccion;
-    void CambiarDireccion();
 };

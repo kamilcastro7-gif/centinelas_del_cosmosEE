@@ -21,6 +21,8 @@ public:
 
 	bool bEsInvulnerable;
 	TSubclassOf<AActor> ProyectilEstandarClass;
+	void TransformarEnNave();
+	void EjecutarAccionCorrupta();
 	virtual void RecibirDanoEnemigo(float CantidadDano) override;
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Componentes")
@@ -31,9 +33,6 @@ private:
 
 	FTimerHandle TimerTransformacionHandle;
 	FTimerHandle TimerCicloAtaqueHandle;
-
-	void TransformarEnNave();
-	void EjecutarAccionCorrupta();
 
 	FVector DireccionDash;
 	bool bEstaHaciendoDash;

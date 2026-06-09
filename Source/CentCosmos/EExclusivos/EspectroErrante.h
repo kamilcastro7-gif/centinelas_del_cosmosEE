@@ -27,6 +27,11 @@ public:
 
 	bool bEsInvulnerable;
 
+	void CambiarDireccionAleatoria();
+	void EntrarFaseInvisible();
+	void EntrarFaseExpuesto();
+	void EjecutarDisparoEspectral();
+
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Componentes")
 	class UStaticMeshComponent* MallaCuerpo;
@@ -45,11 +50,6 @@ private:
 	FTimerHandle TimerRumboHandle;
 	FVector DireccionErrante;
 
-	UFUNCTION()
-	void CambiarDireccionAleatoria();
-	void EntrarFaseInvisible();
-	void EntrarFaseExpuesto();
-	void EjecutarDisparoEspectral();
 };
 
 

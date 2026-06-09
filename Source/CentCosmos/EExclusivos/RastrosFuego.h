@@ -21,6 +21,8 @@ public:
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 
+	void AplicarDanoContinuo();
+
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Componentes")
 	class UStaticMeshComponent* FuegoMesh;
@@ -32,9 +34,6 @@ private:
 	// --- LOGICA DE DAÑO CONSTANTE ---
 	FTimerHandle TimerDanoContinuo;
 	class ACentCosmosPawn* JugadorEnFuego;
-
-	UFUNCTION()
-	void AplicarDanoContinuo();
 };
 
 
