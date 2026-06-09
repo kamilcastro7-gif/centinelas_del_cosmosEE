@@ -10,6 +10,8 @@
 #include "Nivel5Builder.h"
 #include "Nivel6Builder.h"
 #include "Facade.h"
+#include "GestorNiveles.h"
+#include "EstadoNivel.h"
 #include "CentCosmosGameMode.generated.h"
 
 UCLASS()
@@ -30,6 +32,7 @@ private:
     UPROPERTY() ANivelDirector* Director;
     UPROPERTY() TScriptInterface<INivelBuilder> BuilderActivo;
     UPROPERTY() AFacade* ManejadorHorda;
+    UPROPERTY() AGestorNiveles* GestorMusica;
 
     FTimerHandle TimerHandle_InputFix;
     void RestaurarInputJugador();

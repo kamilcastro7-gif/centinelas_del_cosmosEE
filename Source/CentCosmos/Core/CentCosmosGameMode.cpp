@@ -10,6 +10,7 @@ ACentCosmosGameMode::ACentCosmosGameMode()
     Director = nullptr;
     ManejadorHorda = nullptr;
     FacadeMaestro = nullptr;
+    GestorMusica = nullptr;
 }
 
 TScriptInterface<INivelBuilder> ACentCosmosGameMode::CrearBuilderParaMapa(UWorld* Mundo, float& OutDificultad)
@@ -69,6 +70,27 @@ void ACentCosmosGameMode::BeginPlay()
         0.1f,
         false
     );
+
+    // --- Gestor de música por patrón State ---
+    GestorMusica = Mundo->SpawnActor<AGestorNiveles>(
+        AGestorNiveles::StaticClass(),
+        FVector::ZeroVector, FRotator::ZeroRotator, Params
+    );
+
+    if (GestorMusica)
+    {
+        IEstadoNivel* EstadoInicial = nullptr;
+
+        if (Dificultad == 1.0f) EstadoInicial = GestorMusica->ObtenerEstadoNivel1();
+        else if (Dificultad == 2.0f) EstadoInicial = GestorMusica->ObtenerEstadoNivel2();
+        else if (Dificultad == 3.0f) EstadoInicial = GestorMusica->ObtenerEstadoNivel3();
+        else if (Dificultad == 4.0f) EstadoInicial = GestorMusica->ObtenerEstadoNivel4();
+        else if (Dificultad == 5.0f) EstadoInicial = GestorMusica->ObtenerEstadoNivel5();
+        else if (Dificultad == 6.0f) EstadoInicial = GestorMusica->ObtenerEstadoNivel6();
+
+        if (EstadoInicial)
+            GestorMusica->CambiarEstado(EstadoInicial);
+    }
 }
 
 void ACentCosmosGameMode::IniciarNivel(int32 NumeroNivel)
@@ -77,13 +99,13 @@ void ACentCosmosGameMode::IniciarNivel(int32 NumeroNivel)
 
     switch (NumeroNivel)
     {
-        case 1: FacadeMaestro->GenerarNivel1(); break;
-        case 2: FacadeMaestro->GenerarNivel2(); break;
-        case 3: FacadeMaestro->GenerarNivel3(); break;
-        case 4: FacadeMaestro->GenerarNivel4(); break;
-        default:
-            UE_LOG(LogTemp, Warning, TEXT("[CentCosmos] IniciarNivel: numero de nivel no reconocido: %d"), NumeroNivel);
-            break;
+    case 1: FacadeMaestro->GenerarNivel1(); break;
+    case 2: FacadeMaestro->GenerarNivel2(); break;
+    case 3: FacadeMaestro->GenerarNivel3(); break;
+    case 4: FacadeMaestro->GenerarNivel4(); break;
+    default:
+        UE_LOG(LogTemp, Warning, TEXT("[CentCosmos] IniciarNivel: numero de nivel no reconocido: %d"), NumeroNivel);
+        break;
     }
 }
 
