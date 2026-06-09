@@ -67,9 +67,7 @@ void ANivel1Builder::AgregarEnemigos(UWorld* World)
         AEnemyFactory::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
 
     if (!Factory) return;
-
-    // Ola 1: 12 Vástagos + 2 Vigías + 1 Heraldo
-    SpawnVastagos(Factory, 0);
+    SpawnVastagos(Factory, 12);
     SpawnVigias(Factory, 2);
     SpawnHeraldos(Factory, 1);
     SpawnDronAnclaje(Factory, 2);
@@ -93,7 +91,7 @@ void ANivel1Builder::SpawnVastagos(AEnemyFactory* Factory, int32 Cantidad)
         FVector Pos = FVector(
             FMath::RandRange(-1000, 1000),
             FMath::RandRange(-1000, 1000),
-            150.f);
+            0.f);
 
         AActor* E = Factory->FabricarVastago(Pos, FRotator::ZeroRotator);
         if (E)
@@ -111,7 +109,7 @@ void ANivel1Builder::SpawnVigias(AEnemyFactory* Factory, int32 Cantidad)
         FVector Pos = FVector(
             FMath::RandRange(-1000, 1000),
             FMath::RandRange(-1000, 1000),
-            150.f);
+            0.f);
 
         AActor* E = Factory->FabricarVigia(Pos, FRotator::ZeroRotator);
         if (E)
@@ -129,7 +127,7 @@ void ANivel1Builder::SpawnHeraldos(AEnemyFactory* Factory, int32 Cantidad)
         FVector Pos = FVector(   
             FMath::RandRange(-800, 800),
             FMath::RandRange(-800, 800),
-            150.f);
+            0.f);
 
         AActor* E = Factory->FabricarHeraldo(Pos, FRotator::ZeroRotator);
         if (E)
@@ -146,7 +144,7 @@ void ANivel1Builder::SpawnDronAnclaje(AEnemyFactory* Factory, int32 Cantidad)
         FVector Pos = FVector(
             FMath::RandRange(-1000, 1000),
             FMath::RandRange(-1000, 1000),
-            150.f);
+            0.f);
         AActor* E = Factory->FabricarDronAnclaje(Pos, FRotator::ZeroRotator);
         if (E)
         {
@@ -163,7 +161,7 @@ void ANivel1Builder::SpawnNaves(AGeneradorAmbientacion* Gen, int32 Cantidad)
         FVector Pos = FVector(
             FMath::RandRange(-2000, 2000),
             FMath::RandRange(-2000, 2000),
-            150.f);
+            0.f);
         Gen->FabricarNave(Pos, FRotator::ZeroRotator);
     }
 }
@@ -175,7 +173,7 @@ void ANivel1Builder::SpawnSatelites(AGeneradorAmbientacion* Gen, int32 Cantidad)
         FVector Pos = FVector(
             FMath::RandRange(-2000, 2000),
             FMath::RandRange(-2000, 2000),
-            150.f);
+            0.f);
         Gen->FabricarSatelite(Pos, FRotator::ZeroRotator);
     }
 }
@@ -187,7 +185,7 @@ void ANivel1Builder::SpawnRestos(AGeneradorAmbientacion* Gen, int32 Cantidad)
         FVector Pos = FVector(
             FMath::RandRange(-2000, 2000),
             FMath::RandRange(-2000, 2000),
-            150.f);
+            0.f);
         Gen->FabricarRestos(Pos, FRotator::ZeroRotator);
     }
 }
@@ -196,7 +194,6 @@ void ANivel1Builder::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    // Salimos si el boss ya spawneó o si la ola aún no fue generada
     if (bBossSpawneado || EnemigosOla1.Num() == 0) return;
 
     UWorld* World = GetWorld();
@@ -207,7 +204,6 @@ void ANivel1Builder::Tick(float DeltaTime)
 
 void ANivel1Builder::VerificarYSpawnearBoss(UWorld* World)
 {
-    // Contamos cuántos enemigos de la ola 1 siguen vivos
     int32 Vivos = 0;
     for (const TWeakObjectPtr<AActor>& Ref : EnemigosOla1)
     {
@@ -215,8 +211,6 @@ void ANivel1Builder::VerificarYSpawnearBoss(UWorld* World)
     }
 
     if (Vivos > 0) return;
-
-    // Todos muertos — activamos el evento del jefe
     bBossSpawneado = true;
 
     FActorSpawnParameters Params;
@@ -224,7 +218,7 @@ void ANivel1Builder::VerificarYSpawnearBoss(UWorld* World)
 
     TArray<AActor*> Encontrados;
 
-    // 1. Eliminar ambientación
+
     UGameplayStatics::GetAllActorsOfClass(World, AObstaculoNave::StaticClass(), Encontrados);
     for (AActor* A : Encontrados) A->Destroy();
 

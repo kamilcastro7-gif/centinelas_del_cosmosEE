@@ -86,10 +86,6 @@ FNivel ANivel2Builder::ObtenerNivel()
     return NivelActual;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Pasos atómicos — Enemigos
-// ─────────────────────────────────────────────────────────────────────────────
-
 void ANivel2Builder::SpawnVastagos(AEnemyFactory* Factory, int32 Cantidad)
 {
     for (int32 i = 0; i < Cantidad; i++)
@@ -97,7 +93,7 @@ void ANivel2Builder::SpawnVastagos(AEnemyFactory* Factory, int32 Cantidad)
         FVector Pos = FVector(
             FMath::RandRange(-1000, 1000),
             FMath::RandRange(-1000, 1000),
-            150.f);
+            0.f);
         AActor* E = Factory->FabricarVastago(Pos, FRotator::ZeroRotator);
         if (E)
         {
@@ -131,7 +127,7 @@ void ANivel2Builder::SpawnHeraldos(AEnemyFactory* Factory, int32 Cantidad)
         FVector Pos = FVector(
             FMath::RandRange(-800, 800),
             FMath::RandRange(-800, 800),
-            150.f);
+            0.f);
         AActor* E = Factory->FabricarHeraldo(Pos, FRotator::ZeroRotator);
         if (E)
         {
@@ -148,7 +144,7 @@ void ANivel2Builder::SpawnMinadorRocoso(AEnemyFactory* Factory, int32 Cantidad)
         FVector Pos = FVector(
             FMath::RandRange(-1000, 1000),
             FMath::RandRange(-1000, 1000),
-            150.f);
+            0.f);
         AActor* E = Factory->FabricarMinadorRocoso(Pos, FRotator::ZeroRotator);
         if (E)
         {
@@ -158,10 +154,6 @@ void ANivel2Builder::SpawnMinadorRocoso(AEnemyFactory* Factory, int32 Cantidad)
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Pasos atómicos — Ambientación
-// ─────────────────────────────────────────────────────────────────────────────
-
 void ANivel2Builder::SpawnNaves(AGeneradorAmbientacion* Gen, int32 Cantidad)
 {
     for (int32 i = 0; i < Cantidad; i++)
@@ -169,7 +161,7 @@ void ANivel2Builder::SpawnNaves(AGeneradorAmbientacion* Gen, int32 Cantidad)
         FVector Pos = FVector(
             FMath::RandRange(-2000, 2000),
             FMath::RandRange(-2000, 2000),
-            150.f);
+            0.);
         Gen->FabricarNave(Pos, FRotator::ZeroRotator);
     }
 }
@@ -181,7 +173,7 @@ void ANivel2Builder::SpawnSatelites(AGeneradorAmbientacion* Gen, int32 Cantidad)
         FVector Pos = FVector(
             FMath::RandRange(-2000, 2000),
             FMath::RandRange(-2000, 2000),
-            150.f);
+            0.f);
         Gen->FabricarSatelite(Pos, FRotator::ZeroRotator);
     }
 }
@@ -205,7 +197,7 @@ void ANivel2Builder::SpawnNubeIonizada(AGeneradorAmbientacion* Gen, int32 Cantid
         FVector Pos = FVector(
             FMath::RandRange(-2000, 2000),
             FMath::RandRange(-2000, 2000),
-            150.f);
+            0.f);
         Gen->FabricarNubeIonizada(Pos, FRotator::ZeroRotator);
     }
 }

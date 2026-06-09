@@ -36,12 +36,10 @@ void ANivel4Builder::Reset()
 
 void ANivel4Builder::SetMetadatos(const FString& Nombre, float Duracion)
 {
-    // Datos propios del nivel 4
 }
 
 void ANivel4Builder::SetDificultad(float Nivel)
 {
-    // Modificadores de dificultad del nivel 4
 }
 
 void ANivel4Builder::AgregarAmbientacion(UWorld* Mundo)
@@ -66,7 +64,7 @@ void ANivel4Builder::AgregarEnemigos(UWorld* Mundo)
 
 FNivel ANivel4Builder::ObtenerNivel()
 {
-    return FNivel(); // rellenar cuando FNivel tenga los campos necesarios
+    return FNivel(); 
 }
 
 void ANivel4Builder::Tick(float DeltaTime)
@@ -74,8 +72,6 @@ void ANivel4Builder::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
     VerificarYSpawnearBoss();
 }
-
-// ── Pasos atómicos — Enemigos ────────────────────────────────────────────────
 
 void ANivel4Builder::SpawnVastagos(AEnemyFactory* F, int32 N)
 {
@@ -117,8 +113,6 @@ void ANivel4Builder::SpawnBombarderosFuego(AEnemyFactory* F, int32 N)
     }
 }
 
-// ── Pasos atómicos — Ambientación ───────────────────────────────────────────
-
 void ANivel4Builder::SpawnNaves(AGeneradorAmbientacion* G, int32 N)
 {
     for (int32 i = 0; i < N; i++)
@@ -154,8 +148,6 @@ void ANivel4Builder::SpawnRastrosFuego(AGeneradorAmbientacion* G, int32 N)
         G->FabricarRastrosFuego(Pos, FRotator::ZeroRotator);
     }
 }
-
-// ── Boss ─────────────────────────────────────────────────────────────────────
 
 void ANivel4Builder::VerificarYSpawnearBoss()
 {

@@ -104,7 +104,7 @@ void ANivel3Builder::SpawnVastagos(AEnemyFactory* Factory, int32 Cantidad)
         FVector Pos = FVector(
             FMath::RandRange(-1000, 1000),
             FMath::RandRange(-1000, 1000),
-            150.f);
+            0.f);
         AActor* E = Factory->FabricarVastago(Pos, FRotator::ZeroRotator);
         if (E)
         {
@@ -121,7 +121,7 @@ void ANivel3Builder::SpawnVigias(AEnemyFactory* Factory, int32 Cantidad)
         FVector Pos = FVector(
             FMath::RandRange(-1000, 1000),
             FMath::RandRange(-1000, 1000),
-            150.f);
+            0.f);
         AActor* E = Factory->FabricarVigia(Pos, FRotator::ZeroRotator);
         if (E)
         {
@@ -138,7 +138,7 @@ void ANivel3Builder::SpawnHeraldos(AEnemyFactory* Factory, int32 Cantidad)
         FVector Pos = FVector(
             FMath::RandRange(-800, 800),
             FMath::RandRange(-800, 800),
-            150.f);
+            0.f);
         AActor* E = Factory->FabricarHeraldo(Pos, FRotator::ZeroRotator);
         if (E)
         {
@@ -155,7 +155,7 @@ void ANivel3Builder::SpawnBoyaElectrostatica(AEnemyFactory* Factory, int32 Canti
         FVector Pos = FVector(
             FMath::RandRange(-1000, 1000),
             FMath::RandRange(-1000, 1000),
-            150.f);
+            0.f);
         AActor* E = Factory->FabricarBoyaElectrostatica(Pos, FRotator::ZeroRotator);
         if (E)
         {
@@ -173,7 +173,7 @@ void ANivel3Builder::SpawnNaves(AGeneradorAmbientacion* Gen, int32 Cantidad)
         FVector Pos = FVector(
             FMath::RandRange(-2000, 2000),
             FMath::RandRange(-2000, 2000),
-            150.f);
+            0.f);
         Gen->FabricarNave(Pos, FRotator::ZeroRotator);
     }
 }
@@ -185,7 +185,7 @@ void ANivel3Builder::SpawnSatelites(AGeneradorAmbientacion* Gen, int32 Cantidad)
         FVector Pos = FVector(
             FMath::RandRange(-2000, 2000),
             FMath::RandRange(-2000, 2000),
-            150.f);
+            0.f);
         Gen->FabricarSatelite(Pos, FRotator::ZeroRotator);
     }
 }
@@ -197,7 +197,7 @@ void ANivel3Builder::SpawnRestos(AGeneradorAmbientacion* Gen, int32 Cantidad)
         FVector Pos = FVector(
             FMath::RandRange(-2000, 2000),
             FMath::RandRange(-2000, 2000),
-            150.f);
+            0.f);
         Gen->FabricarRestos(Pos, FRotator::ZeroRotator);
     }
 }
@@ -209,7 +209,7 @@ void ANivel3Builder::SpawnAsteroides(AGeneradorAmbientacion* Gen, int32 Cantidad
         FVector Pos = FVector(
             FMath::RandRange(-2000, 2000),
             FMath::RandRange(-2000, 2000),
-            150.f);
+            0.f);
         Gen->FabricarAsteroide(Pos, FRotator::ZeroRotator);
     }
 }

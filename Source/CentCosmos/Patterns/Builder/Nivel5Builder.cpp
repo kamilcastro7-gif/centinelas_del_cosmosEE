@@ -26,7 +26,6 @@ void ANivel5Builder::BeginPlay()
     if (Found.Num() > 0) Generador = Cast<AGeneradorAmbientacion>(Found[0]);
 }
 
-// ── INivelBuilder ────────────────────────────────────────────────────────────
 
 void ANivel5Builder::Reset()
 {
@@ -72,8 +71,6 @@ void ANivel5Builder::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
     VerificarYSpawnearBoss();
 }
-
-// ── Pasos atómicos — Enemigos ────────────────────────────────────────────────
 
 void ANivel5Builder::SpawnVastagos(AEnemyFactory* F, int32 N)
 {

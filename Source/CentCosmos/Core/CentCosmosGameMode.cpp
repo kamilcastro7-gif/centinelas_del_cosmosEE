@@ -70,8 +70,6 @@ void ACentCosmosGameMode::BeginPlay()
         0.1f,
         false
     );
-
-    // --- Gestor de música por patrón State ---
     GestorMusica = Mundo->SpawnActor<AGestorNiveles>(
         AGestorNiveles::StaticClass(),
         FVector::ZeroVector, FRotator::ZeroRotator, Params

@@ -26,8 +26,6 @@ void ANivel6Builder::BeginPlay()
     if (Found.Num() > 0) Generador = Cast<AGeneradorAmbientacion>(Found[0]);
 }
 
-// ── INivelBuilder ────────────────────────────────────────────────────────────
-
 void ANivel6Builder::Reset()
 {
     EnemigosOla1.Empty();
@@ -114,8 +112,6 @@ void ANivel6Builder::SpawnEcoCorruptos(AEnemyFactory* F, int32 N)
     }
 }
 
-// ── Pasos atómicos — Ambientación ───────────────────────────────────────────
-
 void ANivel6Builder::SpawnNaves(AGeneradorAmbientacion* G, int32 N)
 {
     for (int32 i = 0; i < N; i++)
@@ -151,9 +147,6 @@ void ANivel6Builder::SpawnEclipsesSilenciosos(AGeneradorAmbientacion* G, int32 N
         G->FabricarEclipseSilencioso(Pos, FRotator::ZeroRotator);
     }
 }
-
-// ── Boss ─────────────────────────────────────────────────────────────────────
-
 void ANivel6Builder::VerificarYSpawnearBoss()
 {
     if (bBossSpawneado) return;
