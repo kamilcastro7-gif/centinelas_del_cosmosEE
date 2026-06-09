@@ -132,7 +132,4 @@ void ACentCosmosGameMode::PostLogin(APlayerController* NewPlayer)
 void ACentCosmosGameMode::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-
-    if (ManejadorHorda)
-        ManejadorHorda->MoverHorda();
 }
