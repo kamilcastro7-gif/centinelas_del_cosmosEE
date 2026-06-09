@@ -23,8 +23,8 @@ public:
 	// --- COMPONENTE VISUAL DEL DRON ---
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
 	USkeletalMeshComponent* MallaFighterDrone;
+	void OtorgarEscudoAEnemigo();
 
 private:
 	FTimerHandle TimerEscudoHandle;
-	void OtorgarEscudoAEnemigo();
 };

@@ -24,16 +24,25 @@ public:
 
 	void CambiarEstado(IEstadoNivel* NuevoEstado);
 
-	// El reproductor de audio centralizado
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Audio Central")
 	UAudioComponent* AudioComponentCentral;
 
-	// Getter para que el GameMode (Cliente) acceda a este estado cuando lo necesite
+	// Getters para que el GameMode u otros sistemas accedan a los estados
 	IEstadoNivel* ObtenerEstadoNivel1() { return EstadoNivel1; }
+	IEstadoNivel* ObtenerEstadoNivel2() { return EstadoNivel2; }
+	IEstadoNivel* ObtenerEstadoNivel3() { return EstadoNivel3; }
+	IEstadoNivel* ObtenerEstadoNivel4() { return EstadoNivel4; }
+	IEstadoNivel* ObtenerEstadoNivel5() { return EstadoNivel5; }
+	IEstadoNivel* ObtenerEstadoNivel6() { return EstadoNivel6; }
 
 private:
 	IEstadoNivel* EstadoActual;
 
-	// Instancia en memoria para el Nivel 1 (luego agregarás los demás aquí)
+	// Instancias en memoria para todos los niveles
 	IEstadoNivel* EstadoNivel1;
+	IEstadoNivel* EstadoNivel2;
+	IEstadoNivel* EstadoNivel3;
+	IEstadoNivel* EstadoNivel4;
+	IEstadoNivel* EstadoNivel5;
+	IEstadoNivel* EstadoNivel6;
 };

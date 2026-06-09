@@ -25,11 +25,12 @@ public:
 	// --- COMPONENTE VISUAL DEL DRON ---
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
 	USkeletalMeshComponent* MallaBombardero;
+	void EjecutarDisparoFuego();
 
 private:
 	float VelocidadMovimiento;
 	FVector PosicionInicial; // Guardaremos su X y Z originales
 
 	FTimerHandle TimerAtaqueHandle;
-	void EjecutarDisparoFuego();
+	
 };

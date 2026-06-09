@@ -30,6 +30,9 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
+	void IniciarEmbestida();
+	void EstallarEnCruz();
+
 private:
 	FTimerHandle TimerCargaHandle;
 
@@ -43,6 +46,4 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Configuracion Minador")
 	float VelocidadEmbestida;
 
-	void IniciarEmbestida();
-	void EstallarEnCruz();
 };

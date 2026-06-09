@@ -1,17 +1,12 @@
 #include "CentCosmosGameMode.h"
 #include "CentCosmosPawn.h"
-#include "CentCosmos.h"
 #include "Engine/World.h"
-#include "GestorNiveles.h" // AGREGADO: Para la música y el Patrón State
 
 ACentCosmosGameMode::ACentCosmosGameMode()
 {
-    PrimaryActorTick.bCanEverTick = true;
+    PrimaryActorTick.bCanEverTick = false;
     DefaultPawnClass = ACentCosmosPawn::StaticClass();
-    Director = nullptr;
-    BuilderFacil = nullptr;
-    ManejadorHorda = nullptr;
-    GestorNiveles = nullptr; // AGREGADO: Inicialización segura
+    FacadeMaestro = nullptr;
 }
 
 void ACentCosmosGameMode::BeginPlay()
@@ -19,74 +14,40 @@ void ACentCosmosGameMode::BeginPlay()
     Super::BeginPlay();
 
     UWorld* const Mundo = GetWorld();
-    if (!Mundo) return;
-
-    FActorSpawnParameters Params;
-    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-    Director = Mundo->SpawnActor<ANivelDirector>(ANivelDirector::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
-    BuilderFacil = Mundo->SpawnActor<ANivel1Builder>(ANivel1Builder::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
-    ManejadorHorda = Mundo->SpawnActor<AFacade>(AFacade::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
-
-    // AGREGADO: Instanciamos el Gestor Central. Él mismo activará el EstadoNivel1 y la música.
-    GestorNiveles = Mundo->SpawnActor<AGestorNiveles>(AGestorNiveles::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
-
-    if (Director && BuilderFacil)
+    if (Mundo)
     {
-        Director->SetBuilder(TScriptInterface<INivelBuilder>(BuilderFacil));
-        Director->ConstruirNivel(Mundo, TEXT("Nivel_Facil"), 300.0f, 1.0f); // INTACTO: Tus parámetros originales
-    }
+        FActorSpawnParameters Params;
+        Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-    // Esperar un frame para que el PC y el Pawn estén completamente inicializados
-    Mundo->GetTimerManager().SetTimer(
-        TimerHandle_InputFix,
-        this,
-        &ACentCosmosGameMode::RestaurarInputJugador,
-        0.1f,
-        false
-    );
+        // 1. Spawneamos el Facade Maestro
+        FacadeMaestro = Mundo->SpawnActor<AFacade>(AFacade::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
+        // 2. ¡OJO AQUÍ! Forzamos la generación del Nivel 1 para tu prueba rápida
+        if (FacadeMaestro)
+        {
+            IniciarNivel(4);
+        }
+    }
 }
 
-void ACentCosmosGameMode::RestaurarInputJugador()
+void ACentCosmosGameMode::IniciarNivel(int32 NumeroNivel)
 {
-    UWorld* Mundo = GetWorld();
-    if (!Mundo) return;
+    if (!FacadeMaestro) return;
 
-    APlayerController* PC = Mundo->GetFirstPlayerController();
-    if (!PC) return;
-
-    // Si el pawn no fue poseído automáticamente, lo spawneamos y poseemos
-    if (!PC->GetPawn())
+    switch (NumeroNivel)
     {
-        FActorSpawnParameters SpawnParams;
-        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-        ACentCosmosPawn* NuevoPawn = Mundo->SpawnActor<ACentCosmosPawn>(
-            ACentCosmosPawn::StaticClass(),
-            FVector::ZeroVector,
-            FRotator::ZeroRotator,
-            SpawnParams
-        );
-
-        if (NuevoPawn)
-            PC->Possess(NuevoPawn);
+    case 1: FacadeMaestro->GenerarNivel1(); break;
+    case 2: FacadeMaestro->GenerarNivel2(); break;
+    case 3: FacadeMaestro->GenerarNivel3(); break;
+    case 4: FacadeMaestro->GenerarNivel4(); break;
+    case 5: FacadeMaestro->GenerarNivel5(); break;
+    case 6: FacadeMaestro->GenerarNivel6(); break;
+    default: FacadeMaestro->GenerarNivel1(); break;
     }
-
-    // Restaurar control al jugador
-    FInputModeGameOnly InputMode;
-    PC->SetInputMode(InputMode);
-    PC->bShowMouseCursor = false;
-    PC->SetIgnoreLookInput(false);
-    PC->SetIgnoreMoveInput(false);
-
-    UE_LOG(LogTemp, Warning, TEXT("[CentCosmos] Input restaurado. Pawn: %s"),
-        PC->GetPawn() ? *PC->GetPawn()->GetName() : TEXT("NINGUNO"));
 }
 
 void ACentCosmosGameMode::PostLogin(APlayerController* NewPlayer)
 {
     Super::PostLogin(NewPlayer);
-
     if (NewPlayer)
     {
         FInputModeGameOnly InputMode;
@@ -95,12 +56,4 @@ void ACentCosmosGameMode::PostLogin(APlayerController* NewPlayer)
         NewPlayer->SetIgnoreLookInput(false);
         NewPlayer->SetIgnoreMoveInput(false);
     }
-}
-
-void ACentCosmosGameMode::Tick(float DeltaTime)
-{
-    Super::Tick(DeltaTime);
-
-    if (ManejadorHorda)
-        ManejadorHorda->MoverHorda();
 }

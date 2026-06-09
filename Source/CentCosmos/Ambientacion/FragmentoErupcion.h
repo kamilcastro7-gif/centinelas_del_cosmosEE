@@ -15,6 +15,8 @@ public:
     AFragmentoErupcion();
     virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 
+    void SoltarRastro();
+
 protected:
     virtual void BeginPlay() override;
 
@@ -29,5 +31,5 @@ private:
 
     // Timer para dejar rastro (como en tu proyectil)
     FTimerHandle TimerRastrosHandle;
-    void SoltarRastro();
+    
 };

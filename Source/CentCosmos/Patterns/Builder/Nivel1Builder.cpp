@@ -89,11 +89,6 @@ FNivel ANivel1Builder::ObtenerNivel()
     return NivelActual;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Pasos atómicos privados — equivalen a ProducePartA/B/C del canónico.
-// Cada uno tiene una única responsabilidad: spawnear UN tipo de enemigo.
-// ─────────────────────────────────────────────────────────────────────────────
-
 void ANivel1Builder::SpawnVastagos(AEnemyFactory* Factory, int32 Cantidad)
 {
     for (int32 i = 0; i < Cantidad; i++)
@@ -204,7 +199,6 @@ void ANivel1Builder::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    // Salimos si el boss ya spawneó o si la ola aún no fue generada
     if (bBossSpawneado || EnemigosOla1.Num() == 0) return;
 
     UWorld* World = GetWorld();

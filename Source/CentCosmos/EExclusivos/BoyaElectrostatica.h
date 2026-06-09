@@ -20,6 +20,8 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 	void moverBoya();
+	void IniciarFaseElevacion();
+	void SpawnChispasAlRededor();
 
 private:
 	FTimerHandle TimerElevacionHandle;
@@ -33,6 +35,5 @@ private:
 	bool bEstaElevandose;
 	float TiempoElevacion;
 
-	void IniciarFaseElevacion();
-	void SpawnChispasAlRededor();
+	
 };
