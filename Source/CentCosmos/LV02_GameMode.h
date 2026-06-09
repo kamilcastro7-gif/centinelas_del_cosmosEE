@@ -3,14 +3,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "BaseLevelGameMode.h"
 #include "NivelDirector.h"
 #include "Nivel2Builder.h"
 #include "CentCosmosPawn.h"
 #include "LV02_GameMode.generated.h"
 
 UCLASS()
-class CENTCOSMOS_API ALV02_GameMode : public ABaseLevelGameMode
+class CENTCOSMOS_API ALV02_GameMode : public AGameModeBase
 {
     GENERATED_BODY()
 

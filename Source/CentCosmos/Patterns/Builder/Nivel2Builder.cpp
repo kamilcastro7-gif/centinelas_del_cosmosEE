@@ -11,19 +11,11 @@
 #include "NubeIonizada.h"
 #include "Kismet/GameplayStatics.h"
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Constructor
-// ─────────────────────────────────────────────────────────────────────────────
-
 ANivel2Builder::ANivel2Builder()
 {
     PrimaryActorTick.bCanEverTick = true;
     bBossSpawneado = false;
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// INivelBuilder — pasos de construcción principales
-// ─────────────────────────────────────────────────────────────────────────────
 
 void ANivel2Builder::Reset()
 {
@@ -56,8 +48,6 @@ void ANivel2Builder::AgregarAmbientacion(UWorld* World)
         FVector::ZeroVector, FRotator::ZeroRotator, Params);
 
     if (!Gen) return;
-
-    // Nivel 2 — originales + NubeIonizada
     SpawnNaves(Gen, 8);
     SpawnSatelites(Gen, 8);
     SpawnRestos(Gen, 8);
@@ -80,8 +70,6 @@ void ANivel2Builder::AgregarEnemigos(UWorld* World)
         FVector::ZeroVector, FRotator::ZeroRotator, Params);
 
     if (!Factory) return;
-
-    // Ola 1: 14 Vástagos + 3 Vigías + 2 Heraldos + 2 MinadorRocoso
     SpawnVastagos(Factory, 14);
     SpawnVigias(Factory, 3);
     SpawnHeraldos(Factory, 2);

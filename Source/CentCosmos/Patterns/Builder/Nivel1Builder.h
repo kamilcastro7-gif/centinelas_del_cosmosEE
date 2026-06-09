@@ -25,18 +25,12 @@ private:
     TArray<TWeakObjectPtr<AActor>> EnemigosGenerados;
     TArray<TWeakObjectPtr<AActor>> EnemigosOla1;
     bool bBossSpawneado;
-
-    // ── Pasos atómicos — Enemigos ─────────────────────────────────────────────
     void SpawnVastagos(AEnemyFactory* Factory, int32 Cantidad);
     void SpawnVigias(AEnemyFactory* Factory, int32 Cantidad);
     void SpawnHeraldos(AEnemyFactory* Factory, int32 Cantidad);
-    void SpawnDronAnclaje(AEnemyFactory* Factory, int32 Cantidad);  // ← AGREGAR
-
-    // ── Pasos atómicos — Ambientación ────────────────────────────────────────
-    void SpawnNaves(AGeneradorAmbientacion* Gen, int32 Cantidad);  // ← AGREGAR
-    void SpawnSatelites(AGeneradorAmbientacion* Gen, int32 Cantidad);  // ← AGREGAR
-    void SpawnRestos(AGeneradorAmbientacion* Gen, int32 Cantidad);  // ← AGREGAR
-
-    // ── Evento de fin de ola ─────────────────────────────────────────────────
+    void SpawnDronAnclaje(AEnemyFactory* Factory, int32 Cantidad);
+    void SpawnNaves(AGeneradorAmbientacion* Gen, int32 Cantidad); 
+    void SpawnSatelites(AGeneradorAmbientacion* Gen, int32 Cantidad);
+    void SpawnRestos(AGeneradorAmbientacion* Gen, int32 Cantidad);
     void VerificarYSpawnearBoss(UWorld* World);
 };

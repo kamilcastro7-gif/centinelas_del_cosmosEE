@@ -48,8 +48,6 @@ void ANivel1Builder::AgregarAmbientacion(UWorld* World)
         FVector::ZeroVector, FRotator::ZeroRotator, Params);
 
     if (!Gen) return;
-
-    // El builder decide cuántos de cada tipo
     SpawnNaves(Gen, 10);
     SpawnSatelites(Gen, 10);
     SpawnRestos(Gen, 10);
@@ -58,8 +56,6 @@ void ANivel1Builder::AgregarAmbientacion(UWorld* World)
         GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::White,
             TEXT("[Nivel1] Ambientación generada: 30 obstáculos."));
 }
-// AgregarEnemigos — equivale a BuildFullFeaturedProduct() del canónico.
-// Solo coordina; el trabajo real está en los pasos atómicos privados.
 void ANivel1Builder::AgregarEnemigos(UWorld* World)
 {
     if (!World) return;
@@ -73,7 +69,7 @@ void ANivel1Builder::AgregarEnemigos(UWorld* World)
     if (!Factory) return;
 
     // Ola 1: 12 Vástagos + 2 Vigías + 1 Heraldo
-    SpawnVastagos(Factory, 12);
+    SpawnVastagos(Factory, 0);
     SpawnVigias(Factory, 2);
     SpawnHeraldos(Factory, 1);
     SpawnDronAnclaje(Factory, 2);
@@ -89,10 +85,6 @@ FNivel ANivel1Builder::ObtenerNivel()
     return NivelActual;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Pasos atómicos privados — equivalen a ProducePartA/B/C del canónico.
-// Cada uno tiene una única responsabilidad: spawnear UN tipo de enemigo.
-// ─────────────────────────────────────────────────────────────────────────────
 
 void ANivel1Builder::SpawnVastagos(AEnemyFactory* Factory, int32 Cantidad)
 {
@@ -248,12 +240,8 @@ void ANivel1Builder::VerificarYSpawnearBoss(UWorld* World)
     if (GEngine)
         GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan,
             TEXT("[Nivel1] Ambientación eliminada."));
-
-    // 2. Spawnear arena de combate (centro del mapa)
     World->SpawnActor<AArenaCombate>(
         AArenaCombate::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
-
-    // 3. Spawnear jefe (elevado para no quedar enterrado en el suelo)
     ATribunalVigilante* Boss = World->SpawnActor<ATribunalVigilante>(
         ATribunalVigilante::StaticClass(), FVector(0.f, 0.f,0.f), FRotator::ZeroRotator, Params);
 
