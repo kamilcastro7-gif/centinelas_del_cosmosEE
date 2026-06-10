@@ -27,7 +27,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Audio Central")
 	UAudioComponent* AudioComponentCentral;
 
-	// Getters para que el GameMode u otros sistemas accedan a los estados
 	IEstadoNivel* ObtenerEstadoNivel1() { return EstadoNivel1; }
 	IEstadoNivel* ObtenerEstadoNivel2() { return EstadoNivel2; }
 	IEstadoNivel* ObtenerEstadoNivel3() { return EstadoNivel3; }
@@ -38,7 +37,6 @@ public:
 private:
 	IEstadoNivel* EstadoActual;
 
-	// Instancias en memoria para todos los niveles
 	IEstadoNivel* EstadoNivel1;
 	IEstadoNivel* EstadoNivel2;
 	IEstadoNivel* EstadoNivel3;

@@ -33,10 +33,12 @@ private:
 
     TArray<TWeakObjectPtr<AActor>> EnemigosOla1;
     bool bBossSpawneado;
+
     void SpawnVastagos(AEnemyFactory* F, int32 N);
     void SpawnVigias(AEnemyFactory* F, int32 N);
     void SpawnHeraldos(AEnemyFactory* F, int32 N);
     void SpawnEcoCorruptos(AEnemyFactory* F, int32 N);
+
     void SpawnNaves(AGeneradorAmbientacion* G, int32 N);
     void SpawnSatelites(AGeneradorAmbientacion* G, int32 N);
     void SpawnRestos(AGeneradorAmbientacion* G, int32 N);

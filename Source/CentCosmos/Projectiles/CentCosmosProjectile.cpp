@@ -10,7 +10,6 @@
 #include "TribunalBase/TribunalBase.h"
 #include "GrietaAntimateria.h"
 #include "TribunalBase/PlacaMetal.h"
-// --- NUEVOS INCLUDES PARA NIAGARA ---
 #include "NiagaraComponent.h"
 #include "NiagaraSystem.h"
 
@@ -26,10 +25,10 @@ ACentCosmosProjectile::ACentCosmosProjectile()
 	ProjectileMesh->OnComponentHit.AddDynamic(this, &ACentCosmosProjectile::OnHit);
 	RootComponent = ProjectileMesh;
 
-	// Ocultamos la malla visualmente
+	ProjectileMesh->SetRelativeScale3D(FVector(0.8f, 0.8f, 0.8f));
+
 	ProjectileMesh->SetHiddenInGame(true);
 
-	// 2. EFECTO VISUAL NIAGARA
 	EfectoNiagara = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EfectoNiagara"));
 	EfectoNiagara->SetupAttachment(RootComponent);
 

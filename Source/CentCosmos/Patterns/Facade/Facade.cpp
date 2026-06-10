@@ -2,9 +2,7 @@
 
 #include "Facade.h"
 #include "Engine/World.h"
-#include "GestorNiveles.h" // Incluimos nuestro Contexto del patrón State
-
-// --- Subsistemas de Construcción (Builder Pattern) ---
+#include "GestorNiveles.h" 
 #include "Patterns/Builder/NivelDirector.h"
 #include "Patterns/Builder/Nivel1Builder.h"
 #include "Nivel2Builder.h"
@@ -29,7 +27,6 @@ void AFacade::BeginPlay()
         FActorSpawnParameters Params;
         Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-        // El Facade asume la responsabilidad de crear el Gestor de Niveles (State)
         GestorNiveles = Mundo->SpawnActor<AGestorNiveles>(AGestorNiveles::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
     }
 }
@@ -51,7 +48,6 @@ void AFacade::GenerarNivel1()
         Director->ConstruirNivel(Mundo, TEXT("Nivel_1_Facil"), 300.0f, 1.0f);
     }
 
-    // --- INTEGRACIÓN DIRECTA DEL ESTADO (Música) ---
     if (GestorNiveles)
     {
         GestorNiveles->CambiarEstado(GestorNiveles->ObtenerEstadoNivel1());

@@ -10,10 +10,7 @@ class UEnemigo : public UInterface
 	GENERATED_BODY()
 };
 
-/**
- * Interfaz base del Decorator — equivalente a Component en la plantilla.
- * Todo componente concreto y todo decorador implementa esta interfaz.
- */
+
 class CENTCOSMOS_API IEnemigo
 {
 	GENERATED_BODY()

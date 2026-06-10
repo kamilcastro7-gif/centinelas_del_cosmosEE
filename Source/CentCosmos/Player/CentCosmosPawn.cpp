@@ -84,7 +84,6 @@ void ACentCosmosPawn::BeginPlay()
 	Base->Inicializar(VidaMax);
 	Decorador->Envolver(TScriptInterface<IEnemigo>(Base));
 
-	// Inicializar Observer
 	if (!SubjectVida)
 	{
 		SubjectVida = GetWorld()->SpawnActor<ASubject>();

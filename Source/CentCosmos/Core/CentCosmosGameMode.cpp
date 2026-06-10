@@ -1,38 +1,14 @@
 #include "CentCosmosGameMode.h"
-#include "CentCosmos.h"
+#include "Facade.h" 
 #include "CentCosmosPawn.h"
 #include "Engine/World.h"
+#include "TimerManager.h" 
 
 ACentCosmosGameMode::ACentCosmosGameMode()
 {
-    PrimaryActorTick.bCanEverTick = true;
+    PrimaryActorTick.bCanEverTick = false;
     DefaultPawnClass = ACentCosmosPawn::StaticClass();
-    Director = nullptr;
-    ManejadorHorda = nullptr;
     FacadeMaestro = nullptr;
-    GestorMusica = nullptr;
-}
-
-TScriptInterface<INivelBuilder> ACentCosmosGameMode::CrearBuilderParaMapa(UWorld* Mundo, float& OutDificultad)
-{
-    FString NombreMapa = Mundo->GetMapName();
-    NombreMapa.RemoveFromStart(Mundo->StreamingLevelsPrefix);
-
-    UE_LOG(LogTemp, Warning, TEXT("[CentCosmos] Mapa detectado: %s"), *NombreMapa);
-
-    FActorSpawnParameters Params;
-    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-    if (NombreMapa.Contains(TEXT("LV1"))) { OutDificultad = 1.0f; return TScriptInterface<INivelBuilder>(Mundo->SpawnActor<ANivel1Builder>(ANivel1Builder::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params)); }
-    if (NombreMapa.Contains(TEXT("LV2"))) { OutDificultad = 2.0f; return TScriptInterface<INivelBuilder>(Mundo->SpawnActor<ANivel2Builder>(ANivel2Builder::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params)); }
-    if (NombreMapa.Contains(TEXT("LV3"))) { OutDificultad = 3.0f; return TScriptInterface<INivelBuilder>(Mundo->SpawnActor<ANivel3Builder>(ANivel3Builder::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params)); }
-    if (NombreMapa.Contains(TEXT("LV4"))) { OutDificultad = 4.0f; return TScriptInterface<INivelBuilder>(Mundo->SpawnActor<ANivel4Builder>(ANivel4Builder::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params)); }
-    if (NombreMapa.Contains(TEXT("LV5"))) { OutDificultad = 5.0f; return TScriptInterface<INivelBuilder>(Mundo->SpawnActor<ANivel5Builder>(ANivel5Builder::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params)); }
-    if (NombreMapa.Contains(TEXT("LV6"))) { OutDificultad = 6.0f; return TScriptInterface<INivelBuilder>(Mundo->SpawnActor<ANivel6Builder>(ANivel6Builder::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params)); }
-
-    UE_LOG(LogTemp, Warning, TEXT("[CentCosmos] Mapa no reconocido, usando Nivel1Builder por defecto"));
-    OutDificultad = 1.0f;
-    return TScriptInterface<INivelBuilder>(Mundo->SpawnActor<ANivel1Builder>(ANivel1Builder::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params));
 }
 
 void ACentCosmosGameMode::BeginPlay()
@@ -45,50 +21,24 @@ void ACentCosmosGameMode::BeginPlay()
     FActorSpawnParameters Params;
     Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-    float Dificultad = 1.0f;
-    BuilderActivo = CrearBuilderParaMapa(Mundo, Dificultad);
+    FacadeMaestro = Mundo->SpawnActor<AFacade>(AFacade::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
 
-    Director = Mundo->SpawnActor<ANivelDirector>(
-        ANivelDirector::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
-
-    ManejadorHorda = Mundo->SpawnActor<AFacade>(
-        AFacade::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
-
-    FacadeMaestro = Mundo->SpawnActor<AFacade>(
-        AFacade::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
-
-    if (Director && BuilderActivo.GetObject())
+    if (FacadeMaestro)
     {
-        Director->SetBuilder(BuilderActivo);
-        Director->ConstruirNivel(Mundo, TEXT("Nivel"), 300.0f, Dificultad);
+        FString NombreMapa = Mundo->GetMapName();
+        NombreMapa.RemoveFromStart(Mundo->StreamingLevelsPrefix);
+        UE_LOG(LogTemp, Warning, TEXT("[CentCosmos] Mapa detectado: %s"), *NombreMapa);
+
+        if (NombreMapa.Contains(TEXT("LV1")))      FacadeMaestro->GenerarNivel1();
+        else if (NombreMapa.Contains(TEXT("LV2"))) FacadeMaestro->GenerarNivel2();
+        else if (NombreMapa.Contains(TEXT("LV3"))) FacadeMaestro->GenerarNivel3();
+        else if (NombreMapa.Contains(TEXT("LV4"))) FacadeMaestro->GenerarNivel4();
+        else if (NombreMapa.Contains(TEXT("LV5"))) FacadeMaestro->GenerarNivel5();
+        else if (NombreMapa.Contains(TEXT("LV6"))) FacadeMaestro->GenerarNivel6();
+        else UE_LOG(LogTemp, Warning, TEXT("[CentCosmos] Menú o mapa desconocido."));
     }
 
-    Mundo->GetTimerManager().SetTimer(
-        TimerHandle_InputFix,
-        this,
-        &ACentCosmosGameMode::RestaurarInputJugador,
-        0.1f,
-        false
-    );
-    GestorMusica = Mundo->SpawnActor<AGestorNiveles>(
-        AGestorNiveles::StaticClass(),
-        FVector::ZeroVector, FRotator::ZeroRotator, Params
-    );
-
-    if (GestorMusica)
-    {
-        IEstadoNivel* EstadoInicial = nullptr;
-
-        if (Dificultad == 1.0f) EstadoInicial = GestorMusica->ObtenerEstadoNivel1();
-        else if (Dificultad == 2.0f) EstadoInicial = GestorMusica->ObtenerEstadoNivel2();
-        else if (Dificultad == 3.0f) EstadoInicial = GestorMusica->ObtenerEstadoNivel3();
-        else if (Dificultad == 4.0f) EstadoInicial = GestorMusica->ObtenerEstadoNivel4();
-        else if (Dificultad == 5.0f) EstadoInicial = GestorMusica->ObtenerEstadoNivel5();
-        else if (Dificultad == 6.0f) EstadoInicial = GestorMusica->ObtenerEstadoNivel6();
-
-        if (EstadoInicial)
-            GestorMusica->CambiarEstado(EstadoInicial);
-    }
+    Mundo->GetTimerManager().SetTimer(TimerHandle_InputFix, this, &ACentCosmosGameMode::RestaurarInputJugador, 0.1f, false);
 }
 
 void ACentCosmosGameMode::IniciarNivel(int32 NumeroNivel)
@@ -101,9 +51,9 @@ void ACentCosmosGameMode::IniciarNivel(int32 NumeroNivel)
     case 2: FacadeMaestro->GenerarNivel2(); break;
     case 3: FacadeMaestro->GenerarNivel3(); break;
     case 4: FacadeMaestro->GenerarNivel4(); break;
-    default:
-        UE_LOG(LogTemp, Warning, TEXT("[CentCosmos] IniciarNivel: numero de nivel no reconocido: %d"), NumeroNivel);
-        break;
+    case 5: FacadeMaestro->GenerarNivel5(); break;
+    case 6: FacadeMaestro->GenerarNivel6(); break;
+    default: UE_LOG(LogTemp, Warning, TEXT("[CentCosmos] Nivel desconocido: %d"), NumeroNivel); break;
     }
 }
 
@@ -117,24 +67,18 @@ void ACentCosmosGameMode::RestaurarInputJugador()
 
     if (!PC->GetPawn())
     {
-        FActorSpawnParameters SpawnParams;
-        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-        ACentCosmosPawn* NuevoPawn = Mundo->SpawnActor<ACentCosmosPawn>(
-            ACentCosmosPawn::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
-
-        if (NuevoPawn)
-            PC->Possess(NuevoPawn);
+        FActorSpawnParameters Params;
+        Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+        ACentCosmosPawn* NuevoPawn = Mundo->SpawnActor<ACentCosmosPawn>(ACentCosmosPawn::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
+        if (NuevoPawn) PC->Possess(NuevoPawn);
     }
 
-    FInputModeGameOnly InputMode;
-    PC->SetInputMode(InputMode);
+    PC->SetInputMode(FInputModeGameOnly());
     PC->bShowMouseCursor = false;
     PC->SetIgnoreLookInput(false);
     PC->SetIgnoreMoveInput(false);
 
-    UE_LOG(LogTemp, Warning, TEXT("[CentCosmos] Input restaurado. Pawn: %s"),
-        PC->GetPawn() ? *PC->GetPawn()->GetName() : TEXT("NINGUNO"));
+    UE_LOG(LogTemp, Warning, TEXT("[CentCosmos] Input restaurado."));
 }
 
 void ACentCosmosGameMode::PostLogin(APlayerController* NewPlayer)
@@ -142,14 +86,8 @@ void ACentCosmosGameMode::PostLogin(APlayerController* NewPlayer)
     Super::PostLogin(NewPlayer);
     if (!NewPlayer) return;
 
-    FInputModeGameOnly InputMode;
-    NewPlayer->SetInputMode(InputMode);
+    NewPlayer->SetInputMode(FInputModeGameOnly());
     NewPlayer->bShowMouseCursor = false;
     NewPlayer->SetIgnoreLookInput(false);
     NewPlayer->SetIgnoreMoveInput(false);
-}
-
-void ACentCosmosGameMode::Tick(float DeltaTime)
-{
-    Super::Tick(DeltaTime);
 }
