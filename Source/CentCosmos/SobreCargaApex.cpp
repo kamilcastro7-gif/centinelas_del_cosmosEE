@@ -5,13 +5,11 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Patterns/Decorator/EnemDecorador.h"
 #include "Patterns/Decorator/EnemSobrecargaApex.h"
-// --- NUEVOS INCLUDES PARA CASCADE ---
 #include "Particles/ParticleSystemComponent.h"
 #include "Particles/ParticleSystem.h"
 
 APowerUpSobrecargaApex::APowerUpSobrecargaApex()
 {
-	// Esfera verde — velocidad/poder (HITBOX INVISIBLE)
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> FormaMesh(
 		TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
 	if (FormaMesh.Succeeded() && MallaVisual)
@@ -19,11 +17,9 @@ APowerUpSobrecargaApex::APowerUpSobrecargaApex()
 		MallaVisual->SetStaticMesh(FormaMesh.Object);
 		MallaVisual->SetRelativeScale3D(FVector(0.4f));
 
-		// Ocultamos la malla visualmente
 		MallaVisual->SetHiddenInGame(true);
 	}
 
-	// EFECTO VISUAL AURA
 	EfectoAura = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("EfectoAura"));
 	EfectoAura->SetupAttachment(MallaVisual);
 
@@ -38,9 +34,21 @@ void APowerUpSobrecargaApex::AplicarEfecto(ACentCosmosPawn* Nave)
 {
 	if (!Nave) return;
 
-	UEnemSobrecargaApex* Efecto = NewObject<UEnemSobrecargaApex>(Nave);
-	if (Efecto)
+	// 1. Instanciamos el decorador puro
+	UEnemSobrecargaApex* DecoradorApex = NewObject<UEnemSobrecargaApex>(Nave);
+	if (DecoradorApex)
 	{
-		Efecto->AplicarEfecto(Nave);
+		// 2. Le decimos a la nave que se envuelva con este nuevo decorador
+		Nave->AgregarDecorador(DecoradorApex);
+
+		if (GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("Sobrecarga Apex: Decorador Puro Aplicado"));
+
+		// 3. El PowerUp inicia el temporizador para remover el decorador en 10 segundos
+		FTimerHandle Handle;
+		Nave->GetWorldTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([Nave, DecoradorApex]()
+			{
+				if (IsValid(Nave)) Nave->RemoverDecorador(DecoradorApex);
+			}), 10.f, false);
 	}
 }

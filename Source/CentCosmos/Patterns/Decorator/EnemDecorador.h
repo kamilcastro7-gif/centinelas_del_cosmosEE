@@ -11,35 +11,19 @@ class CENTCOSMOS_API UEnemDecorador : public UObject, public IEnemigo
 	GENERATED_BODY()
 
 public:
-	void Envolver(TScriptInterface<IEnemigo> Componente)
-	{
-		Inner = Componente;
-	}
+	void Envolver(TScriptInterface<IEnemigo> Componente) { Inner = Componente; }
+	TScriptInterface<IEnemigo> ObtenerInner() const { return Inner; }
 
-	virtual float GetVida()       const override
-	{
-		return Inner ? Inner->GetVida() : 0.f;
-	}
+	virtual float GetVida()       const override { return Inner ? Inner->GetVida() : 0.f; }
+	virtual float GetVidaMaxima() const override { return Inner ? Inner->GetVidaMaxima() : 0.f; }
+	virtual void RecibirDanio(float Cantidad) override { if (Inner) Inner->RecibirDanio(Cantidad); }
+	virtual void RegenerarVida(float Bonus) override { if (Inner) Inner->RegenerarVida(Bonus); }
+	virtual bool EstaVivo() const override { return Inner ? Inner->EstaVivo() : false; }
 
-	virtual float GetVidaMaxima() const override
-	{
-		return Inner ? Inner->GetVidaMaxima() : 0.f;
-	}
+	virtual float GetVelocidad(float BaseSpeed) const override { return Inner ? Inner->GetVelocidad(BaseSpeed) : BaseSpeed; }
+	virtual float GetCadencia(float BaseRate)   const override { return Inner ? Inner->GetCadencia(BaseRate) : BaseRate; }
 
-	virtual void RecibirDanio(float Cantidad) override
-	{
-		if (Inner) Inner->RecibirDanio(Cantidad);
-	}
-
-	virtual void RegenerarVida(float Bonus) override
-	{
-		if (Inner) Inner->RegenerarVida(Bonus);
-	}
-
-	virtual bool EstaVivo() const override
-	{
-		return Inner ? Inner->EstaVivo() : false;
-	}
+	virtual bool  GetDisparoTriple()            const override { return Inner ? Inner->GetDisparoTriple() : false; }
 
 protected:
 	UPROPERTY()

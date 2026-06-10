@@ -15,8 +15,8 @@
 #include "Sound/SoundBase.h"
 #include "Observer/Subject.h"
 #include "Observer/VidaObserver.h"
-#include "Decorator/EnemDecorador.h"
-#include "Decorator/EnemBaseComp.h"
+#include "Patterns/Decorator/EnemDecorador.h"
+#include "Patterns/Decorator/EnemBaseComp.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Templates/SubclassOf.h"
 
@@ -68,7 +68,9 @@ ACentCosmosPawn::ACentCosmosPawn()
 
 	VidaMax = 100.f;
 	VidaActual = VidaMax;
-	Decorador = CreateDefaultSubobject<UEnemDecorador>(TEXT("Decorador"));
+
+	// Inicializamos la interfaz en nulo, se construirá dinámicamente en BeginPlay
+	Atributos = nullptr;
 
 	SubjectVida = nullptr;
 	ObservadorVida = nullptr;
@@ -78,12 +80,12 @@ void ACentCosmosPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-
-	// Implementacion del patrón Decorator para el sistema de salud
+	// CONEXIÓN MAESTRA DECORATOR: Instanciamos el componente de salud concreto base
 	UEnemBaseComp* Base = NewObject<UEnemBaseComp>(this);
 	Base->Inicializar(VidaMax);
-	Decorador->Envolver(TScriptInterface<IEnemigo>(Base));
+	Atributos = Base; // Definimos el inicio de la cadena del patrón
 
+	// CONEXIÓN CON EL OBSERVADOR (Pristina e intacta)
 	if (!SubjectVida)
 	{
 		SubjectVida = GetWorld()->SpawnActor<ASubject>();
@@ -116,13 +118,26 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	// =========================================================================
+	// CONSULTA DINÁMICA AL DECORADOR (Refactoring Guru puro)
+	// Solicitamos las variables finales calculadas a lo largo de toda la cadena enlazada
+	// =========================================================================
+	float VelocidadCalculada = Atributos ? Atributos->GetVelocidad(MoveSpeedBase) : MoveSpeedBase;
+	float CadenciaCalculada = Atributos ? Atributos->GetCadencia(FireRateBase) : FireRateBase;
+	bool bDisparoTripleActivo = Atributos ? Atributos->GetDisparoTriple() : false;
+
+	// Sincronizamos las variables globales para mantener compatibilidad con el resto del juego
+	MoveSpeed = VelocidadCalculada;
+	FireRate = CadenciaCalculada;
+	bTieneDisparoTriple = bDisparoTripleActivo;
+	// =========================================================================
+
 	const float ForwardValue = GetInputAxisValue(MoveForwardBinding);
 	const float RightValue = GetInputAxisValue(MoveRightBinding);
 
 	const FVector MoveDirection = FVector(ForwardValue, RightValue, 0.f).GetClampedToMaxSize(1.0f);
 	const FVector Movement = MoveDirection * MoveSpeed * DeltaSeconds;
 
-	// --- LÓGICA DE MOVIMIENTO (No se ve afectada por el silencio) ---
 	if (Movement.SizeSquared() > 0.0f)
 	{
 		FRotator NewRotation = Movement.Rotation();
@@ -146,27 +161,22 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 		else if (PC->WasInputKeyJustPressed(EKeys::Three))ArmaActual = ETipoArma::Carga;
 	}
 
-	// =========================================================================
-	// --- NUEVO: FILTRO DE SILENCIO (ECLIPSE SILENCIOSO) ---
-	// Si el enemigo nos silencia, cancelamos las cargas activas y bloqueamos el disparo
 	if (!bPuedeDisparar)
 	{
 		if (bEstaCargando && ProyectilCargaActual)
 		{
-			ProyectilCargaActual->Destroy(); // Destruye la energía a medio cargar
+			ProyectilCargaActual->Destroy();
 			ProyectilCargaActual = nullptr;
 			bEstaCargando = false;
 			TiempoCargaAcumulado = 0.0f;
 		}
-		return; // ¡El return evita que la nave lea el código de disparo de abajo!
+		return;
 	}
-	// =========================================================================
 
 	if (!bCanFire && ArmaActual != ETipoArma::Carga) return;
 
 	UWorld* const World = GetWorld();
 
-	// --- LÓGICA DE DISPARO ---
 	if (PC && PC->IsInputKeyDown(EKeys::SpaceBar))
 	{
 		if (World != nullptr)
@@ -185,6 +195,7 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 				Params.Instigator = GetInstigator();
 				Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
+				// Usamos la evaluación limpia obtenida desde el decorador
 				if (bTieneDisparoTriple)
 				{
 					World->SpawnActor<ACentCosmosProjectile>(ClaseAUsar, SpawnLocation, FireRotation, Params);
@@ -277,17 +288,18 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 
 void ACentCosmosPawn::RecibirDanioNave(float Cantidad)
 {
-	if (!Decorador) return;
+	if (!Atributos) return;
 
-	Decorador->RecibirDanio(Cantidad);
-	VidaActual = Decorador->GetVida();
+	// Pasamos el daño a través de la cadena lógica del Decorator
+	Atributos->RecibirDanio(Cantidad);
+	VidaActual = Atributos->GetVida();
 
+	// NOTIFICACIÓN AL OBSERVER: Informamos al sujeto que la vida cambió de forma limpia
 	if (SubjectVida)
 		SubjectVida->NotifyObservers(FName("VidaActualizada"), VidaActual);
 
-	if (!Decorador->EstaVivo())
+	if (!Atributos->EstaVivo())
 	{
-		// Detach del observer antes de destruir — igual que RemoveMeFromTheList()
 		if (SubjectVida && ObservadorVida)
 			SubjectVida->RemoveObserver(ObservadorVida);
 
@@ -298,35 +310,15 @@ void ACentCosmosPawn::RecibirDanioNave(float Cantidad)
 	}
 }
 
-void ACentCosmosPawn::FireShot(FVector FireDirection) {}
-
-void ACentCosmosPawn::ShotTimerExpired() { bCanFire = true; }
-
-void ACentCosmosPawn::DesactivarDisparoTriple()
-{
-	bTieneDisparoTriple = false;
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Disparo Triple Terminado."));
-}
-
-void ACentCosmosPawn::DesactivarSobreCargaApex()
-{
-	bTieneSobreCargaApex = false;
-	MoveSpeed = MoveSpeedBase;
-	FireRate = FireRateBase;
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("SobreCarga Apex Terminada."));
-}
-
 void ACentCosmosPawn::RestaurarVida(float Cantidad)
 {
-	if (!Decorador) return;
+	if (!Atributos) return;
 
-	// El Decorator regula que no pase de VidaMaxima
-	Decorador->RegenerarVida(Cantidad);
-	VidaActual = Decorador->GetVida();
+	// Aplicamos la curación a través del decorador
+	Atributos->RegenerarVida(Cantidad);
+	VidaActual = Atributos->GetVida();
 
-	// Notificar al Observer para que actualice el HUD
+	// NOTIFICACIÓN AL OBSERVER
 	if (SubjectVida)
 	{
 		SubjectVida->NotifyObservers(FName("VidaActualizada"), VidaActual);
@@ -334,7 +326,55 @@ void ACentCosmosPawn::RestaurarVida(float Cantidad)
 
 	if (GEngine)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, 
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan,
 			TEXT("Vida Restaurada!"));
+	}
+}
+
+void ACentCosmosPawn::FireShot(FVector FireDirection) {}
+
+void ACentCosmosPawn::ShotTimerExpired() { bCanFire = true; }
+
+// Dejamos estas dos funciones obsoletas vacías para evitar roturas con otros sistemas externos
+void ACentCosmosPawn::DesactivarDisparoTriple() {}
+void ACentCosmosPawn::DesactivarSobreCargaApex() {}
+
+// =========================================================================
+// IMPLEMENTACIÓN DE MÉTODOS EJECUTIVOS ENLAZADOS (PATRÓN DECORATOR PURO)
+// =========================================================================
+void ACentCosmosPawn::AgregarDecorador(UEnemDecorador* NuevoDecorador)
+{
+	if (NuevoDecorador)
+	{
+		// El nuevo decorador envuelve la raíz actual de nuestra cadena
+		NuevoDecorador->Envolver(Atributos);
+		// Actualizamos la raíz apuntando al nuevo envoltorio exterior
+		Atributos = NuevoDecorador;
+	}
+}
+
+void ACentCosmosPawn::RemoverDecorador(UEnemDecorador* DecoradorARemover)
+{
+	if (!Atributos || !DecoradorARemover) return;
+
+	// Caso A: Si el decorador que expira es la capa más externa de la cadena
+	if (Atributos.GetObject() == DecoradorARemover)
+	{
+		Atributos = DecoradorARemover->ObtenerInner();
+		return;
+	}
+
+	// Caso B: Si está en medio de la cadena, la recorremos y reconectamos los eslabones
+	UObject* Actual = Atributos.GetObject();
+	while (Actual)
+	{
+		UEnemDecorador* DecActual = Cast<UEnemDecorador>(Actual);
+		if (DecActual && DecActual->ObtenerInner().GetObject() == DecoradorARemover)
+		{
+			// El decorador actual se salta el eslabón eliminado enlazándose directo al de abajo
+			DecActual->Envolver(DecoradorARemover->ObtenerInner());
+			break;
+		}
+		Actual = DecActual ? DecActual->ObtenerInner().GetObject() : nullptr;
 	}
 }

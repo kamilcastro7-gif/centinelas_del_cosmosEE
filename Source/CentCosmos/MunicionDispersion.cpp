@@ -4,13 +4,13 @@
 #include "UObject/ConstructorHelpers.h"
 #include "CentCosmosPawn.h"
 #include "Engine/Engine.h"
-// --- NUEVOS INCLUDES PARA CASCADE ---
+#include "Patterns/Decorator/EnemDecorador.h"
+#include "Patterns/Decorator/EnemDisparoTriple.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Particles/ParticleSystem.h"
 
 AMunicionDispersion::AMunicionDispersion()
 {
-	// Cubo naranja — municion de dispersion (HITBOX INVISIBLE)
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> FormaMesh(
 		TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube'"));
 	if (FormaMesh.Succeeded() && MallaVisual)
@@ -18,11 +18,8 @@ AMunicionDispersion::AMunicionDispersion()
 		MallaVisual->SetStaticMesh(FormaMesh.Object);
 		MallaVisual->SetRelativeScale3D(FVector(0.3f));
 
-		// Ocultamos la malla visualmente
 		MallaVisual->SetHiddenInGame(true);
 	}
-
-	// EFECTO VISUAL AURA
 	EfectoAura = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("EfectoAura"));
 	EfectoAura->SetupAttachment(MallaVisual);
 
@@ -37,12 +34,21 @@ void AMunicionDispersion::AplicarEfecto(ACentCosmosPawn* Nave)
 {
 	if (!Nave) return;
 
-	// Activa disparo triple en la nave
-	Nave->bTieneDisparoTriple = true;
-
-	if (GEngine)
+	// 1. Instanciamos el decorador puro
+	UEnemDisparoTriple* DecoradorTriple = NewObject<UEnemDisparoTriple>(Nave);
+	if (DecoradorTriple)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange,
-			TEXT("Disparo Triple Activado!"));
+		// 2. Envolvemos la cadena de la nave
+		Nave->AgregarDecorador(DecoradorTriple);
+
+		if (GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange, TEXT("Disparo Triple: Decorador Puro Aplicado"));
+
+		// 3. Temporizador para quitar el efecto
+		FTimerHandle Handle;
+		Nave->GetWorldTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([Nave, DecoradorTriple]()
+			{
+				if (IsValid(Nave)) Nave->RemoverDecorador(DecoradorTriple);
+			}), 10.f, false);
 	}
 }

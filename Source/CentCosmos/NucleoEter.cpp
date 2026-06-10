@@ -4,7 +4,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "CentCosmosPawn.h"
 #include "Engine/Engine.h"
-// --- NUEVOS INCLUDES PARA CASCADE ---
+
 #include "Particles/ParticleSystemComponent.h"
 #include "Particles/ParticleSystem.h"
 
@@ -12,7 +12,6 @@ ANucleoEter::ANucleoEter()
 {
 	CantidadCuracion = 50.0f;
 
-	// Cubo cian — curacion (HITBOX INVISIBLE)
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> FormaMesh(
 		TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube'"));
 	if (FormaMesh.Succeeded() && MallaVisual)
@@ -20,11 +19,9 @@ ANucleoEter::ANucleoEter()
 		MallaVisual->SetStaticMesh(FormaMesh.Object);
 		MallaVisual->SetRelativeScale3D(FVector(0.3f));
 
-		// Ocultamos la malla visualmente
 		MallaVisual->SetHiddenInGame(true);
 	}
 
-	// EFECTO VISUAL AURA
 	EfectoAura = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("EfectoAura"));
 	EfectoAura->SetupAttachment(MallaVisual);
 
@@ -39,6 +36,5 @@ void ANucleoEter::AplicarEfecto(ACentCosmosPawn* Nave)
 {
 	if (!Nave) return;
 
-	// RestaurarVida conecta con el Decorator y notifica al Observer
 	Nave->RestaurarVida(CantidadCuracion);
 }

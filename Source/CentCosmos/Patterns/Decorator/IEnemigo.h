@@ -10,7 +10,6 @@ class UEnemigo : public UInterface
 	GENERATED_BODY()
 };
 
-
 class CENTCOSMOS_API IEnemigo
 {
 	GENERATED_BODY()
@@ -21,4 +20,9 @@ public:
 	virtual void  RecibirDanio(float Cantidad) = 0;
 	virtual void  RegenerarVida(float Bonus) = 0;
 	virtual bool  EstaVivo()              const = 0;
+
+	virtual float GetVelocidad(float BaseSpeed) const = 0;
+	virtual float GetCadencia(float BaseRate)   const = 0;
+
+	virtual bool  GetDisparoTriple()            const = 0;
 };

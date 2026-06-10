@@ -1,8 +1,9 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Fill out your copyright notice in the Description page of Project Settings.
 #pragma once
+
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "Patterns/Decorator/EnemDecorador.h"
+#include "Patterns/Decorator/IEnemigo.h"
 #include "Observer/VidaObserver.h"
 #include "Observer/Subject.h"
 #include "CentCosmosPawn.generated.h"
@@ -34,6 +35,8 @@ public:
 	ACentCosmosPawn();
 
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UPROPERTY(Category = Gameplay, EditAnywhere)
 	FVector GunOffset;
@@ -47,11 +50,15 @@ public:
 	UPROPERTY(Category = "Audio", EditAnywhere)
 	class USoundBase* FireSound;
 
+	// === EL PATRÓN DECORATOR PURO ===
+	// Esta interfaz representa la raíz de nuestra cadena dinámica de efectos y estadísticas
 	UPROPERTY()
-	UEnemDecorador* Decorador;
+	TScriptInterface<IEnemigo> Atributos;
 
-	virtual void Tick(float DeltaSeconds) override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	void AgregarDecorador(class UEnemDecorador* NuevoDecorador);
+	void RemoverDecorador(class UEnemDecorador* DecoradorARemover);
+	// ================================
+
 	void FireShot(FVector FireDirection);
 	void ShotTimerExpired();
 	void DesactivarDisparoTriple();

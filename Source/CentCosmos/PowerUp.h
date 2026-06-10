@@ -15,14 +15,12 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	// Componentes — sin macros Blueprint
 	UPROPERTY(VisibleAnywhere)
 	class UBoxComponent* CollisionBox;
 
 	UPROPERTY(VisibleAnywhere)
 	class UStaticMeshComponent* MallaVisual;
 
-	// Cada hijo sobreescribe esto con su efecto concreto
 	virtual void AplicarEfecto(class ACentCosmosPawn* Nave);
 
 private:

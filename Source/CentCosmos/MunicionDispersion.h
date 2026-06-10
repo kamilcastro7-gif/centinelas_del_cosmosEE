@@ -4,7 +4,7 @@
 #include "PowerUp.h"
 #include "MunicionDispersion.generated.h"
 
-class UParticleSystemComponent; // NUEVO
+class UParticleSystemComponent; 
 
 UCLASS()
 class CENTCOSMOS_API AMunicionDispersion : public APowerUp
@@ -16,7 +16,6 @@ protected:
 	virtual void AplicarEfecto(class ACentCosmosPawn* Nave) override;
 
 private:
-	// --- EFECTO VISUAL AURA ---
 	UPROPERTY(VisibleAnywhere, Category = "Componentes")
 	UParticleSystemComponent* EfectoAura;
 };

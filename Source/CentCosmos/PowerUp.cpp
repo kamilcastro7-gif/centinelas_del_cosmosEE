@@ -45,5 +45,5 @@ void APowerUp::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor
 
 void APowerUp::AplicarEfecto(ACentCosmosPawn* Nave)
 {
-	// Base vacía — los hijos sobreescriben esto
+	
 }
