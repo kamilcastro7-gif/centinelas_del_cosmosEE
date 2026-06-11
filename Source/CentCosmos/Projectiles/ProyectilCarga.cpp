@@ -56,7 +56,6 @@ AProyectilCarga::AProyectilCarga()
     ProjectileMovement->SetActive(false);
 
     DanoBase = 0.5f;
-    InitialLifeSpan = 4.0f;
 }
 
 // ... (El resto de tus funciones InicializarCarga, LiberarProyectil y AlChocar se mantienen exactamente igual) ...
@@ -74,6 +73,9 @@ void AProyectilCarga::InicializarCarga(float TiempoCarga)
 
 void AProyectilCarga::LiberarProyectil(float TiempoCargaFinal, FVector DireccionLanzamiento)
 {
+    // ¡NUEVO! Le damos sus 4 segundos de vida justo cuando sale disparado
+    SetLifeSpan(4.0f);
+
     float VelocidadLanzamiento;
 
     if (TiempoCargaFinal >= 2.8f)

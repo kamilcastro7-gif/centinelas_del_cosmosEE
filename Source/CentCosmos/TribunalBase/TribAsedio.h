@@ -17,8 +17,6 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
-	// --- NUEVO: Limpieza antes de morir ---
 	virtual void Destroyed() override;
 
 public:
@@ -51,6 +49,17 @@ public:
 
 	void EliminarPlacaDeArreglo(APlacaMetal* PlacaMuerta);
 
+	// ==========================================
+	// SISTEMA DE INVOCACIÓN DE FASES
+	// ==========================================
+	UPROPERTY(EditAnywhere, Category = "Invocacion")
+	TSubclassOf<AActor> ClaseVastago;
+
+	UPROPERTY(EditAnywhere, Category = "Invocacion")
+	TSubclassOf<AActor> ClaseHeraldo;
+
+	void InvocacionEnCirculo(TSubclassOf<AActor> ClaseEnemigo, int32 Cantidad, float Radio);
+
 private:
 	void SpawnEscudoPlacas();
 	void RegenerarEscudo();
@@ -70,4 +79,10 @@ private:
 	FVector PosicionInicialAnclaje;
 	FVector PuntoDestinoActual;
 	bool bPuedeMoverse;
+
+	// Banderas para controlar las 3 fases
+	bool bVastagos90Invocados;
+	bool bHeraldo50Invocado;
+	bool bHeraldo25Invocado;
+
 };

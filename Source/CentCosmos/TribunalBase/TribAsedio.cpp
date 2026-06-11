@@ -5,6 +5,9 @@
 #include "TimerManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
+// --- INCLUDES DE ENEMIGOS ---
+#include "Enemies/EVastago_Del_infierno.h"
+#include "Enemies/EHeraldo_De_La_Ruina.h"
 
 ATribAsedio::ATribAsedio()
 {
@@ -35,6 +38,11 @@ ATribAsedio::ATribAsedio()
 	RadioMaximoMovimiento = 500.f;
 	TiempoEsperaEnPunto = 1.5f;
 	bPuedeMoverse = true;
+
+	// Inicializamos nuestras banderas
+	bVastagos90Invocados = false;
+	bHeraldo50Invocado = false;
+	bHeraldo25Invocado = false;
 }
 
 void ATribAsedio::BeginPlay()
@@ -44,10 +52,20 @@ void ATribAsedio::BeginPlay()
 	PuntoDestinoActual = PosicionInicialAnclaje;
 }
 
-// --- NUEVO: Limpiamos los escudos si el jefe es destruido de golpe ---
+// --- Limpiamos los escudos y destruimos a los invocados si el jefe muere ---
 void ATribAsedio::Destroyed()
 {
 	DesactivarYLimpiarEscudo();
+
+	// Limpiamos la arena
+	TArray<AActor*> VastagosVivos;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEVastago_Del_infierno::StaticClass(), VastagosVivos);
+	for (AActor* Enemigo : VastagosVivos) { if (Enemigo) Enemigo->Destroy(); }
+
+	TArray<AActor*> HeraldosVivos;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEHeraldo_De_La_Ruina::StaticClass(), HeraldosVivos);
+	for (AActor* Enemigo : HeraldosVivos) { if (Enemigo) Enemigo->Destroy(); }
+
 	Super::Destroyed();
 }
 
@@ -57,6 +75,37 @@ void ATribAsedio::Tick(float DeltaTime)
 
 	// === BLINDAJE 1: Cortar si el jefe está muriendo ===
 	if (!IsValid(this) || IsActorBeingDestroyed()) return;
+
+	// ======================================================
+	// VIGILANCIA DE FASES DE INVOCACIÓN
+	// ======================================================
+	// FASE 1: 90 de vida -> Invoca 10 Vástagos
+	if (Vida <= 90.0f && !bVastagos90Invocados)
+	{
+		TSubclassOf<AActor> ClaseAUsar = ClaseVastago ? ClaseVastago : AEVastago_Del_infierno::StaticClass();
+		InvocacionEnCirculo(ClaseAUsar, 10, 800.f);
+		bVastagos90Invocados = true;
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, TEXT("¡Asedio invoca Vástagos!"));
+	}
+
+	// FASE 2: 50 de vida -> Invoca 1 Heraldo
+	if (Vida <= 50.0f && !bHeraldo50Invocado)
+	{
+		TSubclassOf<AActor> ClaseAUsar = ClaseHeraldo ? ClaseHeraldo : AEHeraldo_De_La_Ruina::StaticClass();
+		InvocacionEnCirculo(ClaseAUsar, 1, 600.f);
+		bHeraldo50Invocado = true;
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("¡Asedio invoca un Heraldo!"));
+	}
+
+	// FASE 3: 25 de vida -> Invoca otro Heraldo
+	if (Vida <= 25.0f && !bHeraldo25Invocado)
+	{
+		TSubclassOf<AActor> ClaseAUsar = ClaseHeraldo ? ClaseHeraldo : AEHeraldo_De_La_Ruina::StaticClass();
+		InvocacionEnCirculo(ClaseAUsar, 1, 600.f);
+		bHeraldo25Invocado = true;
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("¡Asedio invoca su último Heraldo!"));
+	}
+	// ======================================================
 
 	APawn* NaveJugador = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 
@@ -114,7 +163,6 @@ void ATribAsedio::Tick(float DeltaTime)
 		{
 			APlacaMetal* PlacaActual = ArregloPlacas[i];
 
-			// === BLINDAJE 2: Comprobar siempre con IsValid antes de mover ===
 			if (IsValid(PlacaActual) && !PlacaActual->IsActorBeingDestroyed())
 			{
 				float AnguloRad = FMath::DegreesToRadians(AnguloActualPlacas + (i * SeparacionAngular));
@@ -124,7 +172,6 @@ void ATribAsedio::Tick(float DeltaTime)
 
 				PlacaActual->SetActorLocation(NuevaPosicionPlaca);
 
-				// === BLINDAJE 3: Volver a comprobar por si el SetActorLocation causó un impacto letal ===
 				if (IsValid(PlacaActual) && !PlacaActual->IsActorBeingDestroyed())
 				{
 					FRotator NuevaRotacionPlaca = FRotator(0.f, FMath::RadiansToDegrees(AnguloRad) + 90.f, 0.f);
@@ -201,7 +248,7 @@ void ATribAsedio::EliminarPlacaDeArreglo(APlacaMetal* PlacaMuerta)
 	if (PlacasActivas == 0)
 	{
 		bEsVulnerable = true;
-		GetWorld()->GetTimerManager().SetTimer(TimerVulnerabilidad, this, &ATribAsedio::RegenerarEscudo, 10.f, false);
+		GetWorld()->GetTimerManager().SetTimer(TimerVulnerabilidad, this, &ATribAsedio::RegenerarEscudo, 8.f, false);
 	}
 }
 
@@ -238,5 +285,34 @@ void ATribAsedio::RecibirDanioJefe(float Cantidad)
 	else
 	{
 		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, TEXT("Jefe Protegido: ¡Destruye las placas primero!"));
+	}
+}
+
+// ============================================================
+// LÓGICA DE INVOCACIÓN MATEMÁTICA
+// ============================================================
+void ATribAsedio::InvocacionEnCirculo(TSubclassOf<AActor> ClaseEnemigo, int32 Cantidad, float Radio)
+{
+	if (!ClaseEnemigo || Cantidad <= 0) return;
+
+	UWorld* Mundo = GetWorld();
+	if (!Mundo) return;
+
+	float PasoAngular = 360.0f / Cantidad;
+
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	for (int32 i = 0; i < Cantidad; i++)
+	{
+		float AnguloEnRadianes = FMath::DegreesToRadians(i * PasoAngular);
+
+		// Agregamos +150.f en Z para que no caigan bajo el suelo
+		FVector PosicionOffset(FMath::Cos(AnguloEnRadianes) * Radio, FMath::Sin(AnguloEnRadianes) * Radio, 0.f);
+		FVector PosicionSpawn = GetActorLocation() + PosicionOffset;
+
+		FRotator RotacionSpawn = PosicionOffset.Rotation();
+
+		Mundo->SpawnActor<AActor>(ClaseEnemigo, PosicionSpawn, RotacionSpawn, Params);
 	}
 }

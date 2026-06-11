@@ -64,7 +64,7 @@ void AArenaCombate::TeletransportarJugador()
     if (Jugador)
     {
         
-        FVector CentroArena = GetActorLocation() + FVector(300.f, 0.f, 0.f);
+        FVector CentroArena = GetActorLocation() + FVector(-1200.f, -1200.f, 0.f);
         Jugador->SetActorLocation(CentroArena, false, nullptr, ETeleportType::TeleportPhysics);
 
         UE_LOG(LogTemp, Warning, TEXT("Arena: El jugador ha sido teletransportado a la batalla final."));

@@ -7,7 +7,6 @@
 
 AEstadoNivel1::AEstadoNivel1()
 {
-	// Usando la ruta exacta que proporcionaste
 	static ConstructorHelpers::FObjectFinder<USoundBase> ObjetoMusica(TEXT("SoundWave'/Game/Assetssss/A14/Level_1.Level_1'"));
 	if (ObjetoMusica.Succeeded())
 	{

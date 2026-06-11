@@ -37,7 +37,7 @@ AAsteroide::AAsteroide()
 void AAsteroide::BeginPlay()
 {
     Super::BeginPlay();
-    SetLifeSpan(20.0f);
+    SetLifeSpan(60.0f);
 
     // Cambiar dirección cada 3 segundos
     GetWorldTimerManager().SetTimer(TimerCambioDireccion, this, &AAsteroide::CambiarDireccion, 3.0f, true);

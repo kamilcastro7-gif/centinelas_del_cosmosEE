@@ -115,19 +115,13 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	// =========================================================================
-	// CONSULTA DINÁMICA AL DECORADOR (Refactoring Guru puro)
-	// Solicitamos las variables finales calculadas a lo largo de toda la cadena enlazada
-	// =========================================================================
 	float VelocidadCalculada = Atributos ? Atributos->GetVelocidad(MoveSpeedBase) : MoveSpeedBase;
 	float CadenciaCalculada = Atributos ? Atributos->GetCadencia(FireRateBase) : FireRateBase;
 	bool bDisparoTripleActivo = Atributos ? Atributos->GetDisparoTriple() : false;
 
-	// Sincronizamos las variables globales para mantener compatibilidad con el resto del juego
 	MoveSpeed = VelocidadCalculada;
 	FireRate = CadenciaCalculada;
 	bTieneDisparoTriple = bDisparoTripleActivo;
-	// =========================================================================
 
 	const float ForwardValue = GetInputAxisValue(MoveForwardBinding);
 	const float RightValue = GetInputAxisValue(MoveRightBinding);
@@ -174,16 +168,20 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 
 	UWorld* const World = GetWorld();
 
-	if (PC && PC->IsInputKeyDown(EKeys::SpaceBar))
+	// =========================================================================
+	// LÓGICA DE CONTROL DE TECLAS Y AUTO-DISPARO (Evita el lag por exceso de carga)
+	// =========================================================================
+	bool bBotonPresionado = PC && PC->IsInputKeyDown(EKeys::SpaceBar);
+	bool bAlcanzoLimiteCarga = TiempoCargaAcumulado >= 3.0f; // Tiempo máximo de carga antes de auto-disparar
+
+	// Si presiona el botón Y aún no llega al límite de 3 segundos, seguimos cargando/disparando
+	if (bBotonPresionado && !bAlcanzoLimiteCarga)
 	{
 		if (World != nullptr)
 		{
 			const FRotator FireRotation = GetFireRotation(this);
 			const FVector  SpawnLocation = GetActorLocation() + FireRotation.RotateVector(GunOffset);
 
-			// =====================================
-			// 1. ARMA NORMAL
-			// =====================================
 			if (ArmaActual == ETipoArma::Normal && bCanFire)
 			{
 				TSubclassOf<ACentCosmosProjectile> ClaseAUsar = ClaseNormal ? ClaseNormal : TSubclassOf<ACentCosmosProjectile>(ACentCosmosProjectile::StaticClass());
@@ -219,9 +217,6 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 
 				if (FireSound) UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
 			}
-			// =====================================
-			// 2. ARMA BOOMERANG
-			// =====================================
 			else if (ArmaActual == ETipoArma::Boomerang && bCanFire && !bBoomerangEnVuelo)
 			{
 				bBoomerangEnVuelo = true;
@@ -253,9 +248,6 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 
 				if (FireSound) UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
 			}
-			// =====================================
-			// 3. ARMA CARGA (MANTENER PRESIONADO)
-			// =====================================
 			else if (ArmaActual == ETipoArma::Carga && bCanFire)
 			{
 				if (!bEstaCargando)
@@ -265,7 +257,6 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 
 					TSubclassOf<AProyectilCarga> ClaseCargaAUsar = ClaseCarga ? ClaseCarga : TSubclassOf<AProyectilCarga>(AProyectilCarga::StaticClass());
 
-					// TU CÓDIGO ORIGINAL: Limpio y sin forzar rotaciones raras
 					ProyectilCargaActual = World->SpawnActor<AProyectilCarga>(ClaseCargaAUsar, SpawnLocation, FireRotation);
 					if (ProyectilCargaActual)
 					{
@@ -276,7 +267,6 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 
 			if (ProyectilCargaActual && bEstaCargando)
 			{
-				// Magia del Apex: Carga más rápido
 				float FactorCargaApex = (FireRateBase > 0.f && FireRate > 0.f) ? (FireRateBase / FireRate) : 1.0f;
 				TiempoCargaAcumulado += (DeltaSeconds * FactorCargaApex);
 				ProyectilCargaActual->InicializarCarga(TiempoCargaAcumulado);
@@ -287,14 +277,13 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 			FireShot(-GetActorForwardVector());
 		}
 	}
-	// =====================================
-	// 4. ARMA CARGA (SOLTAR LA TECLA)
-	// =====================================
+	// =========================================================================
+	// SOLTAR LA TECLA O AUTO-DISPARO POR LÍMITE DE TIEMPO
+	// =========================================================================
 	else if (bEstaCargando)
 	{
 		if (ProyectilCargaActual)
 		{
-			// Tu dirección original: GARANTIZA que vaya 100% recto
 			const FVector DirCentro = -GetActorForwardVector();
 			FVector SpawnLoc = ProyectilCargaActual->GetActorLocation();
 			FVector EscalaFinalCarga = ProyectilCargaActual->GetActorScale3D();
@@ -302,10 +291,6 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 			ProyectilCargaActual->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 			ProyectilCargaActual->LiberarProyectil(TiempoCargaAcumulado, DirCentro);
 
-			// =========================================================================
-			// BALANCE DE JUEGO: Si la carga supera un límite, ignoramos el Disparo Triple 
-			// para que no esté roto. (Puedes cambiar el 1.5f por el límite que desees).
-			// =========================================================================
 			bool bEsCargaMaxima = TiempoCargaAcumulado >= 1.5f;
 
 			if (bTieneDisparoTriple && !bEsCargaMaxima)
