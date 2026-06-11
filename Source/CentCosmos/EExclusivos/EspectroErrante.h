@@ -1,0 +1,55 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "../EExclusivo.h" 
+#include "EspectroErrante.generated.h"
+
+class UParticleSystemComponent; // NUEVO: Para el sistema de partículas Cascade
+
+UCLASS()
+class CENTCOSMOS_API AEspectroErrante : public AEExclusivo
+{
+	GENERATED_BODY()
+
+public:
+	AEspectroErrante();
+
+protected:
+	virtual void BeginPlay() override;
+
+public:
+	virtual void Tick(float DeltaTime) override;
+
+	// --- SOBRESCRIBIMOS RECIBIR DAÑO PARA GESTIONAR INVULNERABILIDAD ---
+	virtual void RecibirDanoEnemigo(float CantidadDano) override;
+
+	bool bEsInvulnerable;
+
+	void CambiarDireccionAleatoria();
+	void EntrarFaseInvisible();
+	void EntrarFaseExpuesto();
+	void EjecutarDisparoEspectral();
+
+private:
+	UPROPERTY(VisibleAnywhere, Category = "Componentes")
+	class UStaticMeshComponent* MallaCuerpo;
+
+	// --- HITBOX INVISIBLE DEL NÚCLEO ---
+	UPROPERTY(VisibleAnywhere, Category = "Componentes")
+	class UStaticMeshComponent* MallaNucleo;
+
+	// --- EFECTO VISUAL DEL AURA ---
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes", meta = (AllowPrivateAccess = "true"))
+	UParticleSystemComponent* EfectoAura;
+
+	float VelocidadFlotacion;
+	FTimerHandle TimerFaseInvisibleHandle;
+	FTimerHandle TimerFaseExpuestoHandle;
+	FTimerHandle TimerRumboHandle;
+	FVector DireccionErrante;
+
+};
+
+

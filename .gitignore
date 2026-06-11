@@ -1,8 +1,12 @@
-.vs/
-Intermediate/
-Saved/
 Binaries/
 DerivedDataCache/
-*.db
-*.pch
+Intermediate/
+Saved/
+.vs/
 *.sln
+*.suo
+*.opensdf
+*.sdf
+*.VC.db
+*.VC.opendb
+centinelas_del_cosmosEE/

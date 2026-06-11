@@ -1,0 +1,80 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#include "FragmentoErupcion.h"
+#include "Components/StaticMeshComponent.h"
+#include "../EExclusivos/RastrosFuego.h" 
+#include "Kismet/GameplayStatics.h"
+#include "Engine/World.h"
+#include "TimerManager.h" // NECESARIO para que GetWorldTimerManager funcione
+#include "../Player/CentCosmosPawn.h"
+
+AFragmentoErupcion::AFragmentoErupcion()
+{
+    PrimaryActorTick.bCanEverTick = true;
+
+    FragmentoMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FragmentoMesh"));
+    RootComponent = FragmentoMesh;
+
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMesh(TEXT("StaticMesh'/Game/Assetssss/A1/Meshy_AI_Emberfall_Asteroid_0607090308_texture.Meshy_AI_Emberfall_Asteroid_0607090308_texture'"));
+    if (CubeMesh.Succeeded()) FragmentoMesh->SetStaticMesh(CubeMesh.Object);
+
+    FragmentoMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+    SetActorScale3D(FVector(2.5f, 2.5f, 2.5f));
+
+    Velocidad = 900.0f;
+}
+
+void AFragmentoErupcion::BeginPlay()
+{
+    Super::BeginPlay();
+
+    APawn* PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
+    if (PlayerPawn)
+    {
+        // Guardamos la posici�n exacta del jugador en este momento preciso
+        FVector PosicionJugador = PlayerPawn->GetActorLocation();
+
+        // Calculamos el vector direcci�n apuntando hacia esa posici�n fija
+        DireccionVuelo = (PosicionJugador - GetActorLocation()).GetSafeNormal();
+    }
+    else
+    {
+        DireccionVuelo = GetActorForwardVector();
+    }
+
+    // Timer de rastro y vida �til (damos m�s tiempo de vida si nace muy lejos)
+    GetWorldTimerManager().SetTimer(TimerRastrosHandle, this, &AFragmentoErupcion::SoltarRastro, 0.15f, true);
+
+    // Aumentamos el LifeSpan a 10 segundos para que llegue bien desde lejos
+    SetLifeSpan(10.0f);
+}
+
+void AFragmentoErupcion::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+    SetActorLocation(GetActorLocation() + (DireccionVuelo * Velocidad * DeltaTime));
+}
+
+void AFragmentoErupcion::SoltarRastro()
+{
+    // Obtenemos el mundo correctamente dentro de la funci�n
+    UWorld* CurrentWorld = GetWorld();
+    if (CurrentWorld)
+    {
+        CurrentWorld->SpawnActor<ARastrosFuego>(ARastrosFuego::StaticClass(), GetActorLocation(), FRotator::ZeroRotator);
+    }
+}
+
+void AFragmentoErupcion::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+    Super::NotifyActorBeginOverlap(OtherActor);
+
+    if (OtherActor && OtherActor->IsA(ACentCosmosPawn::StaticClass()))
+    {
+        // Le aplica los 15 de daño
+        Cast<ACentCosmosPawn>(OtherActor)->RecibirDanioNave(15.0f);
+
+        // Desaparece al chocar
+        Destroy();
+    }
+}
