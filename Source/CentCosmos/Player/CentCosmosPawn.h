@@ -21,7 +21,6 @@ class CENTCOSMOS_API ACentCosmosPawn : public APawn
 {
 	GENERATED_BODY()
 
-	// Mantenemos los macros de Blueprint por defecto del engine para la cámara y la malla
 	UPROPERTY(Category = Mesh, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* ShipMeshComponent;
 
@@ -50,14 +49,14 @@ public:
 	UPROPERTY(Category = "Audio", EditAnywhere)
 	class USoundBase* FireSound;
 
-	// === EL PATRÓN DECORATOR PURO ===
-	// Esta interfaz representa la raíz de nuestra cadena dinámica de efectos y estadísticas
+	// implementacion decorator
 	UPROPERTY()
 	TScriptInterface<IEnemigo> Atributos;
 
 	void AgregarDecorador(class UEnemDecorador* NuevoDecorador);
 	void RemoverDecorador(class UEnemDecorador* DecoradorARemover);
-	// ================================
+	
+
 
 	void FireShot(FVector FireDirection);
 	void ShotTimerExpired();
@@ -73,7 +72,6 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Armas")
 	bool bBoomerangEnVuelo;
 
-	// SISTEMA DE SALUD
 	UPROPERTY(EditAnywhere, Category = "Salud")
 	float VidaMax;
 
@@ -90,12 +88,11 @@ private:
 	FTimerHandle TimerHandle_DisparoTriple;
 	FTimerHandle TimerHandle_SobreCargaApex;
 
-	// Observer
+	// impllementacion observer
 	UPROPERTY()
 	class ASubject* SubjectVida;
-
-	UPROPERTY()
 	class UVidaObserver* ObservadorVida;
+
 
 	float TiempoCargaAcumulado;
 	bool  bEstaCargando;

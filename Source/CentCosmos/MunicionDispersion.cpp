@@ -34,17 +34,14 @@ void AMunicionDispersion::AplicarEfecto(ACentCosmosPawn* Nave)
 {
 	if (!Nave) return;
 
-	// 1. Instanciamos el decorador puro
 	UEnemDisparoTriple* DecoradorTriple = NewObject<UEnemDisparoTriple>(Nave);
 	if (DecoradorTriple)
 	{
-		// 2. Envolvemos la cadena de la nave
 		Nave->AgregarDecorador(DecoradorTriple);
 
 		if (GEngine)
 			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange, TEXT("Disparo Triple: Decorador Puro Aplicado"));
 
-		// 3. Temporizador para quitar el efecto
 		FTimerHandle Handle;
 		Nave->GetWorldTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([Nave, DecoradorTriple]()
 			{

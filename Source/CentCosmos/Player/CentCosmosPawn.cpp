@@ -69,7 +69,6 @@ ACentCosmosPawn::ACentCosmosPawn()
 	VidaMax = 100.f;
 	VidaActual = VidaMax;
 
-	// Inicializamos la interfaz en nulo, se construirá dinámicamente en BeginPlay
 	Atributos = nullptr;
 
 	SubjectVida = nullptr;
@@ -80,12 +79,10 @@ void ACentCosmosPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// CONEXIÓN MAESTRA DECORATOR: Instanciamos el componente de salud concreto base
 	UEnemBaseComp* Base = NewObject<UEnemBaseComp>(this);
 	Base->Inicializar(VidaMax);
-	Atributos = Base; // Definimos el inicio de la cadena del patrón
+	Atributos = Base;
 
-	// CONEXIÓN CON EL OBSERVADOR (Pristina e intacta)
 	if (!SubjectVida)
 	{
 		SubjectVida = GetWorld()->SpawnActor<ASubject>();
@@ -184,18 +181,18 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 			const FRotator FireRotation = GetFireRotation(this);
 			const FVector  SpawnLocation = GetActorLocation() + FireRotation.RotateVector(GunOffset);
 
+			// =====================================
+			// 1. ARMA NORMAL
+			// =====================================
 			if (ArmaActual == ETipoArma::Normal && bCanFire)
 			{
-				TSubclassOf<ACentCosmosProjectile> ClaseAUsar = ClaseNormal
-					? ClaseNormal
-					: TSubclassOf<ACentCosmosProjectile>(ACentCosmosProjectile::StaticClass());
+				TSubclassOf<ACentCosmosProjectile> ClaseAUsar = ClaseNormal ? ClaseNormal : TSubclassOf<ACentCosmosProjectile>(ACentCosmosProjectile::StaticClass());
 
 				FActorSpawnParameters Params;
 				Params.Owner = this;
 				Params.Instigator = GetInstigator();
 				Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-				// Usamos la evaluación limpia obtenida desde el decorador
 				if (bTieneDisparoTriple)
 				{
 					World->SpawnActor<ACentCosmosProjectile>(ClaseAUsar, SpawnLocation, FireRotation, Params);
@@ -222,6 +219,9 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 
 				if (FireSound) UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
 			}
+			// =====================================
+			// 2. ARMA BOOMERANG
+			// =====================================
 			else if (ArmaActual == ETipoArma::Boomerang && bCanFire && !bBoomerangEnVuelo)
 			{
 				bBoomerangEnVuelo = true;
@@ -229,15 +229,33 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 				FActorSpawnParameters SpawnParamsBoom;
 				SpawnParamsBoom.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-				AProyectilBoomerang* Boomerang = World->SpawnActor<AProyectilBoomerang>(
-					AProyectilBoomerang::StaticClass(), SpawnLocation, FireRotation, SpawnParamsBoom);
-				if (Boomerang) Boomerang->NaveDueno = this;
+				if (bTieneDisparoTriple)
+				{
+					AProyectilBoomerang* BoomCentro = World->SpawnActor<AProyectilBoomerang>(AProyectilBoomerang::StaticClass(), SpawnLocation, FireRotation, SpawnParamsBoom);
+					if (BoomCentro) BoomCentro->NaveDueno = this;
+
+					FRotator RotIzq = FireRotation; RotIzq.Yaw -= 20.f;
+					AProyectilBoomerang* BoomIzq = World->SpawnActor<AProyectilBoomerang>(AProyectilBoomerang::StaticClass(), SpawnLocation, RotIzq, SpawnParamsBoom);
+					if (BoomIzq) BoomIzq->NaveDueno = this;
+
+					FRotator RotDer = FireRotation; RotDer.Yaw += 20.f;
+					AProyectilBoomerang* BoomDer = World->SpawnActor<AProyectilBoomerang>(AProyectilBoomerang::StaticClass(), SpawnLocation, RotDer, SpawnParamsBoom);
+					if (BoomDer) BoomDer->NaveDueno = this;
+				}
+				else
+				{
+					AProyectilBoomerang* Boomerang = World->SpawnActor<AProyectilBoomerang>(AProyectilBoomerang::StaticClass(), SpawnLocation, FireRotation, SpawnParamsBoom);
+					if (Boomerang) Boomerang->NaveDueno = this;
+				}
 
 				bCanFire = false;
 				World->GetTimerManager().SetTimer(TimerHandle_ShotTimerExpired, this, &ACentCosmosPawn::ShotTimerExpired, FireRate);
 
 				if (FireSound) UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
 			}
+			// =====================================
+			// 3. ARMA CARGA (MANTENER PRESIONADO)
+			// =====================================
 			else if (ArmaActual == ETipoArma::Carga && bCanFire)
 			{
 				if (!bEstaCargando)
@@ -245,19 +263,22 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 					bEstaCargando = true;
 					TiempoCargaAcumulado = 0.0f;
 
-					TSubclassOf<AProyectilCarga> ClaseCargaAUsar = ClaseCarga
-						? ClaseCarga
-						: TSubclassOf<AProyectilCarga>(AProyectilCarga::StaticClass());
+					TSubclassOf<AProyectilCarga> ClaseCargaAUsar = ClaseCarga ? ClaseCarga : TSubclassOf<AProyectilCarga>(AProyectilCarga::StaticClass());
 
+					// TU CÓDIGO ORIGINAL: Limpio y sin forzar rotaciones raras
 					ProyectilCargaActual = World->SpawnActor<AProyectilCarga>(ClaseCargaAUsar, SpawnLocation, FireRotation);
 					if (ProyectilCargaActual)
+					{
 						ProyectilCargaActual->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepWorldTransform);
+					}
 				}
 			}
 
 			if (ProyectilCargaActual && bEstaCargando)
 			{
-				TiempoCargaAcumulado += DeltaSeconds;
+				// Magia del Apex: Carga más rápido
+				float FactorCargaApex = (FireRateBase > 0.f && FireRate > 0.f) ? (FireRateBase / FireRate) : 1.0f;
+				TiempoCargaAcumulado += (DeltaSeconds * FactorCargaApex);
 				ProyectilCargaActual->InicializarCarga(TiempoCargaAcumulado);
 			}
 		}
@@ -266,15 +287,63 @@ void ACentCosmosPawn::Tick(float DeltaSeconds)
 			FireShot(-GetActorForwardVector());
 		}
 	}
+	// =====================================
+	// 4. ARMA CARGA (SOLTAR LA TECLA)
+	// =====================================
 	else if (bEstaCargando)
 	{
 		if (ProyectilCargaActual)
 		{
-			const FVector Dir = -GetActorForwardVector();
-			ProyectilCargaActual->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-			ProyectilCargaActual->LiberarProyectil(TiempoCargaAcumulado, Dir);
-			ProyectilCargaActual = nullptr;
+			// Tu dirección original: GARANTIZA que vaya 100% recto
+			const FVector DirCentro = -GetActorForwardVector();
+			FVector SpawnLoc = ProyectilCargaActual->GetActorLocation();
+			FVector EscalaFinalCarga = ProyectilCargaActual->GetActorScale3D();
 
+			ProyectilCargaActual->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+			ProyectilCargaActual->LiberarProyectil(TiempoCargaAcumulado, DirCentro);
+
+			// =========================================================================
+			// BALANCE DE JUEGO: Si la carga supera un límite, ignoramos el Disparo Triple 
+			// para que no esté roto. (Puedes cambiar el 1.5f por el límite que desees).
+			// =========================================================================
+			bool bEsCargaMaxima = TiempoCargaAcumulado >= 1.5f;
+
+			if (bTieneDisparoTriple && !bEsCargaMaxima)
+			{
+				FActorSpawnParameters Params;
+				Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+				TSubclassOf<AProyectilCarga> ClaseAUsar = ClaseCarga ? ClaseCarga : TSubclassOf<AProyectilCarga>(AProyectilCarga::StaticClass());
+
+				FRotator RotCentro = DirCentro.Rotation();
+
+				// CLON IZQUIERDO
+				FRotator RotIzq = RotCentro;
+				RotIzq.Yaw -= 20.f;
+				FVector SpawnIzq = SpawnLoc + FRotator(0.f, RotCentro.Yaw - 90.f, 0.f).Vector() * 100.f;
+
+				AProyectilCarga* CargaIzq = GetWorld()->SpawnActor<AProyectilCarga>(ClaseAUsar, SpawnIzq, RotIzq, Params);
+				if (CargaIzq)
+				{
+					CargaIzq->SetActorScale3D(EscalaFinalCarga);
+					CargaIzq->InicializarCarga(TiempoCargaAcumulado);
+					CargaIzq->LiberarProyectil(TiempoCargaAcumulado, RotIzq.Vector());
+				}
+
+				// CLON DERECHO
+				FRotator RotDer = RotCentro;
+				RotDer.Yaw += 20.f;
+				FVector SpawnDer = SpawnLoc + FRotator(0.f, RotCentro.Yaw + 90.f, 0.f).Vector() * 100.f;
+
+				AProyectilCarga* CargaDer = GetWorld()->SpawnActor<AProyectilCarga>(ClaseAUsar, SpawnDer, RotDer, Params);
+				if (CargaDer)
+				{
+					CargaDer->SetActorScale3D(EscalaFinalCarga);
+					CargaDer->InicializarCarga(TiempoCargaAcumulado);
+					CargaDer->LiberarProyectil(TiempoCargaAcumulado, RotDer.Vector());
+				}
+			}
+
+			ProyectilCargaActual = nullptr;
 			bCanFire = false;
 			GetWorld()->GetTimerManager().SetTimer(TimerHandle_ShotTimerExpired, this, &ACentCosmosPawn::ShotTimerExpired, FireRate);
 		}
@@ -290,11 +359,9 @@ void ACentCosmosPawn::RecibirDanioNave(float Cantidad)
 {
 	if (!Atributos) return;
 
-	// Pasamos el daño a través de la cadena lógica del Decorator
 	Atributos->RecibirDanio(Cantidad);
 	VidaActual = Atributos->GetVida();
 
-	// NOTIFICACIÓN AL OBSERVER: Informamos al sujeto que la vida cambió de forma limpia
 	if (SubjectVida)
 		SubjectVida->NotifyObservers(FName("VidaActualizada"), VidaActual);
 
@@ -314,11 +381,9 @@ void ACentCosmosPawn::RestaurarVida(float Cantidad)
 {
 	if (!Atributos) return;
 
-	// Aplicamos la curación a través del decorador
 	Atributos->RegenerarVida(Cantidad);
 	VidaActual = Atributos->GetVida();
 
-	// NOTIFICACIÓN AL OBSERVER
 	if (SubjectVida)
 	{
 		SubjectVida->NotifyObservers(FName("VidaActualizada"), VidaActual);
@@ -332,23 +397,16 @@ void ACentCosmosPawn::RestaurarVida(float Cantidad)
 }
 
 void ACentCosmosPawn::FireShot(FVector FireDirection) {}
-
 void ACentCosmosPawn::ShotTimerExpired() { bCanFire = true; }
 
-// Dejamos estas dos funciones obsoletas vacías para evitar roturas con otros sistemas externos
 void ACentCosmosPawn::DesactivarDisparoTriple() {}
 void ACentCosmosPawn::DesactivarSobreCargaApex() {}
 
-// =========================================================================
-// IMPLEMENTACIÓN DE MÉTODOS EJECUTIVOS ENLAZADOS (PATRÓN DECORATOR PURO)
-// =========================================================================
 void ACentCosmosPawn::AgregarDecorador(UEnemDecorador* NuevoDecorador)
 {
 	if (NuevoDecorador)
 	{
-		// El nuevo decorador envuelve la raíz actual de nuestra cadena
 		NuevoDecorador->Envolver(Atributos);
-		// Actualizamos la raíz apuntando al nuevo envoltorio exterior
 		Atributos = NuevoDecorador;
 	}
 }
@@ -356,22 +414,18 @@ void ACentCosmosPawn::AgregarDecorador(UEnemDecorador* NuevoDecorador)
 void ACentCosmosPawn::RemoverDecorador(UEnemDecorador* DecoradorARemover)
 {
 	if (!Atributos || !DecoradorARemover) return;
-
-	// Caso A: Si el decorador que expira es la capa más externa de la cadena
 	if (Atributos.GetObject() == DecoradorARemover)
 	{
 		Atributos = DecoradorARemover->ObtenerInner();
 		return;
 	}
 
-	// Caso B: Si está en medio de la cadena, la recorremos y reconectamos los eslabones
 	UObject* Actual = Atributos.GetObject();
 	while (Actual)
 	{
 		UEnemDecorador* DecActual = Cast<UEnemDecorador>(Actual);
 		if (DecActual && DecActual->ObtenerInner().GetObject() == DecoradorARemover)
 		{
-			// El decorador actual se salta el eslabón eliminado enlazándose directo al de abajo
 			DecActual->Envolver(DecoradorARemover->ObtenerInner());
 			break;
 		}

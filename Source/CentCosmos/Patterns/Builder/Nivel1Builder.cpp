@@ -70,7 +70,7 @@ void ANivel1Builder::AgregarEnemigos(UWorld* World)
     SpawnVastagos(Factory, 12);
     SpawnVigias(Factory, 2);
     SpawnHeraldos(Factory, 1);
-    SpawnDronAnclaje(Factory, 2);
+    SpawnDronAnclaje(Factory, 1);
 
     if (GEngine)
         GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange,

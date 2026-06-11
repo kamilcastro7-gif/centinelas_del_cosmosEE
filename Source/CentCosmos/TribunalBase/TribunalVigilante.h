@@ -15,6 +15,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void Destroyed() override;
 
 public:
 	virtual void Tick(float DeltaTime) override;
@@ -24,4 +25,17 @@ public:
 	UChildActorComponent* ComponenteRayo;
 	float VelocidadGiro;
 	float RangoDeteccion;
+
+	UPROPERTY(EditAnywhere, Category = "Invocacion")
+	TSubclassOf<AActor> ClaseVastago;
+
+	UPROPERTY(EditAnywhere, Category = "Invocacion")
+	TSubclassOf<AActor> ClaseHeraldo;
+
+	void InvocacionEnCirculo(TSubclassOf<AActor> ClaseEnemigo, int32 Cantidad, float Radio);
+
+private:
+	bool bVastagosInvocados;
+	bool bHeraldosInvocados;
+	bool bJefeDerrotado; 
 };

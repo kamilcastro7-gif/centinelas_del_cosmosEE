@@ -11,7 +11,7 @@
 AEHeraldo_De_La_Ruina::AEHeraldo_De_La_Ruina() {
     PrimaryActorTick.bCanEverTick = true;
 
-    VelocidadHeraldo = 150.0f;
+    VelocidadHeraldo = 160.0f;
     bEstaPersiguiendo = true;
     TimerEstadoHeraldo = 0.0f;
     Tags.Add(FName("Enemigo"));
@@ -19,17 +19,13 @@ AEHeraldo_De_La_Ruina::AEHeraldo_De_La_Ruina() {
     VidaActual = 40.0f;
     DanioDeChoque = 5.0f;
 
-    // =========================================================================
-    // 1. CORRECCIÓN DE HITBOX RAÍZ: Usar Esfera y escala uniforme (1.0)
-    // =========================================================================
-    // Reemplaza Cube por Shape_Sphere
     static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
     if (MeshAsset.Succeeded()) {
         MallaEnemigo->SetStaticMesh(MeshAsset.Object);
     }
 
     if (MallaEnemigo) {
-        // Escala uniforme 1.0f para la hitbox para evitar shearing
+        
         MallaEnemigo->SetRelativeScale3D(FVector(1.0f, 1.0f, 1.0f));
         MallaEnemigo->SetHiddenInGame(true);
         MallaEnemigo->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -37,10 +33,9 @@ AEHeraldo_De_La_Ruina::AEHeraldo_De_La_Ruina() {
         MallaEnemigo->SetGenerateOverlapEvents(true);
     }
 
-    // 2. MALLA DEL HERALDO VISUAL
     MallaHeraldo = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MallaHeraldo"));
     if (RootComponent) {
-        MallaHeraldo->SetupAttachment(RootComponent); // Se pega a la esfera invisible
+        MallaHeraldo->SetupAttachment(RootComponent); 
     }
 
     static ConstructorHelpers::FObjectFinder<USkeletalMesh> DroneAsset(TEXT("SkeletalMesh'/Game/Scifi_Survey_Drones/Drone_02/Meshes/SK_Sci-fi_Survey_Drone_02.SK_Sci-fi_Survey_Drone_02'"));
@@ -48,16 +43,10 @@ AEHeraldo_De_La_Ruina::AEHeraldo_De_La_Ruina() {
         MallaHeraldo->SetSkeletalMesh(DroneAsset.Object);
     }
 
-    // =========================================================================
-    // CORRECCIÓN DE ALINEAMIENTO: Girar -90 grados a la MALLA VISUAL
-    // =========================================================================
-    // Basado en image_8.png, este dron mira hacia la derecha, lo compensamos con -90 yaw (rotar izquierda).
     MallaHeraldo->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 
-    // Escala del dron: Ajustado a 4.0 para que sea grande como querías, pero sin la esfera gigante.
     MallaHeraldo->SetRelativeScale3D(FVector(4.0f, 4.0f, 4.0f));
 
-    // Apagamos la colisión visual
     MallaHeraldo->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
@@ -67,7 +56,6 @@ void AEHeraldo_De_La_Ruina::BeginPlay() {
     GetWorld()->GetTimerManager().SetTimer(TimerHandle_Ataque, this, &AEHeraldo_De_La_Ruina::HerAtacar, 10.0f, true);
 }
 
-// NUEVO: Ejecutamos el movimiento en cada frame
 void AEHeraldo_De_La_Ruina::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
@@ -137,7 +125,6 @@ void AEHeraldo_De_La_Ruina::HerAtacar() {
     FVector Ubicacion = GetActorLocation() + (GetActorForwardVector() * 200.f);
     FRotator Rotacion = GetActorRotation();
 
-    // Parámetros de aparición para no lastimarse a sí mismo
     FActorSpawnParameters SpawnParams;
     SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
     SpawnParams.Instigator = GetInstigator();
@@ -148,7 +135,6 @@ void AEHeraldo_De_La_Ruina::HerAtacar() {
         GranEsfera->bEsSeguidor = true;
         GranEsfera->Danio = 5.0f;
 
-        // Desaparece automáticamente tras 6 segundos de persecución
         GranEsfera->SetLifeSpan(6.0f);
 
         if (GranEsfera->MovimientoProyectil) {
@@ -156,11 +142,9 @@ void AEHeraldo_De_La_Ruina::HerAtacar() {
             GranEsfera->MovimientoProyectil->MaxSpeed = 1200.f;
             GranEsfera->MovimientoProyectil->bShouldBounce = false;
 
-            // Sistema Homing de Persecución Persistente
             GranEsfera->MovimientoProyectil->bIsHomingProjectile = true;
             GranEsfera->MovimientoProyectil->HomingTargetComponent = Jugador->GetRootComponent();
 
-            // Fuerza de aceleración del giro
             GranEsfera->MovimientoProyectil->HomingAccelerationMagnitude = 4500.f;
         }
     }

@@ -34,17 +34,14 @@ void APowerUpSobrecargaApex::AplicarEfecto(ACentCosmosPawn* Nave)
 {
 	if (!Nave) return;
 
-	// 1. Instanciamos el decorador puro
 	UEnemSobrecargaApex* DecoradorApex = NewObject<UEnemSobrecargaApex>(Nave);
 	if (DecoradorApex)
 	{
-		// 2. Le decimos a la nave que se envuelva con este nuevo decorador
 		Nave->AgregarDecorador(DecoradorApex);
 
 		if (GEngine)
 			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("Sobrecarga Apex: Decorador Puro Aplicado"));
 
-		// 3. El PowerUp inicia el temporizador para remover el decorador en 10 segundos
 		FTimerHandle Handle;
 		Nave->GetWorldTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([Nave, DecoradorApex]()
 			{

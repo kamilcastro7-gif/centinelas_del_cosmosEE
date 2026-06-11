@@ -13,7 +13,7 @@
 AEVigia_Del_Vacio::AEVigia_Del_Vacio() {
     PrimaryActorTick.bCanEverTick = true;
 
-    VelocidadVigia = 0.65f;
+    VelocidadVigia = 0.45f;
     AmplitudPatrulla = 500.0f;
     Tags.Add(FName("Enemigo"));
     VidaActual = 11.0f;
@@ -105,7 +105,7 @@ void AEVigia_Del_Vacio::VigAtacar() {
     AProyectilBase* Proy = GetWorld()->SpawnActor<AProyectilBase>(AProyectilBase::StaticClass(), Ubicacion, Rotacion, SpawnParams);
 
     if (Proy) {
-        Proy->Danio = 10.0f;
+        Proy->Danio = 8.0f;
         if (Proy->MallaProyectil) {
             Proy->MallaProyectil->SetRelativeScale3D(FVector(0.8f));
         }

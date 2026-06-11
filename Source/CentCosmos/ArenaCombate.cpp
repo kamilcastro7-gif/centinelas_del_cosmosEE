@@ -4,6 +4,7 @@
 #include "TribunalBase.h" 
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
+#include "TimerManager.h" // Necesario para los temporizadores
 
 AArenaCombate::AArenaCombate()
 {
@@ -50,15 +51,47 @@ void AArenaCombate::BeginPlay()
 {
     Super::BeginPlay();
     TriggerArea->OnComponentBeginOverlap.AddDynamic(this, &AArenaCombate::AlEntrarEnArena);
+
+    // SOLUCIÓN: Medio segundo después de que la arena aparece, jala al jugador al centro.
+    FTimerHandle HandleTeletransporte;
+    GetWorldTimerManager().SetTimer(HandleTeletransporte, this, &AArenaCombate::TeletransportarJugador, 0.5f, false);
 }
 
+// NUEVA LÓGICA: Esta función hace que el jugador aparezca mágicamente dentro de la arena
+void AArenaCombate::TeletransportarJugador()
+{
+    APawn* Jugador = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+    if (Jugador)
+    {
+        
+        FVector CentroArena = GetActorLocation() + FVector(300.f, 0.f, 0.f);
+        Jugador->SetActorLocation(CentroArena, false, nullptr, ETeleportType::TeleportPhysics);
+
+        UE_LOG(LogTemp, Warning, TEXT("Arena: El jugador ha sido teletransportado a la batalla final."));
+
+        // Como ya metimos al jugador a la fuerza, podemos despertar a los Jefes automáticamente
+        TArray<AActor*> Jefes;
+        UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATribunalBase::StaticClass(), Jefes);
+
+        for (AActor* Actor : Jefes)
+        {
+            ATribunalBase* Jefe = Cast<ATribunalBase>(Actor);
+            if (Jefe)
+            {
+                Jefe->ActivarJefe();
+            }
+        }
+    }
+}
+
+// Mantenemos tu código original como respaldo por si el jugador de alguna manera entra caminando
 void AArenaCombate::AlEntrarEnArena(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
     APawn* PosibleJugador = Cast<APawn>(OtherActor);
 
     if (PosibleJugador && PosibleJugador->IsPlayerControlled())
     {
-        UE_LOG(LogTemp, Warning, TEXT("Arena: Jugador detectado. Buscando Jefes..."));
+        UE_LOG(LogTemp, Warning, TEXT("Arena: Jugador detectado en Trigger. Buscando Jefes..."));
 
         TArray<AActor*> Jefes;
         UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATribunalBase::StaticClass(), Jefes);
@@ -73,7 +106,6 @@ void AArenaCombate::AlEntrarEnArena(UPrimitiveComponent* OverlappedComponent, AA
             ATribunalBase* Jefe = Cast<ATribunalBase>(Actor);
             if (Jefe)
             {
-                UE_LOG(LogTemp, Warning, TEXT("Arena: Activando Jefe!"));
                 Jefe->ActivarJefe();
             }
         }

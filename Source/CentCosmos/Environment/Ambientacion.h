@@ -25,4 +25,7 @@ protected:
 public:
 	// El método de tu interfaz
 	virtual void InicializarObstaculo() override;
+
+private:
+	void EvitarColisionConJugador();
 };

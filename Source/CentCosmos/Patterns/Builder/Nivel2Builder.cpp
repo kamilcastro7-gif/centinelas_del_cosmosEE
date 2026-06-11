@@ -70,10 +70,10 @@ void ANivel2Builder::AgregarEnemigos(UWorld* World)
         FVector::ZeroVector, FRotator::ZeroRotator, Params);
 
     if (!Factory) return;
-    SpawnVastagos(Factory, 14);
-    SpawnVigias(Factory, 3);
+    SpawnVastagos(Factory, 10);
+    SpawnVigias(Factory, 2);
     SpawnHeraldos(Factory, 2);
-    SpawnMinadorRocoso(Factory, 2);
+    SpawnMinadorRocoso(Factory, 3);
 
     if (GEngine)
         GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange,
@@ -110,7 +110,7 @@ void ANivel2Builder::SpawnVigias(AEnemyFactory* Factory, int32 Cantidad)
         FVector Pos = FVector(
             FMath::RandRange(-1000, 1000),
             FMath::RandRange(-1000, 1000),
-            150.f);
+            0.f);
         AActor* E = Factory->FabricarVigia(Pos, FRotator::ZeroRotator);
         if (E)
         {
