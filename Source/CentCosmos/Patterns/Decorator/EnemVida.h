@@ -15,12 +15,10 @@ public:
 		Envolver(Componente);
 		VidaBonus = Bonus;
 	}
-
 	virtual float GetVida() const override
 	{
 		return UEnemDecorador::GetVida() + VidaBonus;
 	}
-
 	virtual float GetVidaMaxima() const override
 	{
 		return UEnemDecorador::GetVidaMaxima() + VidaBonus;

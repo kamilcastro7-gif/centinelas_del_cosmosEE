@@ -9,8 +9,6 @@ class UEnemigo : public UInterface
 {
 	GENERATED_BODY()
 };
-
-
 class CENTCOSMOS_API IEnemigo
 {
 	GENERATED_BODY()

@@ -1,8 +1,9 @@
 #include "CentCosmosGameMode.h"
-#include "Facade.h" 
+#include "Kismet/GameplayStatics.h"
+#include "Facade.h"
 #include "CentCosmosPawn.h"
 #include "Engine/World.h"
-#include "TimerManager.h" 
+#include "TimerManager.h"
 
 ACentCosmosGameMode::ACentCosmosGameMode()
 {
@@ -14,13 +15,11 @@ ACentCosmosGameMode::ACentCosmosGameMode()
 void ACentCosmosGameMode::BeginPlay()
 {
     Super::BeginPlay();
-
     UWorld* Mundo = GetWorld();
     if (!Mundo) return;
 
     FActorSpawnParameters Params;
     Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
     FacadeMaestro = Mundo->SpawnActor<AFacade>(AFacade::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
 
     if (FacadeMaestro)
@@ -29,7 +28,7 @@ void ACentCosmosGameMode::BeginPlay()
         NombreMapa.RemoveFromStart(Mundo->StreamingLevelsPrefix);
         UE_LOG(LogTemp, Warning, TEXT("[CentCosmos] Mapa detectado: %s"), *NombreMapa);
 
-        if (NombreMapa.Contains(TEXT("LV1")))      FacadeMaestro->GenerarNivel1();
+        if (NombreMapa.Contains(TEXT("LV1"))) FacadeMaestro->GenerarNivel1();
         else if (NombreMapa.Contains(TEXT("LV2"))) FacadeMaestro->GenerarNivel2();
         else if (NombreMapa.Contains(TEXT("LV3"))) FacadeMaestro->GenerarNivel3();
         else if (NombreMapa.Contains(TEXT("LV4"))) FacadeMaestro->GenerarNivel4();
@@ -44,7 +43,6 @@ void ACentCosmosGameMode::BeginPlay()
 void ACentCosmosGameMode::IniciarNivel(int32 NumeroNivel)
 {
     if (!FacadeMaestro) return;
-
     switch (NumeroNivel)
     {
     case 1: FacadeMaestro->GenerarNivel1(); break;
@@ -57,11 +55,23 @@ void ACentCosmosGameMode::IniciarNivel(int32 NumeroNivel)
     }
 }
 
+void ACentCosmosGameMode::OnJefeDerrotado()
+{
+    ACentCosmosPawn* Jugador = Cast<ACentCosmosPawn>(
+        UGameplayStatics::GetPlayerPawn(this, 0));
+
+    if (!Jugador) return;
+
+    if (Jugador->VidaActual > 0.f)
+        UGameplayStatics::OpenLevel(this, NombreNivelGanador);
+    else
+        UGameplayStatics::OpenLevel(this, NombreNivelGameOver);
+}
+
 void ACentCosmosGameMode::RestaurarInputJugador()
 {
     UWorld* Mundo = GetWorld();
     if (!Mundo) return;
-
     APlayerController* PC = Mundo->GetFirstPlayerController();
     if (!PC) return;
 
@@ -69,7 +79,8 @@ void ACentCosmosGameMode::RestaurarInputJugador()
     {
         FActorSpawnParameters Params;
         Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-        ACentCosmosPawn* NuevoPawn = Mundo->SpawnActor<ACentCosmosPawn>(ACentCosmosPawn::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
+        ACentCosmosPawn* NuevoPawn = Mundo->SpawnActor<ACentCosmosPawn>(
+            ACentCosmosPawn::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
         if (NuevoPawn) PC->Possess(NuevoPawn);
     }
 
@@ -77,7 +88,6 @@ void ACentCosmosGameMode::RestaurarInputJugador()
     PC->bShowMouseCursor = false;
     PC->SetIgnoreLookInput(false);
     PC->SetIgnoreMoveInput(false);
-
     UE_LOG(LogTemp, Warning, TEXT("[CentCosmos] Input restaurado."));
 }
 
@@ -85,7 +95,6 @@ void ACentCosmosGameMode::PostLogin(APlayerController* NewPlayer)
 {
     Super::PostLogin(NewPlayer);
     if (!NewPlayer) return;
-
     NewPlayer->SetInputMode(FInputModeGameOnly());
     NewPlayer->bShowMouseCursor = false;
     NewPlayer->SetIgnoreLookInput(false);

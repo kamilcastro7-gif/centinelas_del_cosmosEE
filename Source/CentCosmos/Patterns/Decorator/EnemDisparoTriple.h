@@ -3,12 +3,6 @@
 #include "CoreMinimal.h"
 #include "EnemDecorador.h"
 #include "EnemDisparoTriple.generated.h"
-
-/**
- * Decorador concreto C.
- * Aplica el efecto DisparoTriple a la nave del jugador al activarse.
- * Delega toda la gestion de vida al componente interior sin modificarla.
- */
 UCLASS()
 class CENTCOSMOS_API UEnemDisparoTriple : public UEnemDecorador
 {

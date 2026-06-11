@@ -15,8 +15,6 @@ public:
 		Envolver(Componente);
 		DuracionEfecto = Duracion;
 	}
-
-	// Al morir el enemigo el GameMode o el Builder llama AplicarEfecto
 	void AplicarEfecto(class ACentCosmosPawn* Nave);
 
 private:
