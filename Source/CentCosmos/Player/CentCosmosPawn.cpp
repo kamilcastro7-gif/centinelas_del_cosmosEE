@@ -3,7 +3,6 @@
 #include "CentCosmosProjectile.h"
 #include "ProyectilBoomerang.h"
 #include "ProyectilCarga.h"
-#include "CentCosmosGameMode.h" 
 #include "TimerManager.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
@@ -288,18 +287,13 @@ void ACentCosmosPawn::RecibirDanioNave(float Cantidad)
 
 	if (!Decorador->EstaVivo())
 	{
+		// Detach del observer antes de destruir — igual que RemoveMeFromTheList()
 		if (SubjectVida && ObservadorVida)
 			SubjectVida->RemoveObserver(ObservadorVida);
 
 		if (GEngine)
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,
 				TEXT("LA NAVE HA SIDO DESTRUIDA!"));
-
-		// Avisar al GameMode ANTES de destruir el pawn
-		ACentCosmosGameMode* GM = Cast<ACentCosmosGameMode>(
-			UGameplayStatics::GetGameMode(this));
-		if (GM) GM->OnJefeDerrotado(false); // false = jugador perdió
-
 		Destroy();
 	}
 }

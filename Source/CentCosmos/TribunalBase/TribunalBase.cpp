@@ -2,7 +2,6 @@
 
 
     #include "TribunalBase.h"
-#include "CentCosmosGameMode.h"
     #include "Kismet/GameplayStatics.h"
     #include "Engine/Engine.h" 
 
@@ -40,16 +39,11 @@
     void ATribunalBase::RecibirDanioJefe(float Cantidad)
     {
         Vida -= Cantidad;
-        if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red,
-            FString::Printf(TEXT("Tribunal impactado. Vida: %f"), Vida));
+        if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("Tribunal impactado. Vida: %f"), Vida));
 
         if (Vida <= 0.f)
         {
-            ACentCosmosGameMode* GM = Cast<ACentCosmosGameMode>(
-                UGameplayStatics::GetGameMode(this));
-            if (GM) GM->OnJefeDerrotado(true); // true = jefe muerto, jugador ganó
-
-            Destroy();
+            Destroy(); // El Jefe ha sido derrotado
         }
     }
 

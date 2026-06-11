@@ -55,25 +55,23 @@ void ACentCosmosGameMode::IniciarNivel(int32 NumeroNivel)
     }
 }
 
-void ACentCosmosGameMode::OnJefeDerrotado(bool bJugadorVivo)
+void ACentCosmosGameMode::OnJefeDerrotado()
 {
-    if (bJugadorVivo)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("[CentCosmos] Jefe derrotado -> Nivel Ganador"));
+    ACentCosmosPawn* Jugador = Cast<ACentCosmosPawn>(
+        UGameplayStatics::GetPlayerPawn(this, 0));
+
+    if (!Jugador) return;
+
+    if (Jugador->VidaActual > 0.f)
         UGameplayStatics::OpenLevel(this, NombreNivelGanador);
-    }
     else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("[CentCosmos] Jugador destruido -> Game Over"));
         UGameplayStatics::OpenLevel(this, NombreNivelGameOver);
-    }
 }
 
 void ACentCosmosGameMode::RestaurarInputJugador()
 {
     UWorld* Mundo = GetWorld();
     if (!Mundo) return;
-
     APlayerController* PC = Mundo->GetFirstPlayerController();
     if (!PC) return;
 
