@@ -4,12 +4,6 @@
 #include "UObject/NoExportTypes.h"
 #include "IEnemigo.h"
 #include "EnemBaseComp.generated.h"
-
-/**
- * Componente concreto base — equivalente a ConcreteComponent en la plantilla.
- * Guarda la vida real del enemigo y la opera directamente.
- * Los decoradores envuelven este objeto.
- */
 UCLASS()
 class CENTCOSMOS_API UEnemBaseComp : public UObject, public IEnemigo
 {

@@ -15,11 +15,9 @@ class ACentCosmosProjectile : public AActor
 {
 	GENERATED_BODY()
 
-	// --- HITBOX INVISIBLE ---
 	UPROPERTY()
 	UStaticMeshComponent* ProjectileMesh;
 
-	// --- EFECTO VISUAL NIAGARA ---
 	UPROPERTY(VisibleAnywhere, Category = "Componentes")
 	UNiagaraComponent* EfectoNiagara;
 
@@ -36,8 +34,6 @@ public:
 
 	void ForzarDireccion(FVector Direccion, float Velocidad);
 
-	// ATRIBUTO DE DAÑO
-	UPROPERTY()
 	float Danio;
 
 	FORCEINLINE UStaticMeshComponent* GetProjectileMesh() const { return ProjectileMesh; }

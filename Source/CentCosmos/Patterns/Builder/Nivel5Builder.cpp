@@ -4,6 +4,11 @@
 #include "Kismet/GameplayStatics.h"
 #include "ArenaCombate.h"
 #include "TribunalCaos.h"
+#include "Engine/Engine.h"
+#include "ObstaculoNave.h"
+#include "ObstaculoSatelite.h"
+#include "ObstaculoRestos.h"
+// Añade aquí el #include de tu obstáculo Grieta Antimateria si tiene clase propia
 
 ANivel5Builder::ANivel5Builder()
 {
@@ -17,15 +22,19 @@ void ANivel5Builder::BeginPlay()
 {
     Super::BeginPlay();
 
+    UWorld* Mundo = GetWorld();
+    if (!Mundo) return;
+
     TArray<AActor*> Found;
-    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemyFactory::StaticClass(), Found);
+    UGameplayStatics::GetAllActorsOfClass(Mundo, AEnemyFactory::StaticClass(), Found);
     if (Found.Num() > 0) Factory = Cast<AEnemyFactory>(Found[0]);
+    else Factory = Mundo->SpawnActor<AEnemyFactory>(AEnemyFactory::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
 
     Found.Empty();
-    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGeneradorAmbientacion::StaticClass(), Found);
+    UGameplayStatics::GetAllActorsOfClass(Mundo, AGeneradorAmbientacion::StaticClass(), Found);
     if (Found.Num() > 0) Generador = Cast<AGeneradorAmbientacion>(Found[0]);
+    else Generador = Mundo->SpawnActor<AGeneradorAmbientacion>(AGeneradorAmbientacion::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
 }
-
 
 void ANivel5Builder::Reset()
 {
@@ -33,13 +42,8 @@ void ANivel5Builder::Reset()
     bBossSpawneado = false;
 }
 
-void ANivel5Builder::SetMetadatos(const FString& Nombre, float Duracion)
-{
-}
-
-void ANivel5Builder::SetDificultad(float Nivel)
-{
-}
+void ANivel5Builder::SetMetadatos(const FString& Nombre, float Duracion) {}
+void ANivel5Builder::SetDificultad(float Nivel) {}
 
 void ANivel5Builder::AgregarAmbientacion(UWorld* Mundo)
 {
@@ -69,6 +73,9 @@ FNivel ANivel5Builder::ObtenerNivel()
 void ANivel5Builder::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+
+    if (bBossSpawneado || EnemigosOla1.Num() == 0) return;
+
     VerificarYSpawnearBoss();
 }
 
@@ -112,8 +119,6 @@ void ANivel5Builder::SpawnEspectrosErrantes(AEnemyFactory* F, int32 N)
     }
 }
 
-// ── Pasos atómicos — Ambientación ───────────────────────────────────────────
-
 void ANivel5Builder::SpawnNaves(AGeneradorAmbientacion* G, int32 N)
 {
     for (int32 i = 0; i < N; i++)
@@ -150,24 +155,43 @@ void ANivel5Builder::SpawnGrietasAntimateria(AGeneradorAmbientacion* G, int32 N)
     }
 }
 
-// ── Boss ─────────────────────────────────────────────────────────────────────
-
 void ANivel5Builder::VerificarYSpawnearBoss()
 {
-    if (bBossSpawneado) return;
-
-    EnemigosOla1.RemoveAll([](const TWeakObjectPtr<AActor>& Ptr)
+    int32 Vivos = 0;
+    for (const TWeakObjectPtr<AActor>& Ref : EnemigosOla1)
     {
-        return !Ptr.IsValid();
-    });
+        if (Ref.IsValid()) Vivos++;
+    }
 
-    if (EnemigosOla1.Num() > 0) return;
+    if (Vivos > 0) return;
 
     bBossSpawneado = true;
 
     UWorld* Mundo = GetWorld();
     if (!Mundo) return;
 
+    FActorSpawnParameters Params;
+    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+    TArray<AActor*> Encontrados;
+
+    UGameplayStatics::GetAllActorsOfClass(Mundo, AObstaculoNave::StaticClass(), Encontrados);
+    for (AActor* A : Encontrados) A->Destroy();
+
+    UGameplayStatics::GetAllActorsOfClass(Mundo, AObstaculoSatelite::StaticClass(), Encontrados);
+    for (AActor* A : Encontrados) A->Destroy();
+
+    UGameplayStatics::GetAllActorsOfClass(Mundo, AObstaculoRestos::StaticClass(), Encontrados);
+    for (AActor* A : Encontrados) A->Destroy();
+
+    UGameplayStatics::GetAllActorsOfClass(Mundo, AGeneradorAmbientacion::StaticClass(), Encontrados);
+    for (AActor* A : Encontrados) A->Destroy();
+
+    Mundo->SpawnActor<AArenaCombate>(AArenaCombate::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
+
     FVector PosBoss = FVector(0.f, 600.f, 0.f);
-    Mundo->SpawnActor<ATribunalCaos>(ATribunalCaos::StaticClass(), PosBoss, FRotator::ZeroRotator);
+    Mundo->SpawnActor<ATribunalCaos>(ATribunalCaos::StaticClass(), PosBoss, FRotator::ZeroRotator, Params);
+
+    if (GEngine)
+        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("[Nivel 5] OLA 1 COMPLETADA — ¡Arena y Tribunal del Caos aparecen!"));
 }

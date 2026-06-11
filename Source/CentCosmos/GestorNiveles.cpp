@@ -25,7 +25,6 @@ void AGestorNiveles::BeginPlay()
 	UWorld* const Mundo = GetWorld();
 	if (!Mundo) return;
 
-	// Spawneamos todos los estados al inicio para tenerlos listos en memoria
 	EstadoNivel1 = Mundo->SpawnActor<AEstadoNivel1>(AEstadoNivel1::StaticClass());
 	EstadoNivel2 = Mundo->SpawnActor<AEstadoNivel2>(AEstadoNivel2::StaticClass());
 	EstadoNivel3 = Mundo->SpawnActor<AEstadoNivel3>(AEstadoNivel3::StaticClass());
@@ -33,7 +32,6 @@ void AGestorNiveles::BeginPlay()
 	EstadoNivel5 = Mundo->SpawnActor<AEstadoNivel5>(AEstadoNivel5::StaticClass());
 	EstadoNivel6 = Mundo->SpawnActor<AEstadoNivel6>(AEstadoNivel6::StaticClass());
 
-	// Arrancamos el juego automáticamente en el Nivel 1
 	CambiarEstado(EstadoNivel1);
 }
 

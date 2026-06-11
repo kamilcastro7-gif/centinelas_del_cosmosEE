@@ -19,11 +19,7 @@ public:
 	virtual void Reset() = 0;
 	virtual void SetMetadatos(const FString& Nombre, float TiempoLimite) = 0;
 	virtual void SetDificultad(float Dificultad) = 0;
-
-	// Cada builder decide que enemigos y cuantos spawnea
 	virtual void AgregarEnemigos(UWorld* World) = 0;
-
-	// Cada builder genera la ambientacion del nivel
 	virtual void AgregarAmbientacion(UWorld* World) = 0;
 
 	virtual FNivel ObtenerNivel() = 0;

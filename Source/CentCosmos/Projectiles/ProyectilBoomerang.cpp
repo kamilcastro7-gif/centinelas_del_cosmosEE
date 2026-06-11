@@ -18,24 +18,20 @@ AProyectilBoomerang::AProyectilBoomerang()
 {
     PrimaryActorTick.bCanEverTick = true;
 
-    // 1. HITBOX INVISIBLE: Torus base
     static ConstructorHelpers::FObjectFinder<UStaticMesh> TorusMesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Torus.Shape_Torus'"));
     ProyectilMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BoomerangMesh"));
     RootComponent = ProyectilMesh;
 
     if (TorusMesh.Succeeded()) ProyectilMesh->SetStaticMesh(TorusMesh.Object);
 
-    // Ocultamos la malla visualmente
     ProyectilMesh->SetHiddenInGame(true);
 
-    // --- CORRECCIÓN 1: Colisión absoluta de superposición para que atraviese todo ---
     ProyectilMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
     ProyectilMesh->SetCollisionResponseToAllChannels(ECR_Overlap);
 
     ProyectilMesh->OnComponentBeginOverlap.AddDynamic(this, &AProyectilBoomerang::OnOverlap);
     ProyectilMesh->SetRelativeScale3D(FVector(1.8f, 1.8f, 1.8f));
 
-    // 2. EFECTO VISUAL NIAGARA
     EfectoNiagara = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EfectoNiagara"));
     EfectoNiagara->SetupAttachment(RootComponent);
 

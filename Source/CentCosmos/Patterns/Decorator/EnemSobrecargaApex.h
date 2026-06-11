@@ -4,11 +4,6 @@
 #include "EnemDecorador.h"
 #include "EnemSobrecargaApex.generated.h"
 
-/**
- * Decorador concreto B — equivalente a ConcreteDecoratorB en la plantilla.
- * Aplica el efecto SobrecargaApex a la nave del jugador al activarse.
- * Delega toda la gestion de vida al componente interior sin modificarla.
- */
 UCLASS()
 class CENTCOSMOS_API UEnemSobrecargaApex : public UEnemDecorador
 {
@@ -20,8 +15,6 @@ public:
 		Envolver(Componente);
 		DuracionEfecto = Duracion;
 	}
-
-	// Al morir el enemigo el GameMode o el Builder llama AplicarEfecto
 	void AplicarEfecto(class ACentCosmosPawn* Nave);
 
 private:
